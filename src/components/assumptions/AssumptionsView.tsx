@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { parseISO } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -107,6 +107,33 @@ function DateTargetPicker({ value, onChange }: { value: string; onChange: (iso: 
 export default function AssumptionsView() {
   const assumptions = useAppStore((s) => s.revenueAssumptions);
   const update = useAppStore((s) => s.updateRevenueAssumptions);
+  const lineItems = useAppStore((s) => s.lineItems);
+
+  // Total monthly amount of active recurring cost items — one contribution per series
+  // (recurringGroupId), not per generated row, otherwise a series spanning N months would
+  // count its own amount N times instead of once.
+  const recurringMonthlyCostTotal = useMemo(() => {
+    const seenGroups = new Set<string>();
+    let total = 0;
+    for (const li of lineItems) {
+      if (!li.recurring || li.type !== 'cost') continue;
+      const groupKey = li.recurringGroupId ?? li.id;
+      if (seenGroups.has(groupKey)) continue;
+      seenGroups.add(groupKey);
+      total += li.amount;
+    }
+    return total;
+  }, [lineItems]);
+
+  // Pre-fills the override only while it's still empty ("automatico") — once it holds any
+  // value (ours or the user's), it stays exactly as the user left it; they clear it to get a
+  // fresh suggestion again.
+  useEffect(() => {
+    if (assumptions.costRunRateOverride === null && recurringMonthlyCostTotal > 0) {
+      update({ costRunRateOverride: recurringMonthlyCostTotal });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recurringMonthlyCostTotal]);
 
   return (
     <div className="space-y-4">
@@ -153,7 +180,9 @@ export default function AssumptionsView() {
             Lasciando il campo vuoto, la dashboard calcola una stima automatica: la media delle spese degli
             ultimi 3 mesi con dati. Scrivici un numero se vuoi decidere tu quella cifra — utile quando la media
             automatica non ti rappresenta (es. un mese con una spesa una tantum che la falsa), oppure metti 0
-            se vuoi vedere la proiezione assumendo che da qui in avanti non ci siano altre spese.
+            se vuoi vedere la proiezione assumendo che da qui in avanti non ci siano altre spese. Se hai voci di
+            costo ricorrenti attive, il campo si pre-compila da solo col loro totale mensile finché resta vuoto;
+            appena ci scrivi un valore diverso, resta quello che hai scelto tu.
           </p>
         </CardContent>
       </Card>
