@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { buildProjection, computeBreakEvenStatus } from '@/lib/calculations/projection';
+import { computeRunway } from '@/lib/calculations/runway';
 import { CHART_COLORS as CATEGORY_COLORS } from '@/lib/charts/colors';
 import { formatMonthLabel } from '@/lib/groupByMonth';
 import { useAppStore } from '@/lib/storage/store';
@@ -71,6 +72,16 @@ const NET_PROFIT_CHART_CONFIG = {
 
 function eur(n: number): string {
   return n.toLocaleString('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+}
+
+// Stessa logica di formattazione del box Runway in Budget — qui mostriamo lo stesso identico
+// risultato, non un secondo calcolo indipendente.
+function formatRunway(result: { isProfitable: boolean; runwayMonths: number | null }): string {
+  if (result.isProfitable) return 'Redditizio';
+  return `${(result.runwayMonths ?? 0).toLocaleString('it-IT', {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  })} mesi`;
 }
 
 function StatTile({ label, value }: { label: string; value: string }) {
@@ -125,10 +136,13 @@ export default function DashboardView() {
   const currentMonthKey = new Date().toISOString().slice(0, 7);
   const currentMonth = projections.find((p) => p.month === currentMonthKey) ?? projections[0];
 
-  const avgBurnRate = useMemo(() => {
-    if (projections.length === 0) return 0;
-    return projections.reduce((sum, p) => sum + p.burnRate, 0) / projections.length;
-  }, [projections]);
+  // Stesso identico calcolo del box Runway in Budget: stessa cassa (fondi, con eventuale
+  // override) e stesse assunzioni, prese dallo stesso stato globale — sempre in sync.
+  const runwayResult = useMemo(() => {
+    const cashFromFunds = state.fundEntries.reduce((sum, f) => sum + f.amount, 0);
+    const cashAvailable = state.runwayAssumptions.cashAvailableOverride ?? cashFromFunds;
+    return computeRunway(cashAvailable, state.runwayAssumptions);
+  }, [state.fundEntries, state.runwayAssumptions]);
 
   // Months from today through the break-even target — the range the "Utile netto mensile"
   // tile can browse, and what "Utile netto totale" sums over (falls back to just the
@@ -193,7 +207,7 @@ export default function DashboardView() {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         <StatTile label="Posizione cumulativa attuale" value={eur(currentMonth?.cumulativePosition ?? 0)} />
         <StatTile label="Burn rate mensile (mese corrente)" value={eur(currentMonth?.burnRate ?? 0)} />
-        <StatTile label="Burn rate medio proiettato" value={eur(avgBurnRate)} />
+        <StatTile label="Runway" value={formatRunway(runwayResult)} />
         <StatTile label="Ricavo proiettato (mese corrente)" value={eur(currentMonth?.projectedRevenue ?? 0)} />
         <Card className="bg-secondary/60">
           <CardContent className="p-4">
