@@ -44,9 +44,21 @@ export function buildProjection(state: AppState): MonthlyProjection[] {
   const costsByMonth = new Map<string, number>();
   const incomeByMonth = new Map<string, number>();
   for (const li of lineItems) {
-    const k = monthKeyFromISO(li.date);
     const map = li.type === 'cost' ? costsByMonth : incomeByMonth;
-    map.set(k, (map.get(k) ?? 0) + li.amount);
+    const itemMonth = startOfMonth(parseISO(li.date));
+
+    if (li.recurring && itemMonth <= targetDate) {
+      // Same amount, repeated every month from its own date through the break-even target —
+      // a known fixed recurrence, not the trailing-average run-rate guess used elsewhere.
+      const monthsSpan = differenceInCalendarMonths(targetDate, itemMonth) + 1;
+      for (let i = 0; i < monthsSpan; i++) {
+        const k = monthKey(addMonths(itemMonth, i));
+        map.set(k, (map.get(k) ?? 0) + li.amount);
+      }
+    } else {
+      const k = monthKey(itemMonth);
+      map.set(k, (map.get(k) ?? 0) + li.amount);
+    }
   }
 
   const fundsByMonth = new Map<string, number>();

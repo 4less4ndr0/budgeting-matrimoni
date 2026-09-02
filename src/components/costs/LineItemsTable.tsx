@@ -1,5 +1,15 @@
 import { useMemo, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Repeat, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,14 +25,37 @@ function formatEUR(n: number): string {
   return n.toLocaleString('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 }
 
-function LineItemCard({
+function RecurringToggle({
   item,
   onUpdate,
-  onRemove,
 }: {
   item: LineItem;
   onUpdate: (patch: Partial<Omit<LineItem, 'id'>>) => void;
-  onRemove: () => void;
+}) {
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => onUpdate({ recurring: !item.recurring })}
+      title={
+        item.recurring
+          ? 'Ricorrente: si ripete ogni mese fino al target di break-even (clicca per rendere una tantum)'
+          : 'Rendi ricorrente: si ripeterà ogni mese fino al target di break-even'
+      }
+    >
+      <Repeat className={item.recurring ? 'text-primary' : 'text-muted-foreground'} />
+    </Button>
+  );
+}
+
+function LineItemCard({
+  item,
+  onUpdate,
+  onRequestDelete,
+}: {
+  item: LineItem;
+  onUpdate: (patch: Partial<Omit<LineItem, 'id'>>) => void;
+  onRequestDelete: () => void;
 }) {
   return (
     <div className="rounded-lg border border-border p-3">
@@ -33,7 +66,8 @@ function LineItemCard({
           value={item.date}
           onChange={(e) => onUpdate({ date: e.target.value })}
         />
-        <Button variant="ghost" size="icon" onClick={onRemove} title="Elimina">
+        <RecurringToggle item={item} onUpdate={onUpdate} />
+        <Button variant="ghost" size="icon" onClick={onRequestDelete} title="Elimina">
           <Trash2 className="text-muted-foreground hover:text-destructive" />
         </Button>
       </div>
@@ -83,6 +117,7 @@ export default function LineItemsTable() {
   const groups = useMemo(() => groupByMonth(lineItems), [lineItems]);
   const currentMonthKey = new Date().toISOString().slice(0, 7);
   const [openMonth, setOpenMonth] = useState<string | undefined>(() => groups[0]?.[0]);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   function handleAdd() {
     addLineItem({
@@ -92,9 +127,15 @@ export default function LineItemsTable() {
       amount: 0,
       type: 'cost',
       source: 'manual',
+      recurring: false,
     });
     // Jump to (and reveal) the current month's group, since that's always where a new entry lands.
     setOpenMonth(currentMonthKey);
+  }
+
+  function confirmDelete() {
+    if (pendingDeleteId) removeLineItem(pendingDeleteId);
+    setPendingDeleteId(null);
   }
 
   return (
@@ -103,7 +144,8 @@ export default function LineItemsTable() {
         <CardTitle>Voci di costo ed entrata</CardTitle>
         <CardDescription>
           Modifica liberamente qualsiasi valore: sono i tuoi dati di lavoro, non il file importato. Raggruppate
-          per mese, dal più recente.
+          per mese, dal più recente. L&apos;icona <Repeat className="inline h-3.5 w-3.5 align-text-bottom" /> rende
+          una voce ricorrente fissa, ripetuta automaticamente ogni mese fino alla data target di break-even.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -148,7 +190,7 @@ export default function LineItemsTable() {
                         key={item.id}
                         item={item}
                         onUpdate={(patch) => updateLineItem(item.id, patch)}
-                        onRemove={() => removeLineItem(item.id)}
+                        onRequestDelete={() => setPendingDeleteId(item.id)}
                       />
                     ))}
                   </div>
@@ -213,14 +255,20 @@ export default function LineItemsTable() {
                               </Select>
                             </TableCell>
                             <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => removeLineItem(item.id)}
-                                title="Elimina"
-                              >
-                                <Trash2 className="text-muted-foreground hover:text-destructive" />
-                              </Button>
+                              <div className="flex items-center">
+                                <RecurringToggle
+                                  item={item}
+                                  onUpdate={(patch) => updateLineItem(item.id, patch)}
+                                />
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setPendingDeleteId(item.id)}
+                                  title="Elimina"
+                                >
+                                  <Trash2 className="text-muted-foreground hover:text-destructive" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -233,6 +281,27 @@ export default function LineItemsTable() {
           })}
         </Accordion>
       </CardContent>
+
+      <AlertDialog open={pendingDeleteId !== null} onOpenChange={(open) => !open && setPendingDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminare questa voce?</AlertDialogTitle>
+            <AlertDialogDescription>
+              L&apos;operazione non è reversibile: la voce verrà rimossa definitivamente da questa dashboard (il
+              file originale, se importata, non viene comunque mai toccato).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={confirmDelete}
+            >
+              Elimina
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

@@ -90,6 +90,7 @@ export function normalizeRows(sheet: RawSheet, options: NormalizeOptions): Norma
       amount,
       type,
       source: 'imported',
+      recurring: false,
     });
   }
 

@@ -53,12 +53,13 @@ export function exportWorkbook(state: AppState): void {
   XLSX.utils.book_append_sheet(
     wb,
     XLSX.utils.json_to_sheet(
-      state.lineItems.map(({ date, category, description, amount, type }) => ({
+      state.lineItems.map(({ date, category, description, amount, type, recurring }) => ({
         date,
         category,
         description,
         amount,
         type,
+        recurring,
       })),
     ),
     'Line Items',

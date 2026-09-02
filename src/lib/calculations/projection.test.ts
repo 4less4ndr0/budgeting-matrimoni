@@ -41,8 +41,8 @@ describe('buildProjection', () => {
   it('reaches break-even immediately when revenue covers costs, even without funds', () => {
     const state: AppState = {
       lineItems: [
-        { id: '1', date: todayISO, category: 'setup', description: 'dominio', amount: 100, type: 'cost', source: 'manual' },
-        { id: '2', date: todayISO, category: 'vendite', description: 'incasso', amount: 100, type: 'income', source: 'manual' },
+        { id: '1', date: todayISO, category: 'setup', description: 'dominio', amount: 100, type: 'cost', source: 'manual', recurring: false },
+        { id: '2', date: todayISO, category: 'vendite', description: 'incasso', amount: 100, type: 'income', source: 'manual', recurring: false },
       ],
       fundEntries: [],
       revenueAssumptions: baseAssumptions(),
@@ -64,7 +64,7 @@ describe('buildProjection', () => {
   it('funds alone do not trigger break-even without matching revenue', () => {
     const state: AppState = {
       lineItems: [
-        { id: '1', date: todayISO, category: 'setup', description: 'dominio', amount: 100, type: 'cost', source: 'manual' },
+        { id: '1', date: todayISO, category: 'setup', description: 'dominio', amount: 100, type: 'cost', source: 'manual', recurring: false },
       ],
       fundEntries: [{ id: 'f1', date: todayISO, amount: 1000, description: 'capitale iniziale' }],
       revenueAssumptions: baseAssumptions(),
@@ -87,7 +87,7 @@ describe('buildProjection', () => {
   it('is at-risk when costs run rate outpaces revenue indefinitely', () => {
     const state: AppState = {
       lineItems: [
-        { id: '1', date: todayISO, category: 'ads', description: 'campagna', amount: 5000, type: 'cost', source: 'manual' },
+        { id: '1', date: todayISO, category: 'ads', description: 'campagna', amount: 5000, type: 'cost', source: 'manual', recurring: false },
       ],
       fundEntries: [],
       revenueAssumptions: baseAssumptions({ costRunRateOverride: 5000 }),
@@ -106,7 +106,7 @@ describe('buildProjection', () => {
   it('is behind target when the simple model revenue is too slow to catch up by the target month', () => {
     const state: AppState = {
       lineItems: [
-        { id: '1', date: todayISO, category: 'setup', description: 'costi iniziali', amount: 3000, type: 'cost', source: 'manual' },
+        { id: '1', date: todayISO, category: 'setup', description: 'costi iniziali', amount: 3000, type: 'cost', source: 'manual', recurring: false },
       ],
       fundEntries: [],
       revenueAssumptions: baseAssumptions({
@@ -165,8 +165,8 @@ describe('buildProjection', () => {
   it('cumulativeNetProfit excludes fund injections, unlike cumulativePosition', () => {
     const state: AppState = {
       lineItems: [
-        { id: '1', date: todayISO, category: 'setup', description: 'costo', amount: 100, type: 'cost', source: 'manual' },
-        { id: '2', date: todayISO, category: 'vendite', description: 'entrata', amount: 40, type: 'income', source: 'manual' },
+        { id: '1', date: todayISO, category: 'setup', description: 'costo', amount: 100, type: 'cost', source: 'manual', recurring: false },
+        { id: '2', date: todayISO, category: 'vendite', description: 'entrata', amount: 40, type: 'income', source: 'manual', recurring: false },
       ],
       fundEntries: [{ id: 'f1', date: todayISO, amount: 1000, description: 'capitale iniziale' }],
       revenueAssumptions: baseAssumptions(),
@@ -183,5 +183,52 @@ describe('buildProjection', () => {
     expect(currentMonth?.cumulativeNetProfit).toBeCloseTo(-60);
     // Cash position: funds + income - cost.
     expect(currentMonth?.cumulativePosition).toBeCloseTo(940);
+  });
+
+  it('propagates a recurring line item to every month through the break-even target, and stops there', () => {
+    const state: AppState = {
+      lineItems: [
+        {
+          id: '1',
+          date: todayISO,
+          category: 'software',
+          description: 'abbonamento mensile',
+          amount: 50,
+          type: 'cost',
+          source: 'manual',
+          recurring: true,
+        },
+        {
+          id: '2',
+          date: todayISO,
+          category: 'setup',
+          description: 'spesa una tantum',
+          amount: 999,
+          type: 'cost',
+          source: 'manual',
+          recurring: false,
+        },
+      ],
+      fundEntries: [],
+      revenueAssumptions: baseAssumptions(),
+      budgetItems: [],
+      runwayAssumptions: defaultRunwayAssumptions(),
+      budgetTotale: 0,
+      schemaVersion: 1,
+    };
+
+    const projections = buildProjection(state);
+    const currentMonth = projections.find((p) => p.month === format(today, 'yyyy-MM'));
+    const nextMonth = projections.find((p) => p.month === format(addMonths(today, 1), 'yyyy-MM'));
+    const targetMonth = projections.find((p) => p.month === format(addMonths(today, 6), 'yyyy-MM'));
+    const afterTarget = projections.find((p) => p.month === format(addMonths(today, 7), 'yyyy-MM'));
+
+    // Current month: both the recurring amount and the one-time cost.
+    expect(currentMonth?.actualCost).toBeCloseTo(50 + 999);
+    // Every month after, through the target month: only the recurring amount.
+    expect(nextMonth?.actualCost).toBeCloseTo(50);
+    expect(targetMonth?.actualCost).toBeCloseTo(50);
+    // Stops right after the target month.
+    expect(afterTarget?.actualCost).toBeCloseTo(0);
   });
 });

@@ -12,7 +12,16 @@ describe('loadSnapshot', () => {
   it('replaces lineItems, fundEntries and revenueAssumptions with the snapshot, override included', () => {
     const snapshot: StateSnapshot = {
       lineItems: [
-        { id: 'x', date: '2026-02-20', category: 'Dominio', description: 'Rinnovo', amount: 3, type: 'cost', source: 'imported' },
+        {
+          id: 'x',
+          date: '2026-02-20',
+          category: 'Dominio',
+          description: 'Rinnovo',
+          amount: 3,
+          type: 'cost',
+          source: 'imported',
+          recurring: false,
+        },
       ],
       fundEntries: [{ id: 'f1', date: '2026-01-01', amount: 500, description: 'Fondo iniziale' }],
       budgetItems: [{ id: 'b1', nome: 'Location', importo: 5000, bloccato: true }],
@@ -81,6 +90,7 @@ describe('loadSnapshot', () => {
       amount: 999,
       type: 'cost',
       source: 'manual',
+      recurring: false,
     });
 
     useAppStore.getState().loadSnapshot({
