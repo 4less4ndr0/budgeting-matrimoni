@@ -82,8 +82,8 @@ export default function FundsTable() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {/* Top CTA on mobile: adding a fund shouldn't require scrolling past the whole list first. */}
-        <Button variant="secondary" className="mb-4 w-full sm:hidden" onClick={handleAdd}>
+        {/* Top CTA: adding a fund shouldn't require scrolling past the whole list first. */}
+        <Button variant="secondary" className="mb-4 w-full sm:w-auto" onClick={handleAdd}>
           <Plus />
           Aggiungi fondo
         </Button>
@@ -176,11 +176,6 @@ export default function FundsTable() {
             );
           })}
         </Accordion>
-
-        <Button variant="secondary" className="mt-4 hidden sm:inline-flex" onClick={handleAdd}>
-          <Plus />
-          Aggiungi fondo
-        </Button>
       </CardContent>
     </Card>
   );
