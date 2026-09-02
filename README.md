@@ -1,5 +1,7 @@
 # budgeting-matrimoni
 
+**Live: https://4less4ndr0.github.io/budgeting-matrimoni/**
+
 Dashboard finanziaria per **matrimoni.top**: importa i tuoi costi (CSV/Excel), tienili
 aggiornati in una dashboard interattiva e capisci il **burn rate** e se raggiungerai il
 **break-even** entro la data che ti sei dato (default: 6 mesi da oggi).
@@ -67,8 +69,8 @@ npm run preview
 ## Deploy
 
 Il push su `main` fa partire automaticamente il workflow GitHub Actions
-(`.github/workflows/deploy.yml`) che builda e pubblica su GitHub Pages
-(`https://<utente>.github.io/budgeting-matrimoni/`). **Passo manuale una tantum**: in
+(`.github/workflows/deploy.yml`) che builda e pubblica su GitHub Pages:
+https://4less4ndr0.github.io/budgeting-matrimoni/. **Passo manuale una tantum**: in
 Settings → Pages della repo, imposta Source = "GitHub Actions".
 
 ## File di esempio
