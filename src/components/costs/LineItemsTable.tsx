@@ -107,8 +107,8 @@ export default function LineItemsTable() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {/* Top CTA on mobile: adding an entry shouldn't require scrolling past the whole list first. */}
-        <Button variant="secondary" className="mb-4 w-full sm:hidden" onClick={handleAdd}>
+        {/* Top CTA: adding an entry shouldn't require scrolling past the whole list first. */}
+        <Button variant="secondary" className="mb-4 w-full sm:w-auto" onClick={handleAdd}>
           <Plus />
           Aggiungi voce
         </Button>
@@ -232,11 +232,6 @@ export default function LineItemsTable() {
             );
           })}
         </Accordion>
-
-        <Button variant="secondary" className="mt-4 hidden sm:inline-flex" onClick={handleAdd}>
-          <Plus />
-          Aggiungi voce
-        </Button>
       </CardContent>
     </Card>
   );
