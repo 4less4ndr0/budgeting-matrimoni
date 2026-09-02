@@ -1,6 +1,7 @@
 import { addMonths, format } from 'date-fns';
 import { describe, expect, it } from 'vitest';
 import type { AppState, RevenueAssumptions } from '../../types/domain';
+import { defaultRunwayAssumptions } from '../defaults';
 import { buildProjection, computeBreakEvenStatus } from './projection';
 
 const today = new Date();
@@ -46,7 +47,7 @@ describe('buildProjection', () => {
       fundEntries: [],
       revenueAssumptions: baseAssumptions(),
       budgetItems: [],
-      budgetTotale: 0,
+      runwayAssumptions: defaultRunwayAssumptions(),
       schemaVersion: 1,
     };
 
@@ -67,7 +68,7 @@ describe('buildProjection', () => {
       fundEntries: [{ id: 'f1', date: todayISO, amount: 1000, description: 'capitale iniziale' }],
       revenueAssumptions: baseAssumptions(),
       budgetItems: [],
-      budgetTotale: 0,
+      runwayAssumptions: defaultRunwayAssumptions(),
       schemaVersion: 1,
     };
 
@@ -89,7 +90,7 @@ describe('buildProjection', () => {
       fundEntries: [],
       revenueAssumptions: baseAssumptions({ costRunRateOverride: 5000 }),
       budgetItems: [],
-      budgetTotale: 0,
+      runwayAssumptions: defaultRunwayAssumptions(),
       schemaVersion: 1,
     };
 
@@ -120,7 +121,7 @@ describe('buildProjection', () => {
         },
       }),
       budgetItems: [],
-      budgetTotale: 0,
+      runwayAssumptions: defaultRunwayAssumptions(),
       schemaVersion: 1,
     };
 
@@ -147,7 +148,7 @@ describe('buildProjection', () => {
         },
       }),
       budgetItems: [],
-      budgetTotale: 0,
+      runwayAssumptions: defaultRunwayAssumptions(),
       schemaVersion: 1,
     };
 
@@ -165,7 +166,7 @@ describe('buildProjection', () => {
       fundEntries: [{ id: 'f1', date: todayISO, amount: 1000, description: 'capitale iniziale' }],
       revenueAssumptions: baseAssumptions(),
       budgetItems: [],
-      budgetTotale: 0,
+      runwayAssumptions: defaultRunwayAssumptions(),
       schemaVersion: 1,
     };
 
