@@ -77,3 +77,10 @@ Settings → Pages della repo, imposta Source = "GitHub Actions".
 
 In `sample-data/esempio-costi.csv` trovi un file CSV di prova con header italiani per
 testare subito il flusso di import.
+
+## Import automatico da cartella
+
+Oltre al drag&drop manuale, la sezione "Importa" rileva **in automatico** ogni CSV
+presente nella cartella [`csv-imports/`](csv-imports/): appena ce n'è uno basta cliccare
+"Importa" per farlo passare nello stesso wizard di mappatura colonne. Dettagli e
+attenzione sulla repo pubblica in [`csv-imports/README.md`](csv-imports/README.md).

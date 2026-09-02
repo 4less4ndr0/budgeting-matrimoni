@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, UploadCloud } from 'lucide-react';
+import { ArrowLeft, ArrowRight, FolderSync, UploadCloud } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import {
   type TypeFallback,
 } from '@/lib/import/columnMapping';
 import { parseFile, type RawSheet } from '@/lib/import/parseFile';
+import { listRepoImports, repoImportToFile } from '@/lib/import/repoImports';
 import { useAppStore } from '@/lib/storage/store';
 
 type Step = 'upload' | 'mapping' | 'confirm';
@@ -60,6 +61,7 @@ export default function ImportView() {
   }, [sheet, mapping, typeFallback, step]);
 
   const canProceedToConfirm = mapping.date > -1 && mapping.amount > -1;
+  const repoFiles = useMemo(() => listRepoImports(), []);
 
   function reset() {
     setStep('upload');
@@ -85,6 +87,25 @@ export default function ImportView() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {step === 'upload' && repoFiles.length > 0 && (
+          <div className="mb-4 rounded-lg border border-border p-3">
+            <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <FolderSync className="h-3.5 w-3.5" />
+              Rilevati in <code>csv-imports/</code>
+            </p>
+            <ul className="flex flex-col gap-2">
+              {repoFiles.map((f) => (
+                <li key={f.name} className="flex items-center justify-between gap-3 text-sm">
+                  <span className="truncate">{f.name}</span>
+                  <Button size="sm" variant="secondary" onClick={() => void handleFile(repoImportToFile(f))}>
+                    Importa
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {step === 'upload' && (
           <div
             className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed border-border px-6 py-10 text-center text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
