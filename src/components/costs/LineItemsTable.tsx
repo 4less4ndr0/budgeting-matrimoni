@@ -25,22 +25,18 @@ function formatEUR(n: number): string {
   return n.toLocaleString('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 }
 
-function RecurringToggle({
-  item,
-  onUpdate,
-}: {
-  item: LineItem;
-  onUpdate: (patch: Partial<Omit<LineItem, 'id'>>) => void;
-}) {
+function RecurringToggle({ item, onToggle }: { item: LineItem; onToggle: () => void }) {
   return (
     <Button
       variant="ghost"
       size="icon"
-      onClick={() => onUpdate({ recurring: !item.recurring })}
+      onClick={onToggle}
       title={
         item.recurring
-          ? 'Ricorrente: si ripete ogni mese fino al target di break-even (clicca per rendere una tantum)'
-          : 'Rendi ricorrente: si ripeterà ogni mese fino al target di break-even'
+          ? 'Ricorrente (clicca per rendere una tantum questa voce)'
+          : item.recurringGroupId
+            ? 'Rendi di nuovo ricorrente questa voce'
+            : 'Genera una voce identica per ogni mese fino al target di break-even'
       }
     >
       <Repeat className={item.recurring ? 'text-primary' : 'text-muted-foreground'} />
@@ -51,10 +47,12 @@ function RecurringToggle({
 function LineItemCard({
   item,
   onUpdate,
+  onToggleRecurring,
   onRequestDelete,
 }: {
   item: LineItem;
   onUpdate: (patch: Partial<Omit<LineItem, 'id'>>) => void;
+  onToggleRecurring: () => void;
   onRequestDelete: () => void;
 }) {
   return (
@@ -66,7 +64,7 @@ function LineItemCard({
           value={item.date}
           onChange={(e) => onUpdate({ date: e.target.value })}
         />
-        <RecurringToggle item={item} onUpdate={onUpdate} />
+        <RecurringToggle item={item} onToggle={onToggleRecurring} />
         <Button variant="ghost" size="icon" onClick={onRequestDelete} title="Elimina">
           <Trash2 className="text-muted-foreground hover:text-destructive" />
         </Button>
@@ -113,6 +111,7 @@ export default function LineItemsTable() {
   const addLineItem = useAppStore((s) => s.addLineItem);
   const updateLineItem = useAppStore((s) => s.updateLineItem);
   const removeLineItem = useAppStore((s) => s.removeLineItem);
+  const expandRecurring = useAppStore((s) => s.expandRecurring);
 
   const groups = useMemo(() => groupByMonth(lineItems), [lineItems]);
   const currentMonthKey = new Date().toISOString().slice(0, 7);
@@ -144,8 +143,9 @@ export default function LineItemsTable() {
         <CardTitle>Voci di costo ed entrata</CardTitle>
         <CardDescription>
           Modifica liberamente qualsiasi valore: sono i tuoi dati di lavoro, non il file importato. Raggruppate
-          per mese, dal più recente. L&apos;icona <Repeat className="inline h-3.5 w-3.5 align-text-bottom" /> rende
-          una voce ricorrente fissa, ripetuta automaticamente ogni mese fino alla data target di break-even.
+          per mese, dal più recente. L&apos;icona <Repeat className="inline h-3.5 w-3.5 align-text-bottom" /> genera
+          una voce identica per ogni mese successivo fino alla data target di break-even, visibile e modificabile
+          come le altre.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -190,6 +190,7 @@ export default function LineItemsTable() {
                         key={item.id}
                         item={item}
                         onUpdate={(patch) => updateLineItem(item.id, patch)}
+                        onToggleRecurring={() => expandRecurring(item.id)}
                         onRequestDelete={() => setPendingDeleteId(item.id)}
                       />
                     ))}
@@ -256,10 +257,7 @@ export default function LineItemsTable() {
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center">
-                                <RecurringToggle
-                                  item={item}
-                                  onUpdate={(patch) => updateLineItem(item.id, patch)}
-                                />
+                                <RecurringToggle item={item} onToggle={() => expandRecurring(item.id)} />
                                 <Button
                                   variant="ghost"
                                   size="icon"

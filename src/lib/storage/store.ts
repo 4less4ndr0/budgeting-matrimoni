@@ -1,3 +1,4 @@
+import { addMonths, differenceInCalendarMonths, format, parseISO, startOfMonth } from 'date-fns';
 import { nanoid } from 'nanoid';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -56,6 +57,13 @@ export interface AppStore extends AppState {
   updateLineItem: (id: string, patch: Partial<Omit<LineItem, 'id'>>) => void;
   removeLineItem: (id: string) => void;
   importLineItems: (items: Omit<LineItem, 'id'>[], mode: 'append' | 'replace') => void;
+  /**
+   * First click on a not-yet-expanded item: materializes one real LineItem per month from
+   * the item's own month through targetBreakEvenDate (same category/description/amount/type),
+   * all sharing a recurringGroupId. Any later click (on that item or a generated sibling)
+   * just flips its own `recurring` flag — no regeneration, no cascading effects on siblings.
+   */
+  expandRecurring: (id: string) => void;
 
   addFundEntry: (entry: Omit<FundEntry, 'id'>) => void;
   updateFundEntry: (id: string, patch: Partial<Omit<FundEntry, 'id'>>) => void;
@@ -106,6 +114,47 @@ export const useAppStore = create<AppStore>()(
           const newItems = items.map((item) => ({ ...item, id: nanoid() }));
           return {
             lineItems: mode === 'replace' ? newItems : [...state.lineItems, ...newItems],
+          };
+        }),
+
+      expandRecurring: (id) =>
+        set((state) => {
+          const item = state.lineItems.find((li) => li.id === id);
+          if (!item) return {};
+
+          // Already expanded (or defensively, flagged without a group) — just flip the flag
+          // on this one row, no regeneration and no effect on any sibling.
+          if (item.recurringGroupId || item.recurring) {
+            return {
+              lineItems: state.lineItems.map((li) => (li.id === id ? { ...li, recurring: !li.recurring } : li)),
+            };
+          }
+
+          const groupId = nanoid();
+          const itemDate = parseISO(item.date);
+          const itemMonth = startOfMonth(itemDate);
+          const targetMonth = startOfMonth(parseISO(state.revenueAssumptions.targetBreakEvenDate));
+          const monthsToGenerate = Math.max(differenceInCalendarMonths(targetMonth, itemMonth), 0);
+
+          const generated: LineItem[] = [];
+          for (let i = 1; i <= monthsToGenerate; i++) {
+            generated.push({
+              ...item,
+              id: nanoid(),
+              // Same day-of-month as the original (date-fns clamps overflow, e.g. Jan 31 -> Feb 28).
+              date: format(addMonths(itemDate, i), 'yyyy-MM-dd'),
+              recurring: true,
+              recurringGroupId: groupId,
+            });
+          }
+
+          return {
+            lineItems: [
+              ...state.lineItems.map((li) =>
+                li.id === id ? { ...li, recurring: true, recurringGroupId: groupId } : li,
+              ),
+              ...generated,
+            ],
           };
         }),
 

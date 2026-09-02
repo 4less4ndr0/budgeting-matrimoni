@@ -166,3 +166,65 @@ describe('setBudgetTotale', () => {
     expect(useAppStore.getState().budgetTotale).toBe(0);
   });
 });
+
+describe('expandRecurring', () => {
+  beforeEach(() => {
+    useAppStore.getState().resetAll();
+    useAppStore.getState().updateRevenueAssumptions({ targetBreakEvenDate: '2026-04-15' });
+  });
+
+  it('materializes one real LineItem per month through the break-even target', () => {
+    useAppStore.getState().addLineItem({
+      date: '2026-01-15',
+      category: 'software',
+      description: 'abbonamento',
+      amount: 50,
+      type: 'cost',
+      source: 'manual',
+      recurring: false,
+    });
+    const [original] = useAppStore.getState().lineItems;
+
+    useAppStore.getState().expandRecurring(original.id);
+    const { lineItems } = useAppStore.getState();
+
+    // Jan (original) + Feb, Mar, Apr generated = 4 rows, all real, editable LineItems.
+    expect(lineItems).toHaveLength(4);
+    expect(lineItems.map((li) => li.date).sort()).toEqual([
+      '2026-01-15',
+      '2026-02-15',
+      '2026-03-15',
+      '2026-04-15',
+    ]);
+
+    const groupIds = new Set(lineItems.map((li) => li.recurringGroupId));
+    expect(groupIds.size).toBe(1);
+    expect([...groupIds][0]).toBeTruthy();
+    expect(lineItems.every((li) => li.recurring)).toBe(true);
+    expect(lineItems.every((li) => li.amount === 50 && li.category === 'software')).toBe(true);
+    // Each generated row has its own id — not four copies of the original.
+    expect(new Set(lineItems.map((li) => li.id)).size).toBe(4);
+  });
+
+  it('a second click on an already-expanded item just flips its own flag, no regeneration', () => {
+    useAppStore.getState().addLineItem({
+      date: '2026-01-15',
+      category: 'software',
+      description: 'abbonamento',
+      amount: 50,
+      type: 'cost',
+      source: 'manual',
+      recurring: false,
+    });
+    const [original] = useAppStore.getState().lineItems;
+
+    useAppStore.getState().expandRecurring(original.id);
+    expect(useAppStore.getState().lineItems).toHaveLength(4);
+
+    useAppStore.getState().expandRecurring(original.id);
+    const { lineItems } = useAppStore.getState();
+
+    expect(lineItems).toHaveLength(4); // no new rows
+    expect(lineItems.find((li) => li.id === original.id)?.recurring).toBe(false); // just toggled off
+  });
+});
