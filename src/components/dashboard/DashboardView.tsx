@@ -136,13 +136,12 @@ export default function DashboardView() {
   const currentMonthKey = new Date().toISOString().slice(0, 7);
   const currentMonth = projections.find((p) => p.month === currentMonthKey) ?? projections[0];
 
-  // Stesso identico calcolo del box Runway in Budget: stessa cassa (fondi, con eventuale
-  // override) e stesse assunzioni, prese dallo stesso stato globale — sempre in sync.
-  const runwayResult = useMemo(() => {
-    const cashFromFunds = state.fundEntries.reduce((sum, f) => sum + f.amount, 0);
-    const cashAvailable = state.runwayAssumptions.cashAvailableOverride ?? cashFromFunds;
-    return computeRunway(cashAvailable, state.runwayAssumptions);
-  }, [state.fundEntries, state.runwayAssumptions]);
+  // Stesso identico calcolo del box Runway in Budget: stesse assunzioni (incluso il valore
+  // di liquidità scelto liberamente lì), prese dallo stesso stato globale — sempre in sync.
+  const runwayResult = useMemo(
+    () => computeRunway(state.runwayAssumptions.cashAvailable, state.runwayAssumptions),
+    [state.runwayAssumptions],
+  );
 
   // Months from today through the break-even target — the range the "Utile netto mensile"
   // tile can browse, and what "Utile netto totale" sums over (falls back to just the
