@@ -1,4 +1,4 @@
-/** Shared categorical palette for pie/donut charts across the app (Dashboard, Bilancio). */
+/** Shared categorical palette for pie/donut charts across the app (Dashboard, Budget). */
 export const CHART_COLORS = [
   'hsl(158 64% 52%)',
   'hsl(217 91% 68%)',
