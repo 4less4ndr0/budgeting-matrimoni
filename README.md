@@ -68,10 +68,29 @@ npm run preview
 
 ## Deploy
 
-Il push su `main` fa partire automaticamente il workflow GitHub Actions
+Ogni merge su `main` fa partire automaticamente il workflow GitHub Actions
 (`.github/workflows/deploy.yml`) che builda e pubblica su GitHub Pages:
-https://4less4ndr0.github.io/budgeting-matrimoni/. **Passo manuale una tantum**: in
-Settings → Pages della repo, imposta Source = "GitHub Actions".
+https://4less4ndr0.github.io/budgeting-matrimoni/. Lo stesso workflow gira anche (solo
+build + test, senza deploy) su ogni Pull Request verso `main`, per far emergere un errore
+prima del merge. **Passo manuale una tantum**: in Settings → Pages della repo, imposta
+Source = "GitHub Actions".
+
+## Lavorare in due sulla repo
+
+`main` è protetto: niente push diretti, nemmeno per gli admin — solo via Pull Request.
+Ognuno lavora sul proprio branch persistente (es. `<nome>/lavoro`), e quando una modifica
+è pronta apre una PR verso `main`:
+
+```bash
+git checkout -b <tuo-nome>/lavoro origin/main   # la prima volta
+git push -u origin <tuo-nome>/lavoro
+# ... lavori, committi ...
+gh pr create --base main
+```
+
+Non serve l'approvazione dell'altra persona per mergere la propria PR (evita blocchi
+quando uno dei due non è online) — la PR è comunque il momento in cui build e test girano
+e in cui si vede il diff prima che vada in produzione.
 
 ## File di esempio
 
