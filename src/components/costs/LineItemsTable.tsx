@@ -5,7 +5,66 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAppStore } from '@/lib/storage/store';
-import type { EntryType } from '@/types/domain';
+import type { EntryType, LineItem } from '@/types/domain';
+
+function LineItemCard({
+  item,
+  onUpdate,
+  onRemove,
+}: {
+  item: LineItem;
+  onUpdate: (patch: Partial<Omit<LineItem, 'id'>>) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="rounded-lg border border-border p-3">
+      <div className="mb-2 flex items-center gap-2">
+        <Input
+          type="date"
+          className="flex-1"
+          value={item.date}
+          onChange={(e) => onUpdate({ date: e.target.value })}
+        />
+        <Button variant="ghost" size="icon" onClick={onRemove} title="Elimina">
+          <Trash2 className="text-muted-foreground hover:text-destructive" />
+        </Button>
+      </div>
+      <Input
+        type="text"
+        placeholder="Categoria"
+        className="mb-2"
+        value={item.category}
+        onChange={(e) => onUpdate({ category: e.target.value })}
+      />
+      <Input
+        type="text"
+        placeholder="Descrizione"
+        className="mb-2"
+        value={item.description}
+        onChange={(e) => onUpdate({ description: e.target.value })}
+      />
+      <div className="flex gap-2">
+        <Input
+          type="number"
+          step="0.01"
+          placeholder="Importo (€)"
+          className="min-w-0 flex-1"
+          value={item.amount}
+          onChange={(e) => onUpdate({ amount: Number(e.target.value) })}
+        />
+        <Select value={item.type} onValueChange={(value) => onUpdate({ type: value as EntryType })}>
+          <SelectTrigger className="w-32 shrink-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="cost">Costo</SelectItem>
+            <SelectItem value="income">Entrata</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+}
 
 export default function LineItemsTable() {
   const lineItems = useAppStore((s) => s.lineItems);
@@ -24,72 +83,87 @@ export default function LineItemsTable() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Data</TableHead>
-              <TableHead>Categoria</TableHead>
-              <TableHead>Descrizione</TableHead>
-              <TableHead>Importo (€)</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sorted.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>
-                  <Input
-                    type="date"
-                    value={item.date}
-                    onChange={(e) => updateLineItem(item.id, { date: e.target.value })}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    type="text"
-                    value={item.category}
-                    onChange={(e) => updateLineItem(item.id, { category: e.target.value })}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    type="text"
-                    value={item.description}
-                    onChange={(e) => updateLineItem(item.id, { description: e.target.value })}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={item.amount}
-                    onChange={(e) => updateLineItem(item.id, { amount: Number(e.target.value) })}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Select
-                    value={item.type}
-                    onValueChange={(value) => updateLineItem(item.id, { type: value as EntryType })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cost">Costo</SelectItem>
-                      <SelectItem value="income">Entrata</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-                <TableCell>
-                  <Button variant="ghost" size="icon" onClick={() => removeLineItem(item.id)} title="Elimina">
-                    <Trash2 className="text-muted-foreground hover:text-destructive" />
-                  </Button>
-                </TableCell>
+        {/* Mobile: one card per row, since a 5-column input table doesn't fit a phone screen. */}
+        <div className="space-y-3 sm:hidden">
+          {sorted.map((item) => (
+            <LineItemCard
+              key={item.id}
+              item={item}
+              onUpdate={(patch) => updateLineItem(item.id, patch)}
+              onRemove={() => removeLineItem(item.id)}
+            />
+          ))}
+        </div>
+
+        {/* Desktop/tablet: the original table. */}
+        <div className="hidden sm:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Data</TableHead>
+                <TableHead>Categoria</TableHead>
+                <TableHead>Descrizione</TableHead>
+                <TableHead>Importo (€)</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead />
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {sorted.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>
+                    <Input
+                      type="date"
+                      value={item.date}
+                      onChange={(e) => updateLineItem(item.id, { date: e.target.value })}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      type="text"
+                      value={item.category}
+                      onChange={(e) => updateLineItem(item.id, { category: e.target.value })}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      type="text"
+                      value={item.description}
+                      onChange={(e) => updateLineItem(item.id, { description: e.target.value })}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={item.amount}
+                      onChange={(e) => updateLineItem(item.id, { amount: Number(e.target.value) })}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Select
+                      value={item.type}
+                      onValueChange={(value) => updateLineItem(item.id, { type: value as EntryType })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cost">Costo</SelectItem>
+                        <SelectItem value="income">Entrata</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="icon" onClick={() => removeLineItem(item.id)} title="Elimina">
+                      <Trash2 className="text-muted-foreground hover:text-destructive" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
 
         {sorted.length === 0 && (
           <p className="py-4 text-sm text-muted-foreground">
