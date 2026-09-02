@@ -3,32 +3,31 @@ import type { RevenueAssumptions } from '../types/domain';
 
 const todayISO = () => format(new Date(), 'yyyy-MM-dd');
 
-// Seed values from matrimoni.top's own pricing/dossier:
-// Tier 1 (automated, ready in 48h) €150-250, Tier 2 (fully custom) €400-800,
-// B2B wholesale ~€100, referral commission 10-15%, pilot batch of 5-12 active partnerships.
+// Seed prices only (Tier 1/2/3) — every volume, growth and funnel assumption
+// starts at 0 so the projection reflects nothing until the user sets real numbers.
 export function defaultRevenueAssumptions(): RevenueAssumptions {
   const today = new Date();
   return {
     activeModel: 'simple',
     simple: {
-      tier1Price: 200,
-      tier2Price: 600,
-      tier3Price: 900,
-      wholesalePrice: 100,
-      tier1SitesPerMonth: 3,
-      tier2SitesPerMonth: 1,
+      tier1Price: 150,
+      tier2Price: 300,
+      tier3Price: 600,
+      wholesalePrice: 0,
+      tier1SitesPerMonth: 0,
+      tier2SitesPerMonth: 0,
       tier3SitesPerMonth: 0,
-      wholesaleSitesPerMonth: 2,
-      monthlyGrowthRatePct: 5,
+      wholesaleSitesPerMonth: 0,
+      monthlyGrowthRatePct: 0,
     },
     funnel: {
-      monthlyLeads: 20,
-      activePartnerships: 8,
-      conversionRatePct: 15,
+      monthlyLeads: 0,
+      activePartnerships: 0,
+      conversionRatePct: 0,
       saleMode: 'referral_commission',
-      avgSalePrice: 200,
-      commissionRatePct: 12.5,
-      monthlyGrowthRatePct: 8,
+      avgSalePrice: 0,
+      commissionRatePct: 0,
+      monthlyGrowthRatePct: 0,
     },
     projectionStartDate: todayISO(),
     costRunRateOverride: null,
