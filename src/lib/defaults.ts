@@ -13,9 +13,11 @@ export function defaultRevenueAssumptions(): RevenueAssumptions {
     simple: {
       tier1Price: 200,
       tier2Price: 600,
+      tier3Price: 900,
       wholesalePrice: 100,
       tier1SitesPerMonth: 3,
       tier2SitesPerMonth: 1,
+      tier3SitesPerMonth: 0,
       wholesaleSitesPerMonth: 2,
       monthlyGrowthRatePct: 5,
     },

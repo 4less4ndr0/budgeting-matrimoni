@@ -22,9 +22,11 @@ export type RevenueModelType = 'simple' | 'funnel';
 export interface SimpleModelAssumptions {
   tier1Price: number;
   tier2Price: number;
+  tier3Price: number;
   wholesalePrice: number;
   tier1SitesPerMonth: number;
   tier2SitesPerMonth: number;
+  tier3SitesPerMonth: number;
   wholesaleSitesPerMonth: number;
   monthlyGrowthRatePct: number;
 }

@@ -2,6 +2,7 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { useAppStore } from './store';
 import { defaultRevenueAssumptions } from '../defaults';
 import type { StateSnapshot } from '../export/exportSnapshot';
+import type { AppState } from '../../types/domain';
 
 describe('loadSnapshot', () => {
   beforeEach(() => {
@@ -46,5 +47,26 @@ describe('loadSnapshot', () => {
     });
 
     expect(useAppStore.getState().lineItems).toEqual([]);
+  });
+
+  it('backfills fields added later (e.g. Tier 3) with defaults instead of leaving them undefined', () => {
+    // Simulates a snapshot saved before Tier 3 existed — the shape genuinely lacks the field,
+    // as opposed to a TS-literal test object that the compiler would just reject.
+    const oldSnapshot = {
+      lineItems: [],
+      fundEntries: [],
+      revenueAssumptions: {
+        ...defaultRevenueAssumptions(),
+        simple: { tier1Price: 200, tier2Price: 600, tier1SitesPerMonth: 3, tier2SitesPerMonth: 1 },
+      },
+    } as unknown as Pick<AppState, 'lineItems' | 'fundEntries' | 'revenueAssumptions'>;
+
+    useAppStore.getState().loadSnapshot(oldSnapshot);
+    const { simple } = useAppStore.getState().revenueAssumptions;
+
+    expect(simple.tier3Price).toBe(defaultRevenueAssumptions().simple.tier3Price);
+    expect(simple.tier3SitesPerMonth).toBe(defaultRevenueAssumptions().simple.tier3SitesPerMonth);
+    // Fields the old snapshot did have must survive, not just fall back to defaults.
+    expect(simple.tier1Price).toBe(200);
   });
 });
