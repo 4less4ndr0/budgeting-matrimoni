@@ -6,6 +6,7 @@ export const SNAPSHOT_FILENAME = 'stato-sito.json';
 export interface StateSnapshot {
   lineItems: AppState['lineItems'];
   fundEntries: AppState['fundEntries'];
+  budgetItems: AppState['budgetItems'];
   revenueAssumptions: AppState['revenueAssumptions'];
   schemaVersion: number;
   savedAt: string;
@@ -21,6 +22,7 @@ export function exportStateSnapshot(state: AppState): void {
   const snapshot: StateSnapshot = {
     lineItems: state.lineItems,
     fundEntries: state.fundEntries,
+    budgetItems: state.budgetItems,
     revenueAssumptions: state.revenueAssumptions,
     schemaVersion: state.schemaVersion,
     savedAt: new Date().toISOString(),

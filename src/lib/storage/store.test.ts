@@ -15,6 +15,7 @@ describe('loadSnapshot', () => {
         { id: 'x', date: '2026-02-20', category: 'Dominio', description: 'Rinnovo', amount: 3, type: 'cost', source: 'imported' },
       ],
       fundEntries: [{ id: 'f1', date: '2026-01-01', amount: 500, description: 'Fondo iniziale' }],
+      budgetItems: [{ id: 'b1', nome: 'Location', importo: 5000 }],
       revenueAssumptions: { ...defaultRevenueAssumptions(), costRunRateOverride: 0 },
       schemaVersion: 1,
       savedAt: '2026-09-02T12:00:00.000Z',
@@ -25,9 +26,22 @@ describe('loadSnapshot', () => {
 
     expect(state.lineItems).toEqual(snapshot.lineItems);
     expect(state.fundEntries).toEqual(snapshot.fundEntries);
+    expect(state.budgetItems).toEqual(snapshot.budgetItems);
     // The whole point: an override deliberately left at 0 must survive as 0, not be
     // dropped/coerced to null ("automatico") by the round-trip.
     expect(state.revenueAssumptions.costRunRateOverride).toBe(0);
+  });
+
+  it('defaults budgetItems to [] when loading a snapshot saved before "Gestione del bilancio" existed', () => {
+    const oldSnapshot = {
+      lineItems: [],
+      fundEntries: [],
+      revenueAssumptions: defaultRevenueAssumptions(),
+    } as unknown as Pick<AppState, 'lineItems' | 'fundEntries' | 'revenueAssumptions'>;
+
+    useAppStore.getState().loadSnapshot(oldSnapshot);
+
+    expect(useAppStore.getState().budgetItems).toEqual([]);
   });
 
   it('overwrites data left over from a previous session rather than merging it', () => {
@@ -68,5 +82,24 @@ describe('loadSnapshot', () => {
     expect(simple.tier3SitesPerMonth).toBe(defaultRevenueAssumptions().simple.tier3SitesPerMonth);
     // Fields the old snapshot did have must survive, not just fall back to defaults.
     expect(simple.tier1Price).toBe(200);
+  });
+});
+
+describe('budgetItems CRUD', () => {
+  beforeEach(() => {
+    useAppStore.getState().resetAll();
+  });
+
+  it('adds, updates and removes a voce di bilancio', () => {
+    useAppStore.getState().addBudgetItem({ nome: 'Location', importo: 5000 });
+    const [added] = useAppStore.getState().budgetItems;
+    expect(added).toMatchObject({ nome: 'Location', importo: 5000 });
+    expect(added.id).toBeTruthy();
+
+    useAppStore.getState().updateBudgetItem(added.id, { importo: 5500 });
+    expect(useAppStore.getState().budgetItems[0].importo).toBe(5500);
+
+    useAppStore.getState().removeBudgetItem(added.id);
+    expect(useAppStore.getState().budgetItems).toEqual([]);
   });
 });

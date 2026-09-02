@@ -60,6 +60,12 @@ export function exportWorkbook(state: AppState): void {
 
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(flattenAssumptions(state)), 'Assumptions');
 
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.json_to_sheet(state.budgetItems.map(({ nome, importo }) => ({ voce: nome, importo }))),
+    'Bilancio',
+  );
+
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(projections), 'Monthly Projections');
 
   XLSX.writeFile(wb, `budgeting-matrimoni-export-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
