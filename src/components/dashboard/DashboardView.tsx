@@ -268,7 +268,7 @@ export default function DashboardView() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Mese</TableHead>
+                <TableHead className="sticky left-0 z-10 bg-card">Mese</TableHead>
                 <TableHead>Costo reale</TableHead>
                 <TableHead>Entrata reale</TableHead>
                 <TableHead>Ricavo proiettato</TableHead>
@@ -282,7 +282,7 @@ export default function DashboardView() {
             <TableBody>
               {projections.map((p) => (
                 <TableRow key={p.month}>
-                  <TableCell>{p.month}</TableCell>
+                  <TableCell className="sticky left-0 z-10 bg-card font-medium">{p.month}</TableCell>
                   <TableCell>{eur(p.actualCost)}</TableCell>
                   <TableCell>{eur(p.actualIncome)}</TableCell>
                   <TableCell>{eur(p.projectedRevenue)}</TableCell>
