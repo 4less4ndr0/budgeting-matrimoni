@@ -27,18 +27,9 @@ import {
 } from '@/components/ui/chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { buildProjection, computeBreakEvenStatus } from '@/lib/calculations/projection';
+import { CHART_COLORS as CATEGORY_COLORS } from '@/lib/charts/colors';
 import { useAppStore } from '@/lib/storage/store';
 import type { BreakEvenStatus } from '@/types/domain';
-
-const CATEGORY_COLORS = [
-  'hsl(158 64% 52%)',
-  'hsl(217 91% 68%)',
-  'hsl(43 96% 56%)',
-  'hsl(0 84% 70%)',
-  'hsl(262 70% 68%)',
-  'hsl(330 81% 70%)',
-  'hsl(199 89% 58%)',
-];
 
 const STATUS_META: Record<
   BreakEvenStatus,
@@ -88,6 +79,7 @@ export default function DashboardView() {
     useShallow((s) => ({
       lineItems: s.lineItems,
       fundEntries: s.fundEntries,
+      budgetItems: s.budgetItems,
       revenueAssumptions: s.revenueAssumptions,
       schemaVersion: s.schemaVersion,
     })),

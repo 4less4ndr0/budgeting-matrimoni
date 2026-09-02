@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { defaultRevenueAssumptions } from '../defaults';
-import type { AppState, FundEntry, LineItem, RevenueAssumptions } from '../../types/domain';
+import type { AppState, BudgetItem, FundEntry, LineItem, RevenueAssumptions } from '../../types/domain';
 
 const SCHEMA_VERSION = 2;
 
@@ -30,8 +30,17 @@ export interface AppStore extends AppState {
   updateFundEntry: (id: string, patch: Partial<Omit<FundEntry, 'id'>>) => void;
   removeFundEntry: (id: string) => void;
 
+  addBudgetItem: (item: Omit<BudgetItem, 'id'>) => void;
+  updateBudgetItem: (id: string, patch: Partial<Omit<BudgetItem, 'id'>>) => void;
+  removeBudgetItem: (id: string) => void;
+
   updateRevenueAssumptions: (patch: Partial<RevenueAssumptions>) => void;
-  loadSnapshot: (snapshot: Pick<AppState, 'lineItems' | 'fundEntries' | 'revenueAssumptions'>) => void;
+  loadSnapshot: (
+    snapshot: Pick<AppState, 'lineItems' | 'fundEntries' | 'revenueAssumptions'> & {
+      // Optional: snapshots saved before "Gestione del bilancio" existed won't have it.
+      budgetItems?: AppState['budgetItems'];
+    },
+  ) => void;
   resetAll: () => void;
 }
 
@@ -40,6 +49,7 @@ export const useAppStore = create<AppStore>()(
     (set) => ({
       lineItems: [],
       fundEntries: [],
+      budgetItems: [],
       revenueAssumptions: defaultRevenueAssumptions(),
       schemaVersion: SCHEMA_VERSION,
 
@@ -73,6 +83,17 @@ export const useAppStore = create<AppStore>()(
       removeFundEntry: (id) =>
         set((state) => ({ fundEntries: state.fundEntries.filter((f) => f.id !== id) })),
 
+      addBudgetItem: (item) =>
+        set((state) => ({ budgetItems: [...state.budgetItems, { ...item, id: nanoid() }] })),
+
+      updateBudgetItem: (id, patch) =>
+        set((state) => ({
+          budgetItems: state.budgetItems.map((b) => (b.id === id ? { ...b, ...patch } : b)),
+        })),
+
+      removeBudgetItem: (id) =>
+        set((state) => ({ budgetItems: state.budgetItems.filter((b) => b.id !== id) })),
+
       updateRevenueAssumptions: (patch) =>
         set((state) => ({ revenueAssumptions: { ...state.revenueAssumptions, ...patch } })),
 
@@ -80,6 +101,7 @@ export const useAppStore = create<AppStore>()(
         set({
           lineItems: snapshot.lineItems,
           fundEntries: snapshot.fundEntries,
+          budgetItems: snapshot.budgetItems ?? [],
           revenueAssumptions: withAssumptionDefaults(snapshot.revenueAssumptions),
           schemaVersion: SCHEMA_VERSION,
         }),
@@ -88,6 +110,7 @@ export const useAppStore = create<AppStore>()(
         set({
           lineItems: [],
           fundEntries: [],
+          budgetItems: [],
           revenueAssumptions: defaultRevenueAssumptions(),
           schemaVersion: SCHEMA_VERSION,
         }),

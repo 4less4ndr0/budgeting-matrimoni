@@ -17,6 +17,13 @@ export interface FundEntry {
   description: string;
 }
 
+/** A free-form voce di bilancio: name + amount, shown as a slice of the donut chart in "Gestione del bilancio". */
+export interface BudgetItem {
+  id: string;
+  nome: string;
+  importo: number;
+}
+
 export type RevenueModelType = 'simple' | 'funnel';
 
 export interface SimpleModelAssumptions {
@@ -80,6 +87,7 @@ export interface BreakEvenResult {
 export interface AppState {
   lineItems: LineItem[];
   fundEntries: FundEntry[];
+  budgetItems: BudgetItem[];
   revenueAssumptions: RevenueAssumptions;
   schemaVersion: number;
 }
