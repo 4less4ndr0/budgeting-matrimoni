@@ -22,14 +22,14 @@ export default function App() {
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-6 pb-16">
-      <header className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
+      <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
         <div>
           <h1 className="text-xl font-bold tracking-tight">Budgeting matrimoni.top</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Burn rate e proiezione break-even per il business matrimoni.top
           </p>
         </div>
-        <Button variant="secondary" onClick={() => exportWorkbook(state)}>
+        <Button variant="secondary" onClick={() => exportWorkbook(state)} className="self-start">
           <Download />
           Esporta Excel
         </Button>
