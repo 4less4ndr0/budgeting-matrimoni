@@ -35,6 +35,7 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import RunwayCard from '@/components/dashboard/RunwayCard';
 import { buildProjection, computeBreakEvenStatus } from '@/lib/calculations/projection';
 import { CHART_COLORS as CATEGORY_COLORS } from '@/lib/charts/colors';
 import { formatMonthLabel } from '@/lib/groupByMonth';
@@ -164,6 +165,8 @@ export default function DashboardView() {
 
   return (
     <div className="space-y-4">
+      <RunwayCard />
+
       <Alert variant={statusMeta.variant}>
         <StatusIcon className="h-4 w-4" />
         <AlertTitle>{statusMeta.title}</AlertTitle>

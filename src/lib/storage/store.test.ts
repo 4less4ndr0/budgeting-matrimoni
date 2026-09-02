@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { useAppStore } from './store';
-import { defaultRevenueAssumptions } from '../defaults';
+import { defaultRevenueAssumptions, defaultRunwayAssumptions } from '../defaults';
 import type { StateSnapshot } from '../export/exportSnapshot';
 import type { AppState } from '../../types/domain';
 
@@ -17,6 +17,7 @@ describe('loadSnapshot', () => {
       fundEntries: [{ id: 'f1', date: '2026-01-01', amount: 500, description: 'Fondo iniziale' }],
       budgetItems: [{ id: 'b1', nome: 'Location', importo: 5000 }],
       revenueAssumptions: { ...defaultRevenueAssumptions(), costRunRateOverride: 0 },
+      runwayAssumptions: defaultRunwayAssumptions(),
       schemaVersion: 1,
       savedAt: '2026-09-02T12:00:00.000Z',
     };
@@ -42,6 +43,18 @@ describe('loadSnapshot', () => {
     useAppStore.getState().loadSnapshot(oldSnapshot);
 
     expect(useAppStore.getState().budgetItems).toEqual([]);
+  });
+
+  it('defaults runwayAssumptions when loading a snapshot saved before the Runway calculator existed', () => {
+    const oldSnapshot = {
+      lineItems: [],
+      fundEntries: [],
+      revenueAssumptions: defaultRevenueAssumptions(),
+    } as unknown as Pick<AppState, 'lineItems' | 'fundEntries' | 'revenueAssumptions'>;
+
+    useAppStore.getState().loadSnapshot(oldSnapshot);
+
+    expect(useAppStore.getState().runwayAssumptions).toEqual(defaultRunwayAssumptions());
   });
 
   it('overwrites data left over from a previous session rather than merging it', () => {

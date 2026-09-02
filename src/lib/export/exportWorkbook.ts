@@ -5,6 +5,7 @@ import { buildProjection } from '../calculations/projection';
 
 function flattenAssumptions(state: AppState) {
   const a = state.revenueAssumptions;
+  const r = state.runwayAssumptions;
   return [
     { campo: 'Modello attivo', valore: a.activeModel },
     { campo: 'Data inizio proiezione', valore: a.projectionStartDate },
@@ -28,6 +29,19 @@ function flattenAssumptions(state: AppState) {
     { campo: 'Prezzo medio vendita', valore: a.funnel.avgSalePrice },
     { campo: 'Commissione %', valore: a.funnel.commissionRatePct },
     { campo: 'Crescita mensile % (funnel)', valore: a.funnel.monthlyGrowthRatePct },
+    { campo: '--- Runway ---', valore: '' },
+    { campo: 'Tipo input spesa', valore: r.burnInputMode },
+    { campo: 'Proiezione', valore: r.projectionMode },
+    { campo: 'Override liquidità disponibile', valore: r.cashAvailableOverride ?? '(automatico)' },
+    { campo: 'Spesa mensile aggregata', valore: r.aggregateMonthlyBurn },
+    { campo: 'Spesa: Stipendi & Team', valore: r.detailedBurn.salariesAndTeam },
+    { campo: 'Spesa: Strumenti & Software', valore: r.detailedBurn.toolsAndSoftware },
+    { campo: 'Spesa: Ufficio & Operazioni', valore: r.detailedBurn.officeAndOperations },
+    { campo: 'Spesa: Marketing & Vendite', valore: r.detailedBurn.marketingAndSales },
+    { campo: 'Spesa: Altro', valore: r.detailedBurn.other },
+    { campo: 'Entrate mensili', valore: r.monthlyRevenue },
+    { campo: 'Crescita mensile % spesa', valore: r.burnGrowthPct },
+    { campo: 'Crescita mensile % entrate', valore: r.revenueGrowthPct },
   ];
 }
 

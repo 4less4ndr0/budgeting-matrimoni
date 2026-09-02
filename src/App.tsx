@@ -17,6 +17,7 @@ export default function App() {
       fundEntries: s.fundEntries,
       budgetItems: s.budgetItems,
       revenueAssumptions: s.revenueAssumptions,
+      runwayAssumptions: s.runwayAssumptions,
       schemaVersion: s.schemaVersion,
     })),
   );

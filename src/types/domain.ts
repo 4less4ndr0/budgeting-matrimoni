@@ -84,10 +84,40 @@ export interface BreakEvenResult {
   monthsDelta: number | null; // negative = ahead, positive = behind, null if at-risk
 }
 
+export type BurnInputMode = 'aggregate' | 'detailed';
+export type RunwayProjectionMode = 'static' | 'dynamic';
+
+export interface RunwayDetailedBurn {
+  salariesAndTeam: number;
+  toolsAndSoftware: number;
+  officeAndOperations: number;
+  marketingAndSales: number;
+  other: number;
+}
+
+export interface RunwayAssumptions {
+  burnInputMode: BurnInputMode;
+  projectionMode: RunwayProjectionMode;
+  cashAvailableOverride: number | null; // null = auto (somma dei fundEntries)
+  aggregateMonthlyBurn: number;
+  detailedBurn: RunwayDetailedBurn;
+  monthlyRevenue: number;
+  burnGrowthPct: number; // usato solo in modalità dynamic
+  revenueGrowthPct: number; // usato solo in modalità dynamic
+}
+
+export interface RunwayResult {
+  totalMonthlyBurn: number;
+  netMonthlyBurn: number; // totalMonthlyBurn - monthlyRevenue, prima di eventuale crescita
+  isProfitable: boolean;
+  runwayMonths: number | null; // con decimali; null quando isProfitable
+}
+
 export interface AppState {
   lineItems: LineItem[];
   fundEntries: FundEntry[];
   budgetItems: BudgetItem[];
   revenueAssumptions: RevenueAssumptions;
+  runwayAssumptions: RunwayAssumptions;
   schemaVersion: number;
 }
