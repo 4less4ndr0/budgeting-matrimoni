@@ -45,6 +45,7 @@ describe('buildProjection', () => {
       fundEntries: [{ id: 'f1', date: todayISO, amount: 1000, description: 'risparmi personali' }],
       revenueAssumptions: baseAssumptions(),
       budgetItems: [],
+      budgetTotale: 0,
       schemaVersion: 1,
     };
 
@@ -65,6 +66,7 @@ describe('buildProjection', () => {
       fundEntries: [],
       revenueAssumptions: baseAssumptions({ costRunRateOverride: 5000 }),
       budgetItems: [],
+      budgetTotale: 0,
       schemaVersion: 1,
     };
 
@@ -95,6 +97,7 @@ describe('buildProjection', () => {
         },
       }),
       budgetItems: [],
+      budgetTotale: 0,
       schemaVersion: 1,
     };
 
@@ -121,6 +124,7 @@ describe('buildProjection', () => {
         },
       }),
       budgetItems: [],
+      budgetTotale: 0,
       schemaVersion: 1,
     };
 
@@ -138,6 +142,7 @@ describe('buildProjection', () => {
       fundEntries: [{ id: 'f1', date: todayISO, amount: 1000, description: 'capitale iniziale' }],
       revenueAssumptions: baseAssumptions(),
       budgetItems: [],
+      budgetTotale: 0,
       schemaVersion: 1,
     };
 

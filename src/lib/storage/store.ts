@@ -20,6 +20,13 @@ function withAssumptionDefaults(assumptions: RevenueAssumptions): RevenueAssumpt
   };
 }
 
+/** Backfills `bloccato` on voci saved before the lock feature existed. */
+function withBudgetItemDefaults(
+  items: Array<Omit<BudgetItem, 'bloccato'> & { bloccato?: boolean }>,
+): BudgetItem[] {
+  return items.map((item) => ({ bloccato: false, ...item }));
+}
+
 export interface AppStore extends AppState {
   addLineItem: (item: Omit<LineItem, 'id'>) => void;
   updateLineItem: (id: string, patch: Partial<Omit<LineItem, 'id'>>) => void;
@@ -33,12 +40,14 @@ export interface AppStore extends AppState {
   addBudgetItem: (item: Omit<BudgetItem, 'id'>) => void;
   updateBudgetItem: (id: string, patch: Partial<Omit<BudgetItem, 'id'>>) => void;
   removeBudgetItem: (id: string) => void;
+  setBudgetTotale: (value: number) => void;
 
   updateRevenueAssumptions: (patch: Partial<RevenueAssumptions>) => void;
   loadSnapshot: (
     snapshot: Pick<AppState, 'lineItems' | 'fundEntries' | 'revenueAssumptions'> & {
-      // Optional: snapshots saved before "Gestione del bilancio" existed won't have it.
+      // Optional: snapshots saved before "Budget" existed won't have these.
       budgetItems?: AppState['budgetItems'];
+      budgetTotale?: AppState['budgetTotale'];
     },
   ) => void;
   resetAll: () => void;
@@ -50,6 +59,7 @@ export const useAppStore = create<AppStore>()(
       lineItems: [],
       fundEntries: [],
       budgetItems: [],
+      budgetTotale: 0,
       revenueAssumptions: defaultRevenueAssumptions(),
       schemaVersion: SCHEMA_VERSION,
 
@@ -94,6 +104,8 @@ export const useAppStore = create<AppStore>()(
       removeBudgetItem: (id) =>
         set((state) => ({ budgetItems: state.budgetItems.filter((b) => b.id !== id) })),
 
+      setBudgetTotale: (value) => set({ budgetTotale: value }),
+
       updateRevenueAssumptions: (patch) =>
         set((state) => ({ revenueAssumptions: { ...state.revenueAssumptions, ...patch } })),
 
@@ -101,7 +113,8 @@ export const useAppStore = create<AppStore>()(
         set({
           lineItems: snapshot.lineItems,
           fundEntries: snapshot.fundEntries,
-          budgetItems: snapshot.budgetItems ?? [],
+          budgetItems: withBudgetItemDefaults(snapshot.budgetItems ?? []),
+          budgetTotale: snapshot.budgetTotale ?? 0,
           revenueAssumptions: withAssumptionDefaults(snapshot.revenueAssumptions),
           schemaVersion: SCHEMA_VERSION,
         }),
@@ -111,6 +124,7 @@ export const useAppStore = create<AppStore>()(
           lineItems: [],
           fundEntries: [],
           budgetItems: [],
+          budgetTotale: 0,
           revenueAssumptions: defaultRevenueAssumptions(),
           schemaVersion: SCHEMA_VERSION,
         }),
@@ -123,6 +137,7 @@ export const useAppStore = create<AppStore>()(
         return {
           ...state,
           revenueAssumptions: withAssumptionDefaults(state.revenueAssumptions),
+          budgetItems: withBudgetItemDefaults(state.budgetItems ?? []),
         };
       },
     },
