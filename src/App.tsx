@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import AssumptionsView from './components/assumptions/AssumptionsView';
 import FundsTable from './components/costs/FundsTable';
 import LineItemsTable from './components/costs/LineItemsTable';
@@ -18,12 +19,14 @@ const TABS: { key: Tab; label: string }[] = [
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('dashboard');
-  const state = useAppStore((s) => ({
-    lineItems: s.lineItems,
-    fundEntries: s.fundEntries,
-    revenueAssumptions: s.revenueAssumptions,
-    schemaVersion: s.schemaVersion,
-  }));
+  const state = useAppStore(
+    useShallow((s) => ({
+      lineItems: s.lineItems,
+      fundEntries: s.fundEntries,
+      revenueAssumptions: s.revenueAssumptions,
+      schemaVersion: s.schemaVersion,
+    })),
+  );
 
   return (
     <div className="app-shell">

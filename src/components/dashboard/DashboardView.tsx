@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import {
   Area,
   AreaChart,
@@ -32,12 +33,14 @@ function eur(n: number): string {
 }
 
 export default function DashboardView() {
-  const state = useAppStore((s) => ({
-    lineItems: s.lineItems,
-    fundEntries: s.fundEntries,
-    revenueAssumptions: s.revenueAssumptions,
-    schemaVersion: s.schemaVersion,
-  }));
+  const state = useAppStore(
+    useShallow((s) => ({
+      lineItems: s.lineItems,
+      fundEntries: s.fundEntries,
+      revenueAssumptions: s.revenueAssumptions,
+      schemaVersion: s.schemaVersion,
+    })),
+  );
 
   const projections = useMemo(() => buildProjection(state), [state]);
   const breakEven = useMemo(
