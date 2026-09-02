@@ -1,0 +1,103 @@
+{
+  "lineItems": [
+    {
+      "date": "2026-02-20",
+      "category": "Dominio & Hosting",
+      "description": "Pagamento dominio (Leo Moschen)",
+      "amount": 3,
+      "type": "cost",
+      "source": "imported",
+      "id": "GmYZniuGbEYuVO8s8ULIW"
+    },
+    {
+      "date": "2026-06-16",
+      "category": "Software & AI",
+      "description": "Claude (Leo Moschen)",
+      "amount": 18,
+      "type": "cost",
+      "source": "imported",
+      "id": "HQtJh7kUbs_eQ7pS9opmF"
+    },
+    {
+      "date": "2026-05-09",
+      "category": "Lovable",
+      "description": "Lovable Studio (Tommaso)",
+      "amount": 12.5,
+      "type": "cost",
+      "source": "imported",
+      "id": "9SIeSUEv9ZeHB7TAKXeGH"
+    },
+    {
+      "date": "2026-05-14",
+      "category": "Lovable",
+      "description": "Top up crediti Lovable (Tommaso)",
+      "amount": 90,
+      "type": "cost",
+      "source": "imported",
+      "id": "_d7shS1uHBY5LStIL9N6A"
+    },
+    {
+      "date": "2026-06-02",
+      "category": "Lovable",
+      "description": "Top up crediti Lovable (Tommaso)",
+      "amount": 90,
+      "type": "cost",
+      "source": "imported",
+      "id": "1nFPyj3g_EfaEGKct3i2c"
+    },
+    {
+      "date": "2026-06-09",
+      "category": "Lovable",
+      "description": "Lovable Studio (Tommaso)",
+      "amount": 12.5,
+      "type": "cost",
+      "source": "imported",
+      "id": "VX_3YIQddjhHc8CWUb7AH"
+    },
+    {
+      "date": "2026-06-25",
+      "category": "Asset Digitali",
+      "description": "Higgsfield (Tommaso)",
+      "amount": 114.68,
+      "type": "cost",
+      "source": "imported",
+      "id": "qCt8WgM2MHMf-cAP8xV8H"
+    }
+  ],
+  "fundEntries": [
+    {
+      "date": "2026-09-02",
+      "amount": 2800,
+      "description": "",
+      "id": "RjTJr6JYczc1UDlPBW659"
+    }
+  ],
+  "revenueAssumptions": {
+    "activeModel": "simple",
+    "simple": {
+      "tier1Price": 0,
+      "tier2Price": 0,
+      "tier3Price": 0,
+      "wholesalePrice": 0,
+      "tier1SitesPerMonth": 0,
+      "tier2SitesPerMonth": 0,
+      "tier3SitesPerMonth": 0,
+      "wholesaleSitesPerMonth": 0,
+      "monthlyGrowthRatePct": 0
+    },
+    "funnel": {
+      "monthlyLeads": 0,
+      "activePartnerships": 0,
+      "conversionRatePct": 0,
+      "saleMode": "referral_commission",
+      "avgSalePrice": 0,
+      "commissionRatePct": 0,
+      "monthlyGrowthRatePct": 0
+    },
+    "projectionStartDate": "2026-09-02",
+    "costRunRateOverride": 0,
+    "targetBreakEvenDate": "2027-03-02"
+  },
+  "schemaVersion": 1,
+  "savedAt": "2026-09-02T12:58:45.500Z"
+}
