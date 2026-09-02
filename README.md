@@ -103,3 +103,10 @@ Oltre al drag&drop manuale, la sezione "Importa" rileva **in automatico** ogni C
 presente nella cartella [`csv-imports/`](csv-imports/): appena ce n'è uno basta cliccare
 "Importa" per farlo passare nello stesso wizard di mappatura colonne. Dettagli e
 attenzione sulla repo pubblica in [`csv-imports/README.md`](csv-imports/README.md).
+
+Il tasto "Esporta" in alto è un menu con due opzioni: Excel (come prima) e **"Salva stato
+(.json)"**, che scarica uno snapshot completo — costi, fondi, assunzioni ricavi, override
+inclusi — pensato per essere spostato in `csv-imports/`: la stessa tab "Importa" lo rileva
+e lo ricarica con un click, così puoi portare la stessa identica situazione su un altro
+dispositivo (i dati normalmente vivono solo nel `localStorage` del browser, non sono
+condivisi).
