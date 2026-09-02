@@ -15,9 +15,9 @@ function Field({
   children: ReactNode;
 }) {
   return (
-    <div className="mb-3 flex items-center gap-3">
-      <Label className="w-48 shrink-0 font-normal text-muted-foreground">{label}</Label>
-      <div className="flex-1">{children}</div>
+    <div className="mb-3 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+      <Label className="font-normal text-muted-foreground sm:w-48 sm:shrink-0">{label}</Label>
+      <div className="min-w-0 flex-1">{children}</div>
     </div>
   );
 }

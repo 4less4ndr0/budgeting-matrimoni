@@ -128,8 +128,8 @@ export default function ImportView() {
               Mappa le colonne
             </h3>
             {INTERNAL_FIELDS.map((field) => (
-              <div className="mb-3 flex items-center gap-3" key={field.key}>
-                <Label className="w-48 shrink-0 font-normal text-muted-foreground">
+              <div className="mb-3 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3" key={field.key}>
+                <Label className="font-normal text-muted-foreground sm:w-48 sm:shrink-0">
                   {field.label}
                   {field.required ? ' *' : ''}
                 </Label>
@@ -137,7 +137,7 @@ export default function ImportView() {
                   value={String(mapping[field.key])}
                   onValueChange={(value) => setMapping((m) => ({ ...m, [field.key]: Number(value) }))}
                 >
-                  <SelectTrigger className="flex-1">
+                  <SelectTrigger className="min-w-0 flex-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -153,12 +153,12 @@ export default function ImportView() {
             ))}
 
             {mapping.type === -1 && (
-              <div className="mb-3 flex items-center gap-3">
-                <Label className="w-48 shrink-0 font-normal text-muted-foreground">
+              <div className="mb-3 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+                <Label className="font-normal text-muted-foreground sm:w-48 sm:shrink-0">
                   Come determinare costo/entrata
                 </Label>
                 <Select value={typeFallback} onValueChange={(v) => setTypeFallback(v as TypeFallback)}>
-                  <SelectTrigger className="flex-1">
+                  <SelectTrigger className="min-w-0 flex-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -239,10 +239,10 @@ export default function ImportView() {
                   </TableBody>
                 </Table>
 
-                <div className="mb-1 mt-4 flex items-center gap-3">
-                  <Label className="w-48 shrink-0 font-normal text-muted-foreground">Modalità import</Label>
+                <div className="mb-1 mt-4 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+                  <Label className="font-normal text-muted-foreground sm:w-48 sm:shrink-0">Modalità import</Label>
                   <Select value={importMode} onValueChange={(v) => setImportMode(v as 'append' | 'replace')}>
-                    <SelectTrigger className="flex-1">
+                    <SelectTrigger className="min-w-0 flex-1">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
