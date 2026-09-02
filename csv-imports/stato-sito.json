@@ -1,0 +1,122 @@
+{
+  "lineItems": [
+    {
+      "date": "2026-02-20",
+      "category": "Dominio & Hosting",
+      "description": "Pagamento dominio (Leo Moschen)",
+      "amount": 3,
+      "type": "cost",
+      "source": "imported",
+      "id": "JIj1Rq-zgpIbUeKvg57my"
+    },
+    {
+      "date": "2026-06-16",
+      "category": "Software & AI",
+      "description": "Claude (Leo Moschen)",
+      "amount": 18,
+      "type": "cost",
+      "source": "imported",
+      "id": "aJsvshDa1y9i3YDfXOPUH"
+    },
+    {
+      "date": "2026-05-09",
+      "category": "Lovable",
+      "description": "Lovable Studio (Tommaso)",
+      "amount": 12.5,
+      "type": "cost",
+      "source": "imported",
+      "id": "1FRoFQucFZ6cSOpMB9chj"
+    },
+    {
+      "date": "2026-05-14",
+      "category": "Lovable",
+      "description": "Top up crediti Lovable (Tommaso)",
+      "amount": 90,
+      "type": "cost",
+      "source": "imported",
+      "id": "oS6YW8jYpcVhcT9RlgC38"
+    },
+    {
+      "date": "2026-06-02",
+      "category": "Lovable",
+      "description": "Top up crediti Lovable (Tommaso)",
+      "amount": 90,
+      "type": "cost",
+      "source": "imported",
+      "id": "DYuF8khStsLhCuWO2vV5g"
+    },
+    {
+      "date": "2026-06-09",
+      "category": "Lovable",
+      "description": "Lovable Studio (Tommaso)",
+      "amount": 12.5,
+      "type": "cost",
+      "source": "imported",
+      "id": "a-1patcNYcaLfTmOiLoNV"
+    },
+    {
+      "date": "2026-06-25",
+      "category": "Asset Digitali",
+      "description": "Higgsfield (Tommaso)",
+      "amount": 114.68,
+      "type": "cost",
+      "source": "imported",
+      "id": "kQXtMIV1FfaYq1uDyEswr"
+    },
+    {
+      "date": "2026-09-02",
+      "category": "marketing",
+      "description": "hig",
+      "amount": 130,
+      "type": "cost",
+      "source": "manual",
+      "id": "ZJVhakwxWYv4Qf-cRyNNQ"
+    },
+    {
+      "date": "2026-09-02",
+      "category": "marketing",
+      "description": "meta ads",
+      "amount": 400,
+      "type": "cost",
+      "source": "manual",
+      "id": "kC8LhzoD3f6zmBMgs_y1g"
+    }
+  ],
+  "fundEntries": [
+    {
+      "date": "2026-01-02",
+      "amount": 2800,
+      "description": "capitale iniziale",
+      "id": "waJMvamuwxFUOLZShsHPK"
+    }
+  ],
+  "budgetItems": [],
+  "revenueAssumptions": {
+    "activeModel": "simple",
+    "simple": {
+      "tier1Price": 150,
+      "tier2Price": 0,
+      "tier3Price": 0,
+      "wholesalePrice": 0,
+      "tier1SitesPerMonth": 3,
+      "tier2SitesPerMonth": 0,
+      "tier3SitesPerMonth": 0,
+      "wholesaleSitesPerMonth": 0,
+      "monthlyGrowthRatePct": 0
+    },
+    "funnel": {
+      "monthlyLeads": 0,
+      "activePartnerships": 0,
+      "conversionRatePct": 0,
+      "saleMode": "direct",
+      "avgSalePrice": 0,
+      "commissionRatePct": 0,
+      "monthlyGrowthRatePct": 0
+    },
+    "projectionStartDate": "2026-09-02",
+    "costRunRateOverride": 0,
+    "targetBreakEvenDate": "2026-12-31"
+  },
+  "schemaVersion": 1,
+  "savedAt": "2026-09-02T20:07:56.739Z"
+}
