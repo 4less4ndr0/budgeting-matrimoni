@@ -149,8 +149,11 @@ export default function AssumptionsView() {
             />
           </Field>
           <p className="text-sm text-muted-foreground">
-            Lasciando vuoto l&apos;override, i mesi futuri senza costi reali usano la media degli ultimi 3 mesi
-            con dati.
+            Serve a stimare quanto spenderai nei mesi futuri in cui non hai ancora registrato spese reali.
+            Lasciando il campo vuoto, la dashboard calcola una stima automatica: la media delle spese degli
+            ultimi 3 mesi con dati. Scrivici un numero se vuoi decidere tu quella cifra — utile quando la media
+            automatica non ti rappresenta (es. un mese con una spesa una tantum che la falsa), oppure metti 0
+            se vuoi vedere la proiezione assumendo che da qui in avanti non ci siano altre spese.
           </p>
         </CardContent>
       </Card>
