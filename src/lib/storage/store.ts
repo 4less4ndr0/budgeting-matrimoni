@@ -4,7 +4,21 @@ import { persist } from 'zustand/middleware';
 import { defaultRevenueAssumptions } from '../defaults';
 import type { AppState, FundEntry, LineItem, RevenueAssumptions } from '../../types/domain';
 
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
+
+/**
+ * Backfills fields added after data may already have been saved (persisted localStorage,
+ * or an older stato-sito.json snapshot) with their defaults, so old data doesn't turn into
+ * NaN in the projections just because a newer field is missing.
+ */
+function withAssumptionDefaults(assumptions: RevenueAssumptions): RevenueAssumptions {
+  const defaults = defaultRevenueAssumptions();
+  return {
+    ...assumptions,
+    simple: { ...defaults.simple, ...assumptions.simple },
+    funnel: { ...defaults.funnel, ...assumptions.funnel },
+  };
+}
 
 export interface AppStore extends AppState {
   addLineItem: (item: Omit<LineItem, 'id'>) => void;
@@ -66,7 +80,7 @@ export const useAppStore = create<AppStore>()(
         set({
           lineItems: snapshot.lineItems,
           fundEntries: snapshot.fundEntries,
-          revenueAssumptions: snapshot.revenueAssumptions,
+          revenueAssumptions: withAssumptionDefaults(snapshot.revenueAssumptions),
           schemaVersion: SCHEMA_VERSION,
         }),
 
@@ -81,6 +95,13 @@ export const useAppStore = create<AppStore>()(
     {
       name: 'budgeting-matrimoni-store',
       version: SCHEMA_VERSION,
+      migrate: (persisted) => {
+        const state = persisted as AppStore;
+        return {
+          ...state,
+          revenueAssumptions: withAssumptionDefaults(state.revenueAssumptions),
+        };
+      },
     },
   ),
 );

@@ -8,6 +8,7 @@ export function simpleModelRevenue(monthIndex: number, a: SimpleModelAssumptions
   const base =
     a.tier1Price * a.tier1SitesPerMonth +
     a.tier2Price * a.tier2SitesPerMonth +
+    a.tier3Price * a.tier3SitesPerMonth +
     a.wholesalePrice * a.wholesaleSitesPerMonth;
   return base * growthFactor(a.monthlyGrowthRatePct, monthIndex);
 }

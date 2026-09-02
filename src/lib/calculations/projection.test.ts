@@ -12,9 +12,11 @@ function baseAssumptions(overrides: Partial<RevenueAssumptions> = {}): RevenueAs
     simple: {
       tier1Price: 200,
       tier2Price: 600,
+      tier3Price: 900,
       wholesalePrice: 100,
       tier1SitesPerMonth: 0,
       tier2SitesPerMonth: 0,
+      tier3SitesPerMonth: 0,
       wholesaleSitesPerMonth: 0,
       monthlyGrowthRatePct: 0,
     },
@@ -81,9 +83,11 @@ describe('buildProjection', () => {
         simple: {
           tier1Price: 200,
           tier2Price: 0,
+          tier3Price: 0,
           wholesalePrice: 0,
           tier1SitesPerMonth: 1, // only 200/month in revenue vs 3000 cost -> break-even far beyond 6 months
           tier2SitesPerMonth: 0,
+          tier3SitesPerMonth: 0,
           wholesaleSitesPerMonth: 0,
           monthlyGrowthRatePct: 0,
         },

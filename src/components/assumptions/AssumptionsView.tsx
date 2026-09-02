@@ -136,6 +136,32 @@ export default function AssumptionsView() {
             <Separator className="my-4" />
 
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Tier 3
+            </h3>
+            <Field label="Prezzo (€)">
+              <Input
+                type="number"
+                value={assumptions.simple.tier3Price}
+                onChange={(e) =>
+                  update({ simple: { ...assumptions.simple, tier3Price: Number(e.target.value) } })
+                }
+              />
+            </Field>
+            <Field label="Siti / mese">
+              <Input
+                type="number"
+                value={assumptions.simple.tier3SitesPerMonth}
+                onChange={(e) =>
+                  update({
+                    simple: { ...assumptions.simple, tier3SitesPerMonth: Number(e.target.value) },
+                  })
+                }
+              />
+            </Field>
+
+            <Separator className="my-4" />
+
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Wholesale B2B
             </h3>
             <Field label="Prezzo (€)">

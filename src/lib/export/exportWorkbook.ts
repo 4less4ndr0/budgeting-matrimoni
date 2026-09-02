@@ -15,6 +15,8 @@ function flattenAssumptions(state: AppState) {
     { campo: 'Siti Tier 1 / mese', valore: a.simple.tier1SitesPerMonth },
     { campo: 'Prezzo Tier 2', valore: a.simple.tier2Price },
     { campo: 'Siti Tier 2 / mese', valore: a.simple.tier2SitesPerMonth },
+    { campo: 'Prezzo Tier 3', valore: a.simple.tier3Price },
+    { campo: 'Siti Tier 3 / mese', valore: a.simple.tier3SitesPerMonth },
     { campo: 'Prezzo wholesale', valore: a.simple.wholesalePrice },
     { campo: 'Siti wholesale / mese', valore: a.simple.wholesaleSitesPerMonth },
     { campo: 'Crescita mensile % (semplice)', valore: a.simple.monthlyGrowthRatePct },
