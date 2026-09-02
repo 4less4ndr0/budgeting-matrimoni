@@ -3,8 +3,8 @@
 **Live: https://4less4ndr0.github.io/budgeting-matrimoni/**
 
 Dashboard finanziaria per **matrimoni.top**: importa i tuoi costi (CSV/Excel), tienili
-aggiornati in una dashboard interattiva e capisci il **burn rate** e se raggiungerai il
-**break-even** entro la data che ti sei dato (default: 6 mesi da oggi).
+aggiornati in una dashboard interattiva e capisci il **burn rate**, l'**utile netto** e se
+raggiungerai il **break-even** entro la data che ti sei dato (default: 6 mesi da oggi).
 
 App 100% client-side: nessun backend, nessun database. I dati restano nel browser
 (localStorage) e il file che importi non viene mai modificato — viene solo letto e copiato
@@ -13,21 +13,31 @@ nella dashboard.
 ## Funzionalità
 
 - **Import CSV/Excel** con mappatura colonne (il tuo file può avere qualsiasi struttura:
-  scegli tu quale colonna è data, categoria, importo, ecc.)
-- **Tabelle editabili** per costi/entrate e fondi disponibili
+  scegli tu quale colonna è data, categoria, importo, ecc.), più rilevamento **automatico**
+  di ogni CSV presente nella cartella [`csv-imports/`](csv-imports/) — un click e passa
+  nello stesso wizard di mappatura.
+- **Tabelle editabili** per costi/entrate e fondi disponibili — su mobile diventano card
+  verticali (una per voce) invece di una tabella stretta, pensate per lo schermo di un
+  telefono.
 - **Due modelli di proiezione ricavi**, selezionabili:
   - *Semplice*: prezzo per sito × siti venduti al mese
   - *Funnel B2B*: lead mensili × tasso di conversione × vendita diretta o commissione di
     segnalazione
-- **Dashboard**: burn rate mensile, posizione cumulativa, stato rispetto al target di
-  break-even (in anticipo / in linea / in ritardo / a rischio), grafici e tabella mensile
-- **Export Excel** con i dati aggiornati, riaggiornabile e riapribile su Google Sheets
+- **Dashboard**: burn rate mensile, posizione cumulativa (fondi + ricavi vs costi), **utile
+  netto mensile e cumulato** (conto economico puro, senza contare i fondi), stato rispetto
+  al target di break-even (in anticipo / in linea / in ritardo / a rischio), grafici e
+  tabella mensile
+- **Export** in due formati dal menu "Esporta": Excel (dati + proiezioni, riaggiornabile e
+  riapribile su Google Sheets) oppure **snapshot completo in JSON** (costi, fondi,
+  assunzioni ricavi, override inclusi) per portare l'identica situazione su un altro
+  dispositivo — la tab "Importa" lo rileva e lo ricarica con un click se lo metti in
+  `csv-imports/` come `stato-sito.json`
 
 ## Stack UI
 
-Componenti [shadcn/ui](https://ui.shadcn.com) (Radix UI + Tailwind CSS) — sorgenti in
-`src/components/ui/`, non un pacchetto npm. `components.json` è già configurato, quindi
-una volta installato Node puoi aggiungere altri componenti con:
+Componenti [shadcn/ui](https://ui.shadcn.com) (Radix UI + Tailwind CSS, tema chiaro
+"neutral") — sorgenti in `src/components/ui/`, non un pacchetto npm. `components.json` è
+già configurato, quindi una volta installato Node puoi aggiungere altri componenti con:
 
 ```bash
 npx shadcn@latest add <componente>
@@ -35,8 +45,7 @@ npx shadcn@latest add <componente>
 
 ## Prerequisiti
 
-Serve **Node.js** (versione 20 o superiore) e npm, non ancora installati su questa
-macchina. Per installarli:
+Serve **Node.js** (versione 20 o superiore) e npm. Per installarli:
 
 ```bash
 brew install node
@@ -92,21 +101,18 @@ Non serve l'approvazione dell'altra persona per mergere la propria PR (evita blo
 quando uno dei due non è online) — la PR è comunque il momento in cui build e test girano
 e in cui si vede il diff prima che vada in produzione.
 
-## File di esempio
+## Cartella `csv-imports/`
 
-In `sample-data/esempio-costi.csv` trovi un file CSV di prova con header italiani per
-testare subito il flusso di import.
+Ci metti dentro due tipi di file, entrambi rilevati in automatico dalla tab "Importa":
 
-## Import automatico da cartella
+- **CSV di movimenti** (es. estratto conto) → wizard di mappatura colonne con un click.
+- **`stato-sito.json`** → snapshot completo generato da "Esporta" → "Salva stato (.json)",
+  per portare la stessa identica situazione (dati + assunzioni) su un altro dispositivo.
 
-Oltre al drag&drop manuale, la sezione "Importa" rileva **in automatico** ogni CSV
-presente nella cartella [`csv-imports/`](csv-imports/): appena ce n'è uno basta cliccare
-"Importa" per farlo passare nello stesso wizard di mappatura colonne. Dettagli e
-attenzione sulla repo pubblica in [`csv-imports/README.md`](csv-imports/README.md).
+Dettagli, convenzioni di naming e **attenzione sulla repo pubblica** (ogni file qui dentro
+resta visibile nella cronologia git anche se lo cancelli) in
+[`csv-imports/README.md`](csv-imports/README.md).
 
-Il tasto "Esporta" in alto è un menu con due opzioni: Excel (come prima) e **"Salva stato
-(.json)"**, che scarica uno snapshot completo — costi, fondi, assunzioni ricavi, override
-inclusi — pensato per essere spostato in `csv-imports/`: la stessa tab "Importa" lo rileva
-e lo ricarica con un click, così puoi portare la stessa identica situazione su un altro
-dispositivo (i dati normalmente vivono solo nel `localStorage` del browser, non sono
-condivisi).
+In [`sample-data/esempio-costi.csv`](sample-data/esempio-costi.csv) trovi invece un file
+CSV di prova con header italiani, utile per testare subito il flusso di import manuale
+(drag&drop, non passa da `csv-imports/`).
