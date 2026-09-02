@@ -17,6 +17,7 @@ export interface AppStore extends AppState {
   removeFundEntry: (id: string) => void;
 
   updateRevenueAssumptions: (patch: Partial<RevenueAssumptions>) => void;
+  loadSnapshot: (snapshot: Pick<AppState, 'lineItems' | 'fundEntries' | 'revenueAssumptions'>) => void;
   resetAll: () => void;
 }
 
@@ -60,6 +61,14 @@ export const useAppStore = create<AppStore>()(
 
       updateRevenueAssumptions: (patch) =>
         set((state) => ({ revenueAssumptions: { ...state.revenueAssumptions, ...patch } })),
+
+      loadSnapshot: (snapshot) =>
+        set({
+          lineItems: snapshot.lineItems,
+          fundEntries: snapshot.fundEntries,
+          revenueAssumptions: snapshot.revenueAssumptions,
+          schemaVersion: SCHEMA_VERSION,
+        }),
 
       resetAll: () =>
         set({

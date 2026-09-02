@@ -5,6 +5,16 @@ La pagina di import li rileva **in automatico**: appena apri la sezione "Importa
 un elenco con tutti i CSV presenti in questa cartella, pronti da importare con un click
 (stessa mappatura colonne e anteprima di sempre — il file non viene mai modificato).
 
+## stato-sito.json — snapshot completo
+
+Oltre ai CSV di movimenti, questa cartella può contenere anche uno **snapshot completo
+dello stato del sito** (costi, fondi, assunzioni ricavi — override compresi), generato dal
+tasto "Esporta" → "Salva stato (.json)". Sposta il file scaricato qui (sovrascrivendo
+`stato-sito.json` a ogni salvataggio) e committa/pusha: la tab "Importa" lo rileva e con un
+click ricarica esattamente quella situazione, anche su un altro dispositivo — utile perché
+i dati normalmente restano solo nel browser di chi li ha inseriti (`localStorage`, non
+condiviso tra dispositivi).
+
 ## Come funziona
 
 - **In locale** (`npm run dev`): basta salvare un nuovo CSV qui dentro, il sito lo rileva

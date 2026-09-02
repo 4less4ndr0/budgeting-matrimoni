@@ -1,13 +1,12 @@
-import { Download } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import AssumptionsView from '@/components/assumptions/AssumptionsView';
 import FundsTable from '@/components/costs/FundsTable';
 import LineItemsTable from '@/components/costs/LineItemsTable';
 import DashboardView from '@/components/dashboard/DashboardView';
+import ExportMenu from '@/components/export/ExportMenu';
 import ImportView from '@/components/import/ImportView';
-import { Button } from '@/components/ui/button';
+import SnapshotRestoreCard from '@/components/import/SnapshotRestoreCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { exportWorkbook } from '@/lib/export/exportWorkbook';
 import { useAppStore } from '@/lib/storage/store';
 
 export default function App() {
@@ -29,10 +28,7 @@ export default function App() {
             Burn rate e proiezione break-even per il business matrimoni.top
           </p>
         </div>
-        <Button variant="secondary" onClick={() => exportWorkbook(state)} className="self-start">
-          <Download />
-          Esporta Excel
-        </Button>
+        <ExportMenu state={state} />
       </header>
 
       <Tabs defaultValue="dashboard">
@@ -53,7 +49,8 @@ export default function App() {
         <TabsContent value="assunzioni">
           <AssumptionsView />
         </TabsContent>
-        <TabsContent value="importa">
+        <TabsContent value="importa" className="space-y-4">
+          <SnapshotRestoreCard />
           <ImportView />
         </TabsContent>
       </Tabs>
