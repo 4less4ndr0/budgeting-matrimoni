@@ -48,6 +48,7 @@ describe('buildProjection', () => {
       revenueAssumptions: baseAssumptions(),
       budgetItems: [],
       runwayAssumptions: defaultRunwayAssumptions(),
+      budgetTotale: 0,
       schemaVersion: 1,
     };
 
@@ -69,6 +70,7 @@ describe('buildProjection', () => {
       revenueAssumptions: baseAssumptions(),
       budgetItems: [],
       runwayAssumptions: defaultRunwayAssumptions(),
+      budgetTotale: 0,
       schemaVersion: 1,
     };
 
@@ -91,6 +93,7 @@ describe('buildProjection', () => {
       revenueAssumptions: baseAssumptions({ costRunRateOverride: 5000 }),
       budgetItems: [],
       runwayAssumptions: defaultRunwayAssumptions(),
+      budgetTotale: 0,
       schemaVersion: 1,
     };
 
@@ -122,6 +125,7 @@ describe('buildProjection', () => {
       }),
       budgetItems: [],
       runwayAssumptions: defaultRunwayAssumptions(),
+      budgetTotale: 0,
       schemaVersion: 1,
     };
 
@@ -149,6 +153,7 @@ describe('buildProjection', () => {
       }),
       budgetItems: [],
       runwayAssumptions: defaultRunwayAssumptions(),
+      budgetTotale: 0,
       schemaVersion: 1,
     };
 
@@ -167,6 +172,7 @@ describe('buildProjection', () => {
       revenueAssumptions: baseAssumptions(),
       budgetItems: [],
       runwayAssumptions: defaultRunwayAssumptions(),
+      budgetTotale: 0,
       schemaVersion: 1,
     };
 

@@ -1,6 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
 import AssumptionsView from '@/components/assumptions/AssumptionsView';
-import BilancioView from '@/components/bilancio/BilancioView';
+import BudgetView from '@/components/budget/BudgetView';
 import FundsTable from '@/components/costs/FundsTable';
 import LineItemsTable from '@/components/costs/LineItemsTable';
 import DashboardView from '@/components/dashboard/DashboardView';
@@ -16,6 +16,7 @@ export default function App() {
       lineItems: s.lineItems,
       fundEntries: s.fundEntries,
       budgetItems: s.budgetItems,
+      budgetTotale: s.budgetTotale,
       revenueAssumptions: s.revenueAssumptions,
       runwayAssumptions: s.runwayAssumptions,
       schemaVersion: s.schemaVersion,
@@ -41,7 +42,7 @@ export default function App() {
 
           <TabsList>
             <TabsTrigger value="bep">BEP</TabsTrigger>
-            <TabsTrigger value="bilancio">Bilancio</TabsTrigger>
+            <TabsTrigger value="budget">Budget</TabsTrigger>
           </TabsList>
         </div>
       </div>
@@ -76,9 +77,9 @@ export default function App() {
           </Tabs>
         </TabsContent>
 
-        {/* Bilancio stands on its own: no sub-tabs, nothing from BEP shows through. */}
-        <TabsContent value="bilancio">
-          <BilancioView />
+        {/* Budget stands on its own: no sub-tabs, nothing from BEP shows through. */}
+        <TabsContent value="budget">
+          <BudgetView />
         </TabsContent>
       </div>
     </Tabs>

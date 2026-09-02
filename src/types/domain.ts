@@ -17,11 +17,12 @@ export interface FundEntry {
   description: string;
 }
 
-/** A free-form voce di bilancio: name + amount, shown as a slice of the donut chart in "Gestione del bilancio". */
+/** A free-form voce di budget: name + amount, shown as a slice of the donut chart in "Budget". */
 export interface BudgetItem {
   id: string;
   nome: string;
   importo: number;
+  bloccato: boolean; // locked: importo is frozen while reallocating the other voci
 }
 
 export type RevenueModelType = 'simple' | 'funnel';
@@ -117,6 +118,7 @@ export interface AppState {
   lineItems: LineItem[];
   fundEntries: FundEntry[];
   budgetItems: BudgetItem[];
+  budgetTotale: number; // 0 = non impostato, nessun avviso di sforamento
   revenueAssumptions: RevenueAssumptions;
   runwayAssumptions: RunwayAssumptions;
   schemaVersion: number;
