@@ -15,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import RunwayCard from '@/components/budget/RunwayCard';
 import { CHART_COLORS } from '@/lib/charts/colors';
 import { useAppStore } from '@/lib/storage/store';
 import type { BudgetItem } from '@/types/domain';
@@ -312,6 +313,8 @@ export default function BudgetView() {
           </CardContent>
         </Card>
       </div>
+
+      <RunwayCard />
     </div>
   );
 }
