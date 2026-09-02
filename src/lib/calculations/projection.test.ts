@@ -120,4 +120,24 @@ describe('buildProjection', () => {
     const currentMonth = projections.find((p) => p.month === format(today, 'yyyy-MM'));
     expect(currentMonth?.projectedRevenue).toBeCloseTo(200);
   });
+
+  it('cumulativeNetProfit excludes fund injections, unlike cumulativePosition', () => {
+    const state: AppState = {
+      lineItems: [
+        { id: '1', date: todayISO, category: 'setup', description: 'costo', amount: 100, type: 'cost', source: 'manual' },
+        { id: '2', date: todayISO, category: 'vendite', description: 'entrata', amount: 40, type: 'income', source: 'manual' },
+      ],
+      fundEntries: [{ id: 'f1', date: todayISO, amount: 1000, description: 'capitale iniziale' }],
+      revenueAssumptions: baseAssumptions(),
+      schemaVersion: 1,
+    };
+
+    const projections = buildProjection(state);
+    const currentMonth = projections.find((p) => p.month === format(today, 'yyyy-MM'));
+
+    // Net profit: income - cost, no funds involved.
+    expect(currentMonth?.cumulativeNetProfit).toBeCloseTo(-60);
+    // Cash position: funds + income - cost.
+    expect(currentMonth?.cumulativePosition).toBeCloseTo(940);
+  });
 });

@@ -1,7 +1,20 @@
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { AlertTriangle, CheckCircle2, PartyPopper, TrendingDown } from 'lucide-react';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from 'recharts';
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ComposedChart,
+  Line,
+  Pie,
+  PieChart,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -48,6 +61,11 @@ const CUMULATIVE_CHART_CONFIG = {
 
 const BURN_RATE_CHART_CONFIG = {
   burnRate: { label: 'Burn rate', color: 'hsl(43 96% 56%)' },
+} satisfies ChartConfig;
+
+const NET_PROFIT_CHART_CONFIG = {
+  netCashFlow: { label: 'Utile netto mese', color: 'hsl(217 91% 68%)' },
+  cumulativeNetProfit: { label: 'Utile netto cumulato', color: 'hsl(158 64% 52%)' },
 } satisfies ChartConfig;
 
 function eur(n: number): string {
@@ -125,11 +143,13 @@ export default function DashboardView() {
         </AlertDescription>
       </Alert>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         <StatTile label="Posizione cumulativa attuale" value={eur(currentMonth?.cumulativePosition ?? 0)} />
         <StatTile label="Burn rate mensile (mese corrente)" value={eur(currentMonth?.burnRate ?? 0)} />
         <StatTile label="Burn rate medio proiettato" value={eur(avgBurnRate)} />
         <StatTile label="Ricavo proiettato (mese corrente)" value={eur(currentMonth?.projectedRevenue ?? 0)} />
+        <StatTile label="Utile netto mensile" value={eur(currentMonth?.netCashFlow ?? 0)} />
+        <StatTile label="Utile netto totale" value={eur(currentMonth?.cumulativeNetProfit ?? 0)} />
       </div>
 
       <Card>
@@ -213,6 +233,35 @@ export default function DashboardView() {
 
       <Card>
         <CardHeader>
+          <CardTitle>Utile netto: mensile e cumulato</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-3 text-sm text-muted-foreground">
+            Entrate + ricavi meno costi, senza contare i Fondi disponibili — è il conto economico puro, diverso
+            dalla posizione cumulativa qui sopra (che invece include il capitale).
+          </p>
+          <ChartContainer config={NET_PROFIT_CHART_CONFIG} className="h-[280px] w-full">
+            <ComposedChart data={projections}>
+              <CartesianGrid vertical={false} />
+              <XAxis dataKey="month" tickLine={false} axisLine={false} fontSize={11} />
+              <YAxis tickLine={false} axisLine={false} fontSize={11} tickFormatter={(v: number) => eur(v)} width={80} />
+              <ChartTooltip content={<ChartTooltipContent formatter={(v) => eur(Number(v))} />} />
+              <ChartLegend content={<ChartLegendContent />} />
+              <Bar dataKey="netCashFlow" fill="var(--color-netCashFlow)" radius={[3, 3, 0, 0]} />
+              <Line
+                type="monotone"
+                dataKey="cumulativeNetProfit"
+                stroke="var(--color-cumulativeNetProfit)"
+                strokeWidth={2}
+                dot={false}
+              />
+            </ComposedChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Tabella mensile</CardTitle>
         </CardHeader>
         <CardContent>
@@ -224,6 +273,8 @@ export default function DashboardView() {
                 <TableHead>Entrata reale</TableHead>
                 <TableHead>Ricavo proiettato</TableHead>
                 <TableHead>Burn rate</TableHead>
+                <TableHead>Utile netto mese</TableHead>
+                <TableHead>Utile netto cumulato</TableHead>
                 <TableHead>Posizione cumulativa</TableHead>
                 <TableHead>Break-even</TableHead>
               </TableRow>
@@ -236,6 +287,8 @@ export default function DashboardView() {
                   <TableCell>{eur(p.actualIncome)}</TableCell>
                   <TableCell>{eur(p.projectedRevenue)}</TableCell>
                   <TableCell>{eur(p.burnRate)}</TableCell>
+                  <TableCell>{eur(p.netCashFlow)}</TableCell>
+                  <TableCell>{eur(p.cumulativeNetProfit)}</TableCell>
                   <TableCell>{eur(p.cumulativePosition)}</TableCell>
                   <TableCell>{p.isBreakEven ? '✅' : '—'}</TableCell>
                 </TableRow>

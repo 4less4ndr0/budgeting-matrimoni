@@ -101,6 +101,7 @@ export function buildProjection(state: AppState): MonthlyProjection[] {
     cumulativeCosts += projectedCost;
     cumulativeRevenue += actualIncome + projectedRevenue;
     const cumulativePosition = cumulativeFunds + cumulativeRevenue - cumulativeCosts;
+    const cumulativeNetProfit = cumulativeRevenue - cumulativeCosts;
     const isBreakEven = cumulativePosition >= 0;
 
     projections.push({
@@ -115,6 +116,7 @@ export function buildProjection(state: AppState): MonthlyProjection[] {
       cumulativeCosts,
       cumulativeRevenue,
       cumulativePosition,
+      cumulativeNetProfit,
       isBreakEven,
     });
   }

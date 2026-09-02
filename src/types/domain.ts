@@ -62,6 +62,7 @@ export interface MonthlyProjection {
   cumulativeCosts: number;
   cumulativeRevenue: number;
   cumulativePosition: number; // cumulativeFunds + cumulativeRevenue - cumulativeCosts
+  cumulativeNetProfit: number; // cumulativeRevenue - cumulativeCosts, EXCLUDING cumulativeFunds — P&L view, not cash position
   isBreakEven: boolean;
 }
 
