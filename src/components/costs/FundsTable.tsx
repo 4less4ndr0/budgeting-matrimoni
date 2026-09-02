@@ -1,10 +1,17 @@
+import { useMemo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { formatMonthLabel, groupByMonth } from '@/lib/groupByMonth';
 import { useAppStore } from '@/lib/storage/store';
 import type { FundEntry } from '@/types/domain';
+
+function formatEUR(n: number): string {
+  return n.toLocaleString('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+}
 
 function FundEntryCard({
   entry,
@@ -52,7 +59,18 @@ export default function FundsTable() {
   const updateFundEntry = useAppStore((s) => s.updateFundEntry);
   const removeFundEntry = useAppStore((s) => s.removeFundEntry);
 
-  const sorted = [...fundEntries].sort((a, b) => a.date.localeCompare(b.date));
+  const groups = useMemo(() => groupByMonth(fundEntries), [fundEntries]);
+  const currentMonthKey = new Date().toISOString().slice(0, 7);
+  const [openMonth, setOpenMonth] = useState<string | undefined>(() => groups[0]?.[0]);
+
+  function handleAdd() {
+    addFundEntry({
+      date: new Date().toISOString().slice(0, 10),
+      amount: 0,
+      description: '',
+    });
+    setOpenMonth(currentMonthKey);
+  }
 
   return (
     <Card>
@@ -60,84 +78,106 @@ export default function FundsTable() {
         <CardTitle>Fondi disponibili</CardTitle>
         <CardDescription>
           Capitale già disponibile per il business (risparmi, investimenti, incassi già raccolti) — si somma ai
-          ricavi proiettati per calcolare il break-even.
+          ricavi proiettati per calcolare il break-even. Raggruppati per mese, dal più recente.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {/* Mobile: one card per row, consistent with LineItemsTable. */}
-        <div className="space-y-3 sm:hidden">
-          {sorted.map((entry) => (
-            <FundEntryCard
-              key={entry.id}
-              entry={entry}
-              onUpdate={(patch) => updateFundEntry(entry.id, patch)}
-              onRemove={() => removeFundEntry(entry.id)}
-            />
-          ))}
-        </div>
+        {/* Top CTA on mobile: adding a fund shouldn't require scrolling past the whole list first. */}
+        <Button variant="secondary" className="mb-4 w-full sm:hidden" onClick={handleAdd}>
+          <Plus />
+          Aggiungi fondo
+        </Button>
 
-        {/* Desktop/tablet: the original table. */}
-        <div className="hidden sm:block">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Data</TableHead>
-                <TableHead>Descrizione</TableHead>
-                <TableHead>Importo (€)</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sorted.map((entry) => (
-                <TableRow key={entry.id}>
-                  <TableCell>
-                    <Input
-                      type="date"
-                      value={entry.date}
-                      onChange={(e) => updateFundEntry(entry.id, { date: e.target.value })}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="text"
-                      value={entry.description}
-                      onChange={(e) => updateFundEntry(entry.id, { description: e.target.value })}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={entry.amount}
-                      onChange={(e) => updateFundEntry(entry.id, { amount: Number(e.target.value) })}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" onClick={() => removeFundEntry(entry.id)} title="Elimina">
-                      <Trash2 className="text-muted-foreground hover:text-destructive" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        {groups.length === 0 && <p className="py-4 text-sm text-muted-foreground">Nessun fondo ancora registrato.</p>}
 
-        {sorted.length === 0 && (
-          <p className="py-4 text-sm text-muted-foreground">Nessun fondo ancora registrato.</p>
-        )}
+        <Accordion type="single" collapsible value={openMonth} onValueChange={setOpenMonth}>
+          {groups.map(([month, entries]) => {
+            const total = entries.reduce((sum, e) => sum + e.amount, 0);
 
-        <Button
-          variant="secondary"
-          className="mt-4"
-          onClick={() =>
-            addFundEntry({
-              date: new Date().toISOString().slice(0, 10),
-              amount: 0,
-              description: '',
-            })
-          }
-        >
+            return (
+              <AccordionItem key={month} value={month}>
+                <AccordionTrigger>
+                  <div className="flex flex-1 items-baseline justify-between gap-3 pr-2">
+                    <span className="flex items-baseline gap-2">
+                      <span>{formatMonthLabel(month)}</span>
+                      <span className="text-xs font-normal text-muted-foreground">
+                        {entries.length} {entries.length === 1 ? 'fondo' : 'fondi'}
+                      </span>
+                    </span>
+                    <span className="font-semibold text-emerald-600">{formatEUR(total)}</span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  {/* Mobile: one card per row. */}
+                  <div className="space-y-3 sm:hidden">
+                    {entries.map((entry) => (
+                      <FundEntryCard
+                        key={entry.id}
+                        entry={entry}
+                        onUpdate={(patch) => updateFundEntry(entry.id, patch)}
+                        onRemove={() => removeFundEntry(entry.id)}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Desktop/tablet: table, one per month group. */}
+                  <div className="hidden sm:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Data</TableHead>
+                          <TableHead>Descrizione</TableHead>
+                          <TableHead>Importo (€)</TableHead>
+                          <TableHead />
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {entries.map((entry) => (
+                          <TableRow key={entry.id}>
+                            <TableCell>
+                              <Input
+                                type="date"
+                                value={entry.date}
+                                onChange={(e) => updateFundEntry(entry.id, { date: e.target.value })}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="text"
+                                value={entry.description}
+                                onChange={(e) => updateFundEntry(entry.id, { description: e.target.value })}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={entry.amount}
+                                onChange={(e) => updateFundEntry(entry.id, { amount: Number(e.target.value) })}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removeFundEntry(entry.id)}
+                                title="Elimina"
+                              >
+                                <Trash2 className="text-muted-foreground hover:text-destructive" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            );
+          })}
+        </Accordion>
+
+        <Button variant="secondary" className="mt-4 hidden sm:inline-flex" onClick={handleAdd}>
           <Plus />
           Aggiungi fondo
         </Button>
