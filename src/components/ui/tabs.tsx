@@ -8,48 +8,19 @@ const Tabs = TabsPrimitive.Root;
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, forwardedRef) => {
-  const localRef = React.useRef<HTMLDivElement | null>(null);
-
-  React.useEffect(() => {
-    const list = localRef.current;
-    if (!list) return;
-
-    // iOS Safari can restore focus to the active trigger (roving tabindex) when the page
-    // returns to the foreground after an app switch, and scroll it into view itself — with
-    // a 'center' alignment rather than 'nearest', which visibly slides the bar even though
-    // the active tab was already in view. Asserting 'nearest' ourselves first keeps it a
-    // no-op whenever nothing actually needs to move.
-    const keepActiveTabStable = () => {
-      const active = list.querySelector<HTMLElement>('[data-state="active"]');
-      active?.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'auto' });
-    };
-
-    document.addEventListener('visibilitychange', keepActiveTabStable);
-    window.addEventListener('pageshow', keepActiveTabStable);
-    return () => {
-      document.removeEventListener('visibilitychange', keepActiveTabStable);
-      window.removeEventListener('pageshow', keepActiveTabStable);
-    };
-  }, []);
-
-  return (
-    <TabsPrimitive.List
-      ref={(node) => {
-        localRef.current = node;
-        if (typeof forwardedRef === 'function') forwardedRef(node);
-        else if (forwardedRef) (forwardedRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
-      }}
-      className={cn(
-        // scroll-behavior/overflow-anchor: forces any scroll correction (ours above, or the
-        // browser's own) to happen instantly rather than as a visible sliding animation.
-        'flex h-9 w-full items-center justify-start gap-1 overflow-x-auto border-b border-border bg-transparent p-0 text-muted-foreground [-ms-overflow-style:none] [scroll-behavior:auto] [overflow-anchor:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-        className,
-      )}
-      {...props}
-    />
-  );
-});
+>(({ className, ...props }, ref) => (
+  <TabsPrimitive.List
+    ref={ref}
+    className={cn(
+      // scroll-behavior/overflow-anchor: any scroll correction the browser makes on this
+      // element happens instantly, never as a visible sliding animation. The bar itself is
+      // pinned via `position: sticky` on its parent in App.tsx, so it doesn't move on scroll.
+      'flex h-9 w-full items-center justify-start gap-1 overflow-x-auto border-b border-border bg-transparent p-0 text-muted-foreground [-ms-overflow-style:none] [scroll-behavior:auto] [overflow-anchor:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+      className,
+    )}
+    {...props}
+  />
+));
 TabsList.displayName = TabsPrimitive.List.displayName;
 
 const TabsTrigger = React.forwardRef<

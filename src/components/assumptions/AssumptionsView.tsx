@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { parseISO } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +23,87 @@ function Field({
   );
 }
 
+const MONTHS_IT = [
+  'Gennaio',
+  'Febbraio',
+  'Marzo',
+  'Aprile',
+  'Maggio',
+  'Giugno',
+  'Luglio',
+  'Agosto',
+  'Settembre',
+  'Ottobre',
+  'Novembre',
+  'Dicembre',
+];
+
+/**
+ * Three plain <Select> dropdowns instead of a native <input type="date">. The native date
+ * input renders inconsistently across browsers (centered on Safari/iOS, left-aligned
+ * elsewhere, partially so after CSS overrides) — this renders identically everywhere since
+ * it's built from the same Select component used throughout the rest of the app.
+ */
+function DateTargetPicker({ value, onChange }: { value: string; onChange: (iso: string) => void }) {
+  const date = parseISO(value);
+  const day = date.getDate();
+  const month = date.getMonth();
+  const year = date.getFullYear();
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 8 }, (_, i) => currentYear - 1 + i);
+
+  function update(newDay: number, newMonth: number, newYear: number) {
+    const maxDay = new Date(newYear, newMonth + 1, 0).getDate();
+    const clampedDay = Math.min(newDay, maxDay);
+    const iso = `${newYear}-${String(newMonth + 1).padStart(2, '0')}-${String(clampedDay).padStart(2, '0')}`;
+    onChange(iso);
+  }
+
+  return (
+    <div className="flex gap-2">
+      <Select value={String(day)} onValueChange={(v) => update(Number(v), month, year)}>
+        <SelectTrigger className="w-[4.5rem] shrink-0">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {days.map((d) => (
+            <SelectItem key={d} value={String(d)}>
+              {d}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select value={String(month)} onValueChange={(v) => update(day, Number(v), year)}>
+        <SelectTrigger className="min-w-0 flex-1">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {MONTHS_IT.map((label, i) => (
+            <SelectItem key={label} value={String(i)}>
+              {label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select value={String(year)} onValueChange={(v) => update(day, month, Number(v))}>
+        <SelectTrigger className="w-24 shrink-0">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {years.map((y) => (
+            <SelectItem key={y} value={String(y)}>
+              {y}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
 export default function AssumptionsView() {
   const assumptions = useAppStore((s) => s.revenueAssumptions);
   const update = useAppStore((s) => s.updateRevenueAssumptions);
@@ -34,10 +116,9 @@ export default function AssumptionsView() {
         </CardHeader>
         <CardContent>
           <Field label="Data target">
-            <Input
-              type="date"
+            <DateTargetPicker
               value={assumptions.targetBreakEvenDate}
-              onChange={(e) => update({ targetBreakEvenDate: e.target.value })}
+              onChange={(iso) => update({ targetBreakEvenDate: iso })}
             />
           </Field>
           <Field label="Modello di ricavo attivo">
