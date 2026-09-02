@@ -44,6 +44,13 @@ function withBudgetItemDefaults(
   return items.map((item) => ({ bloccato: false, ...item }));
 }
 
+/** Backfills `recurring` on voci saved before the recurring-item feature existed. */
+function withLineItemDefaults(
+  items: Array<Omit<LineItem, 'recurring'> & { recurring?: boolean }>,
+): LineItem[] {
+  return items.map((item) => ({ recurring: false, ...item }));
+}
+
 export interface AppStore extends AppState {
   addLineItem: (item: Omit<LineItem, 'id'>) => void;
   updateLineItem: (id: string, patch: Partial<Omit<LineItem, 'id'>>) => void;
@@ -134,7 +141,7 @@ export const useAppStore = create<AppStore>()(
 
       loadSnapshot: (snapshot) =>
         set({
-          lineItems: snapshot.lineItems,
+          lineItems: withLineItemDefaults(snapshot.lineItems),
           fundEntries: snapshot.fundEntries,
           budgetItems: withBudgetItemDefaults(snapshot.budgetItems ?? []),
           budgetTotale: snapshot.budgetTotale ?? 0,

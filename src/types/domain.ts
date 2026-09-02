@@ -8,6 +8,7 @@ export interface LineItem {
   amount: number; // always positive; sign implied by `type`
   type: EntryType;
   source: 'imported' | 'manual';
+  recurring: boolean; // fixed monthly recurrence: same amount repeats every month from `date` through targetBreakEvenDate
 }
 
 export interface FundEntry {
