@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { AlertTriangle, CheckCircle2, PartyPopper, TrendingDown } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, PartyPopper, TrendingDown } from 'lucide-react';
 import {
   Area,
   AreaChart,
@@ -16,6 +16,7 @@ import {
   YAxis,
 } from 'recharts';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ChartContainer,
@@ -28,6 +29,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { buildProjection, computeBreakEvenStatus } from '@/lib/calculations/projection';
 import { CHART_COLORS as CATEGORY_COLORS } from '@/lib/charts/colors';
+import { formatMonthLabel } from '@/lib/groupByMonth';
 import { useAppStore } from '@/lib/storage/store';
 import type { BreakEvenStatus } from '@/types/domain';
 
@@ -119,6 +121,29 @@ export default function DashboardView() {
     return projections.reduce((sum, p) => sum + p.burnRate, 0) / projections.length;
   }, [projections]);
 
+  // Months from today through the break-even target — the range the "Utile netto mensile"
+  // tile can browse, and what "Utile netto totale" sums over (falls back to just the
+  // current month if the target is somehow before today).
+  const horizonProjections = useMemo(() => {
+    const inRange = projections.filter((p) => p.month >= currentMonthKey && p.month <= breakEven.targetMonth);
+    if (inRange.length > 0) return inRange;
+    return currentMonth ? [currentMonth] : [];
+  }, [projections, currentMonthKey, breakEven.targetMonth, currentMonth]);
+
+  const totalNetProfitHorizon = useMemo(
+    () => horizonProjections.reduce((sum, p) => sum + p.netCashFlow, 0),
+    [horizonProjections],
+  );
+
+  const [selectedMonthIndex, setSelectedMonthIndex] = useState(0);
+  const safeMonthIndex = Math.min(Math.max(selectedMonthIndex, 0), Math.max(horizonProjections.length - 1, 0));
+  const selectedMonthProjection = horizonProjections[safeMonthIndex];
+
+  const tableProjections = useMemo(
+    () => projections.filter((p) => p.month <= breakEven.targetMonth),
+    [projections, breakEven.targetMonth],
+  );
+
   const statusMeta = STATUS_META[breakEven.status];
   const StatusIcon = statusMeta.icon;
 
@@ -141,8 +166,42 @@ export default function DashboardView() {
         <StatTile label="Burn rate mensile (mese corrente)" value={eur(currentMonth?.burnRate ?? 0)} />
         <StatTile label="Burn rate medio proiettato" value={eur(avgBurnRate)} />
         <StatTile label="Ricavo proiettato (mese corrente)" value={eur(currentMonth?.projectedRevenue ?? 0)} />
-        <StatTile label="Utile netto mensile" value={eur(currentMonth?.netCashFlow ?? 0)} />
-        <StatTile label="Utile netto totale" value={eur(currentMonth?.cumulativeNetProfit ?? 0)} />
+        <Card className="bg-secondary/60">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                Utile netto mensile
+              </div>
+              <div className="flex items-center gap-0.5">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  disabled={safeMonthIndex === 0}
+                  onClick={() => setSelectedMonthIndex((i) => Math.max(i - 1, 0))}
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  disabled={safeMonthIndex >= horizonProjections.length - 1}
+                  onClick={() => setSelectedMonthIndex((i) => Math.min(i + 1, horizonProjections.length - 1))}
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+            <div className="mt-1.5 text-2xl font-bold">{eur(selectedMonthProjection?.netCashFlow ?? 0)}</div>
+            {selectedMonthProjection && (
+              <div className="mt-0.5 text-xs text-muted-foreground">
+                {formatMonthLabel(selectedMonthProjection.month)}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        <StatTile label="Utile netto totale (mese corrente → target)" value={eur(totalNetProfitHorizon)} />
       </div>
 
       <Card>
@@ -273,7 +332,7 @@ export default function DashboardView() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {projections.map((p) => (
+              {tableProjections.map((p) => (
                 <TableRow key={p.month}>
                   <TableCell className="sticky left-0 z-10 bg-card font-medium">{p.month}</TableCell>
                   <TableCell>{eur(p.actualCost)}</TableCell>
