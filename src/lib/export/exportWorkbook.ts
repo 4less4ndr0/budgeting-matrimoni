@@ -32,7 +32,7 @@ function flattenAssumptions(state: AppState) {
     { campo: '--- Runway ---', valore: '' },
     { campo: 'Tipo input spesa', valore: r.burnInputMode },
     { campo: 'Proiezione', valore: r.projectionMode },
-    { campo: 'Override liquidità disponibile', valore: r.cashAvailableOverride ?? '(automatico)' },
+    { campo: 'Liquidità disponibile (Runway)', valore: r.cashAvailable },
     { campo: 'Spesa mensile aggregata', valore: r.aggregateMonthlyBurn },
     { campo: 'Spesa: Stipendi & Team', valore: r.detailedBurn.salariesAndTeam },
     { campo: 'Spesa: Strumenti & Software', valore: r.detailedBurn.toolsAndSoftware },

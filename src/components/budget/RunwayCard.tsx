@@ -62,14 +62,10 @@ function SegmentedToggle<T extends string>({
 }
 
 export default function RunwayCard() {
-  const fundEntries = useAppStore((s) => s.fundEntries);
   const runway = useAppStore((s) => s.runwayAssumptions);
   const update = useAppStore((s) => s.updateRunwayAssumptions);
 
-  const cashFromFunds = useMemo(() => fundEntries.reduce((sum, f) => sum + f.amount, 0), [fundEntries]);
-  const cashAvailable = runway.cashAvailableOverride ?? cashFromFunds;
-
-  const result = useMemo(() => computeRunway(cashAvailable, runway), [cashAvailable, runway]);
+  const result = useMemo(() => computeRunway(runway.cashAvailable, runway), [runway]);
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
@@ -108,14 +104,12 @@ export default function RunwayCard() {
             <Input
               type="number"
               step="0.01"
-              value={cashAvailable}
-              onChange={(e) =>
-                update({ cashAvailableOverride: e.target.value === '' ? null : Number(e.target.value) })
-              }
+              placeholder="0"
+              value={runway.cashAvailable}
+              onChange={(e) => update({ cashAvailable: Number(e.target.value) })}
             />
             <p className="mt-1 text-xs text-muted-foreground">
-              Precompilato dal totale dei Fondi disponibili ({eur(cashFromFunds)}) — modificabile; svuota il campo
-              per tornare al totale automatico.
+              Cifra libera, scelta da te — scollegata dal totale dei Fondi disponibili in Costi & Fondi.
             </p>
           </div>
 

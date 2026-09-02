@@ -39,7 +39,7 @@ export function defaultRunwayAssumptions(): RunwayAssumptions {
   return {
     burnInputMode: 'aggregate',
     projectionMode: 'static',
-    cashAvailableOverride: null,
+    cashAvailable: 0,
     aggregateMonthlyBurn: 0,
     detailedBurn: {
       salariesAndTeam: 0,

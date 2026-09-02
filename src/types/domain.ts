@@ -99,7 +99,7 @@ export interface RunwayDetailedBurn {
 export interface RunwayAssumptions {
   burnInputMode: BurnInputMode;
   projectionMode: RunwayProjectionMode;
-  cashAvailableOverride: number | null; // null = auto (somma dei fundEntries)
+  cashAvailable: number; // valore libero scelto dall'utente, scollegato dai Fondi disponibili
   aggregateMonthlyBurn: number;
   detailedBurn: RunwayDetailedBurn;
   monthlyRevenue: number;
