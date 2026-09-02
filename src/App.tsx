@@ -18,6 +18,7 @@ export default function App() {
       budgetItems: s.budgetItems,
       budgetTotale: s.budgetTotale,
       revenueAssumptions: s.revenueAssumptions,
+      runwayAssumptions: s.runwayAssumptions,
       schemaVersion: s.schemaVersion,
     })),
   );

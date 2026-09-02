@@ -1,5 +1,5 @@
 import { addMonths, format } from 'date-fns';
-import type { RevenueAssumptions } from '../types/domain';
+import type { RevenueAssumptions, RunwayAssumptions } from '../types/domain';
 
 const todayISO = () => format(new Date(), 'yyyy-MM-dd');
 
@@ -32,5 +32,24 @@ export function defaultRevenueAssumptions(): RevenueAssumptions {
     projectionStartDate: todayISO(),
     costRunRateOverride: null,
     targetBreakEvenDate: format(addMonths(today, 6), 'yyyy-MM-dd'),
+  };
+}
+
+export function defaultRunwayAssumptions(): RunwayAssumptions {
+  return {
+    burnInputMode: 'aggregate',
+    projectionMode: 'static',
+    cashAvailableOverride: null,
+    aggregateMonthlyBurn: 0,
+    detailedBurn: {
+      salariesAndTeam: 0,
+      toolsAndSoftware: 0,
+      officeAndOperations: 0,
+      marketingAndSales: 0,
+      other: 0,
+    },
+    monthlyRevenue: 0,
+    burnGrowthPct: 0,
+    revenueGrowthPct: 0,
   };
 }

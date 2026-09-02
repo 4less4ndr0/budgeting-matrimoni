@@ -1,6 +1,7 @@
 import { addMonths, format } from 'date-fns';
 import { describe, expect, it } from 'vitest';
 import type { AppState, RevenueAssumptions } from '../../types/domain';
+import { defaultRunwayAssumptions } from '../defaults';
 import { buildProjection, computeBreakEvenStatus } from './projection';
 
 const today = new Date();
@@ -37,14 +38,16 @@ function baseAssumptions(overrides: Partial<RevenueAssumptions> = {}): RevenueAs
 }
 
 describe('buildProjection', () => {
-  it('reaches break-even immediately when funds already cover all known costs', () => {
+  it('reaches break-even immediately when revenue covers costs, even without funds', () => {
     const state: AppState = {
       lineItems: [
         { id: '1', date: todayISO, category: 'setup', description: 'dominio', amount: 100, type: 'cost', source: 'manual' },
+        { id: '2', date: todayISO, category: 'vendite', description: 'incasso', amount: 100, type: 'income', source: 'manual' },
       ],
-      fundEntries: [{ id: 'f1', date: todayISO, amount: 1000, description: 'risparmi personali' }],
+      fundEntries: [],
       revenueAssumptions: baseAssumptions(),
       budgetItems: [],
+      runwayAssumptions: defaultRunwayAssumptions(),
       budgetTotale: 0,
       schemaVersion: 1,
     };
@@ -58,6 +61,29 @@ describe('buildProjection', () => {
     expect(result.breakEvenMonth).toBe(format(today, 'yyyy-MM'));
   });
 
+  it('funds alone do not trigger break-even without matching revenue', () => {
+    const state: AppState = {
+      lineItems: [
+        { id: '1', date: todayISO, category: 'setup', description: 'dominio', amount: 100, type: 'cost', source: 'manual' },
+      ],
+      fundEntries: [{ id: 'f1', date: todayISO, amount: 1000, description: 'capitale iniziale' }],
+      revenueAssumptions: baseAssumptions(),
+      budgetItems: [],
+      runwayAssumptions: defaultRunwayAssumptions(),
+      budgetTotale: 0,
+      schemaVersion: 1,
+    };
+
+    const projections = buildProjection(state);
+    const currentMonth = projections.find((p) => p.month === format(today, 'yyyy-MM'));
+
+    // Plenty of cash on hand thanks to the funds...
+    expect(currentMonth?.cumulativePosition).toBeGreaterThan(0);
+    // ...but no real break-even yet: revenue hasn't caught up with costs.
+    expect(currentMonth?.cumulativeNetProfit).toBeLessThan(0);
+    expect(currentMonth?.isBreakEven).toBe(false);
+  });
+
   it('is at-risk when costs run rate outpaces revenue indefinitely', () => {
     const state: AppState = {
       lineItems: [
@@ -66,6 +92,7 @@ describe('buildProjection', () => {
       fundEntries: [],
       revenueAssumptions: baseAssumptions({ costRunRateOverride: 5000 }),
       budgetItems: [],
+      runwayAssumptions: defaultRunwayAssumptions(),
       budgetTotale: 0,
       schemaVersion: 1,
     };
@@ -97,6 +124,7 @@ describe('buildProjection', () => {
         },
       }),
       budgetItems: [],
+      runwayAssumptions: defaultRunwayAssumptions(),
       budgetTotale: 0,
       schemaVersion: 1,
     };
@@ -124,6 +152,7 @@ describe('buildProjection', () => {
         },
       }),
       budgetItems: [],
+      runwayAssumptions: defaultRunwayAssumptions(),
       budgetTotale: 0,
       schemaVersion: 1,
     };
@@ -142,6 +171,7 @@ describe('buildProjection', () => {
       fundEntries: [{ id: 'f1', date: todayISO, amount: 1000, description: 'capitale iniziale' }],
       revenueAssumptions: baseAssumptions(),
       budgetItems: [],
+      runwayAssumptions: defaultRunwayAssumptions(),
       budgetTotale: 0,
       schemaVersion: 1,
     };

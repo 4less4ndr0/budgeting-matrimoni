@@ -9,6 +9,7 @@ export interface StateSnapshot {
   budgetItems: AppState['budgetItems'];
   budgetTotale: AppState['budgetTotale'];
   revenueAssumptions: AppState['revenueAssumptions'];
+  runwayAssumptions: AppState['runwayAssumptions'];
   schemaVersion: number;
   savedAt: string;
 }
@@ -26,6 +27,7 @@ export function exportStateSnapshot(state: AppState): void {
     budgetItems: state.budgetItems,
     budgetTotale: state.budgetTotale,
     revenueAssumptions: state.revenueAssumptions,
+    runwayAssumptions: state.runwayAssumptions,
     schemaVersion: state.schemaVersion,
     savedAt: new Date().toISOString(),
   };

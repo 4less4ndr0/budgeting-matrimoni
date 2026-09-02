@@ -1,8 +1,15 @@
 import { nanoid } from 'nanoid';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { defaultRevenueAssumptions } from '../defaults';
-import type { AppState, BudgetItem, FundEntry, LineItem, RevenueAssumptions } from '../../types/domain';
+import { defaultRevenueAssumptions, defaultRunwayAssumptions } from '../defaults';
+import type {
+  AppState,
+  BudgetItem,
+  FundEntry,
+  LineItem,
+  RevenueAssumptions,
+  RunwayAssumptions,
+} from '../../types/domain';
 
 const SCHEMA_VERSION = 2;
 
@@ -17,6 +24,16 @@ function withAssumptionDefaults(assumptions: RevenueAssumptions): RevenueAssumpt
     ...assumptions,
     simple: { ...defaults.simple, ...assumptions.simple },
     funnel: { ...defaults.funnel, ...assumptions.funnel },
+  };
+}
+
+/** Stesso ruolo di withAssumptionDefaults, per il calcolatore Runway. */
+function withRunwayDefaults(assumptions: RunwayAssumptions): RunwayAssumptions {
+  const defaults = defaultRunwayAssumptions();
+  return {
+    ...defaults,
+    ...assumptions,
+    detailedBurn: { ...defaults.detailedBurn, ...assumptions.detailedBurn },
   };
 }
 
@@ -43,11 +60,13 @@ export interface AppStore extends AppState {
   setBudgetTotale: (value: number) => void;
 
   updateRevenueAssumptions: (patch: Partial<RevenueAssumptions>) => void;
+  updateRunwayAssumptions: (patch: Partial<RunwayAssumptions>) => void;
   loadSnapshot: (
     snapshot: Pick<AppState, 'lineItems' | 'fundEntries' | 'revenueAssumptions'> & {
-      // Optional: snapshots saved before "Budget" existed won't have these.
+      // Optional: snapshots saved before "Gestione del bilancio"/Runway/Budget esistessero non le hanno.
       budgetItems?: AppState['budgetItems'];
       budgetTotale?: AppState['budgetTotale'];
+      runwayAssumptions?: AppState['runwayAssumptions'];
     },
   ) => void;
   resetAll: () => void;
@@ -61,6 +80,7 @@ export const useAppStore = create<AppStore>()(
       budgetItems: [],
       budgetTotale: 0,
       revenueAssumptions: defaultRevenueAssumptions(),
+      runwayAssumptions: defaultRunwayAssumptions(),
       schemaVersion: SCHEMA_VERSION,
 
       addLineItem: (item) =>
@@ -109,6 +129,9 @@ export const useAppStore = create<AppStore>()(
       updateRevenueAssumptions: (patch) =>
         set((state) => ({ revenueAssumptions: { ...state.revenueAssumptions, ...patch } })),
 
+      updateRunwayAssumptions: (patch) =>
+        set((state) => ({ runwayAssumptions: { ...state.runwayAssumptions, ...patch } })),
+
       loadSnapshot: (snapshot) =>
         set({
           lineItems: snapshot.lineItems,
@@ -116,6 +139,9 @@ export const useAppStore = create<AppStore>()(
           budgetItems: withBudgetItemDefaults(snapshot.budgetItems ?? []),
           budgetTotale: snapshot.budgetTotale ?? 0,
           revenueAssumptions: withAssumptionDefaults(snapshot.revenueAssumptions),
+          runwayAssumptions: snapshot.runwayAssumptions
+            ? withRunwayDefaults(snapshot.runwayAssumptions)
+            : defaultRunwayAssumptions(),
           schemaVersion: SCHEMA_VERSION,
         }),
 
@@ -126,6 +152,7 @@ export const useAppStore = create<AppStore>()(
           budgetItems: [],
           budgetTotale: 0,
           revenueAssumptions: defaultRevenueAssumptions(),
+          runwayAssumptions: defaultRunwayAssumptions(),
           schemaVersion: SCHEMA_VERSION,
         }),
     }),
