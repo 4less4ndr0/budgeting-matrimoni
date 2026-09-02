@@ -8,7 +8,12 @@ export interface LineItem {
   amount: number; // always positive; sign implied by `type`
   type: EntryType;
   source: 'imported' | 'manual';
-  recurring: boolean; // fixed monthly recurrence: same amount repeats every month from `date` through targetBreakEvenDate
+  // Marks this row as part of a recurring series (display only — the calc engine treats it
+  // like any other dated row; the actual monthly rows are real materialized LineItems, not a
+  // calc-time projection). Toggling it on a not-yet-expanded item generates one real LineItem
+  // per month through targetBreakEvenDate, all sharing `recurringGroupId`.
+  recurring: boolean;
+  recurringGroupId?: string;
 }
 
 export interface FundEntry {
