@@ -1,6 +1,14 @@
 import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, PartyPopper, TrendingDown } from 'lucide-react';
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Coins,
+  PartyPopper,
+  TrendingDown,
+} from 'lucide-react';
 import {
   Area,
   AreaChart,
@@ -146,6 +154,14 @@ export default function DashboardView() {
   const statusMeta = STATUS_META[breakEven.status];
   const StatusIcon = statusMeta.icon;
 
+  // ROI: il punto in cui i ricavi cumulati eguagliano il capitale investito (fondi) — il
+  // capitale iniettato è stato "ripreso" dai ricavi. Diverso dal break-even (ricavi = costi):
+  // ha senso solo se c'è del capitale registrato, altrimenti la soglia sarebbe 0 e banale.
+  const roiMonth = useMemo(() => {
+    if (state.fundEntries.length === 0) return null;
+    return projections.find((p) => p.cumulativeRevenue >= p.cumulativeFunds)?.month ?? null;
+  }, [projections, state.fundEntries.length]);
+
   return (
     <div className="space-y-4">
       <Alert variant={statusMeta.variant}>
@@ -159,6 +175,18 @@ export default function DashboardView() {
             : `Nessun break-even entro l'orizzonte proiettato — target: ${breakEven.targetMonth}`}
         </AlertDescription>
       </Alert>
+
+      {state.fundEntries.length > 0 && (
+        <Alert variant={roiMonth ? 'success' : 'warning'}>
+          <Coins className="h-4 w-4" />
+          <AlertTitle>{roiMonth ? 'ROI raggiunto' : 'ROI non ancora raggiunto'}</AlertTitle>
+          <AlertDescription>
+            {roiMonth
+              ? `A partire da ${roiMonth} i ricavi eguagliano il capitale investito: il capitale iniettato è stato recuperato.`
+              : `I ricavi non arrivano ancora a coprire il capitale investito entro l'orizzonte proiettato.`}
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         <StatTile label="Posizione cumulativa attuale" value={eur(currentMonth?.cumulativePosition ?? 0)} />

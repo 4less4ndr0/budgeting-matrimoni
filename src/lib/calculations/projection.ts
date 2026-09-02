@@ -102,7 +102,10 @@ export function buildProjection(state: AppState): MonthlyProjection[] {
     cumulativeRevenue += actualIncome + projectedRevenue;
     const cumulativePosition = cumulativeFunds + cumulativeRevenue - cumulativeCosts;
     const cumulativeNetProfit = cumulativeRevenue - cumulativeCosts;
-    const isBreakEven = cumulativePosition >= 0;
+    // Break-even = revenue alone has caught up with costs (the real P&L milestone), not
+    // "cash position is positive" — that's covered separately by cumulativePosition, which
+    // also counts injected funds and is what tells you if you have enough cash on hand.
+    const isBreakEven = cumulativeNetProfit >= 0;
 
     projections.push({
       month: k,
