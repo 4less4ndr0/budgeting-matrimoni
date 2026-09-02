@@ -312,7 +312,14 @@ export default function DashboardView() {
             ) : (
               <ChartContainer config={categoryChartConfig} className="h-[240px] w-full">
                 <PieChart>
-                  <Pie data={categoryBreakdown} dataKey="value" nameKey="name" outerRadius={90} label>
+                  <Pie
+                    data={categoryBreakdown}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={55}
+                    outerRadius={90}
+                    label
+                  >
                     {categoryBreakdown.map((entry, i) => (
                       <Cell key={entry.name} fill={CATEGORY_COLORS[i % CATEGORY_COLORS.length]} />
                     ))}
