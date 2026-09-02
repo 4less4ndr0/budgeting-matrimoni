@@ -21,6 +21,16 @@ nella dashboard.
   break-even (in anticipo / in linea / in ritardo / a rischio), grafici e tabella mensile
 - **Export Excel** con i dati aggiornati, riaggiornabile e riapribile su Google Sheets
 
+## Stack UI
+
+Componenti [shadcn/ui](https://ui.shadcn.com) (Radix UI + Tailwind CSS) — sorgenti in
+`src/components/ui/`, non un pacchetto npm. `components.json` è già configurato, quindi
+una volta installato Node puoi aggiungere altri componenti con:
+
+```bash
+npx shadcn@latest add <componente>
+```
+
 ## Prerequisiti
 
 Serve **Node.js** (versione 20 o superiore) e npm, non ancora installati su questa

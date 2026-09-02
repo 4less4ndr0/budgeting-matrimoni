@@ -1,5 +1,11 @@
-import { useAppStore } from '../../lib/storage/store';
-import type { EntryType } from '../../types/domain';
+import { Plus, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useAppStore } from '@/lib/storage/store';
+import type { EntryType } from '@/types/domain';
 
 export default function LineItemsTable() {
   const lineItems = useAppStore((s) => s.lineItems);
@@ -10,94 +16,105 @@ export default function LineItemsTable() {
   const sorted = [...lineItems].sort((a, b) => a.date.localeCompare(b.date));
 
   return (
-    <div className="card">
-      <h2>Voci di costo ed entrata</h2>
-      <p className="muted" style={{ marginTop: -6, marginBottom: 14 }}>
-        Modifica liberamente qualsiasi valore: sono i tuoi dati di lavoro, non il file
-        importato.
-      </p>
-      <div className="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Categoria</th>
-              <th>Descrizione</th>
-              <th>Importo (€)</th>
-              <th>Tipo</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
+    <Card>
+      <CardHeader>
+        <CardTitle>Voci di costo ed entrata</CardTitle>
+        <CardDescription>
+          Modifica liberamente qualsiasi valore: sono i tuoi dati di lavoro, non il file importato.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Data</TableHead>
+              <TableHead>Categoria</TableHead>
+              <TableHead>Descrizione</TableHead>
+              <TableHead>Importo (€)</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {sorted.map((item) => (
-              <tr key={item.id}>
-                <td>
-                  <input
+              <TableRow key={item.id}>
+                <TableCell>
+                  <Input
                     type="date"
                     value={item.date}
                     onChange={(e) => updateLineItem(item.id, { date: e.target.value })}
                   />
-                </td>
-                <td>
-                  <input
+                </TableCell>
+                <TableCell>
+                  <Input
                     type="text"
                     value={item.category}
                     onChange={(e) => updateLineItem(item.id, { category: e.target.value })}
                   />
-                </td>
-                <td>
-                  <input
+                </TableCell>
+                <TableCell>
+                  <Input
                     type="text"
                     value={item.description}
                     onChange={(e) => updateLineItem(item.id, { description: e.target.value })}
                   />
-                </td>
-                <td>
-                  <input
+                </TableCell>
+                <TableCell>
+                  <Input
                     type="number"
                     step="0.01"
                     value={item.amount}
                     onChange={(e) => updateLineItem(item.id, { amount: Number(e.target.value) })}
                   />
-                </td>
-                <td>
-                  <select
+                </TableCell>
+                <TableCell>
+                  <Select
                     value={item.type}
-                    onChange={(e) => updateLineItem(item.id, { type: e.target.value as EntryType })}
+                    onValueChange={(value) => updateLineItem(item.id, { type: value as EntryType })}
                   >
-                    <option value="cost">Costo</option>
-                    <option value="income">Entrata</option>
-                  </select>
-                </td>
-                <td>
-                  <button className="icon-btn" onClick={() => removeLineItem(item.id)} title="Elimina">
-                    ✕
-                  </button>
-                </td>
-              </tr>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cost">Costo</SelectItem>
+                      <SelectItem value="income">Entrata</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+                <TableCell>
+                  <Button variant="ghost" size="icon" onClick={() => removeLineItem(item.id)} title="Elimina">
+                    <Trash2 className="text-muted-foreground hover:text-destructive" />
+                  </Button>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
 
-      {sorted.length === 0 && <p className="muted">Nessuna voce ancora. Importa un file o aggiungine una.</p>}
+        {sorted.length === 0 && (
+          <p className="py-4 text-sm text-muted-foreground">
+            Nessuna voce ancora. Importa un file o aggiungine una.
+          </p>
+        )}
 
-      <button
-        className="btn secondary"
-        style={{ marginTop: 14 }}
-        onClick={() =>
-          addLineItem({
-            date: new Date().toISOString().slice(0, 10),
-            category: '',
-            description: '',
-            amount: 0,
-            type: 'cost',
-            source: 'manual',
-          })
-        }
-      >
-        + Aggiungi voce
-      </button>
-    </div>
+        <Button
+          variant="secondary"
+          className="mt-4"
+          onClick={() =>
+            addLineItem({
+              date: new Date().toISOString().slice(0, 10),
+              category: '',
+              description: '',
+              amount: 0,
+              type: 'cost',
+              source: 'manual',
+            })
+          }
+        >
+          <Plus />
+          Aggiungi voce
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

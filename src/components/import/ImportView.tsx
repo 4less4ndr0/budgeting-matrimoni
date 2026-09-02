@@ -1,13 +1,21 @@
 import { useMemo, useRef, useState } from 'react';
+import { ArrowLeft, ArrowRight, UploadCloud } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   INTERNAL_FIELDS,
   normalizeRows,
   suggestMapping,
   type ColumnMapping,
   type TypeFallback,
-} from '../../lib/import/columnMapping';
-import { parseFile, type RawSheet } from '../../lib/import/parseFile';
-import { useAppStore } from '../../lib/storage/store';
+} from '@/lib/import/columnMapping';
+import { parseFile, type RawSheet } from '@/lib/import/parseFile';
+import { useAppStore } from '@/lib/storage/store';
 
 type Step = 'upload' | 'mapping' | 'confirm';
 
@@ -68,17 +76,18 @@ export default function ImportView() {
   }
 
   return (
-    <div>
-      <div className="card">
-        <h2>Importa costi/entrate da CSV o Excel</h2>
-        <p className="muted" style={{ marginTop: -6, marginBottom: 14 }}>
-          Il file originale non viene mai modificato: i dati vengono letti una sola volta e
-          copiati nella dashboard, dove puoi editarli liberamente.
-        </p>
-
+    <Card>
+      <CardHeader>
+        <CardTitle>Importa costi/entrate da CSV o Excel</CardTitle>
+        <CardDescription>
+          Il file originale non viene mai modificato: i dati vengono letti una sola volta e copiati nella
+          dashboard, dove puoi editarli liberamente.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
         {step === 'upload' && (
           <div
-            className="dropzone"
+            className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed border-border px-6 py-10 text-center text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
             onClick={() => fileInputRef.current?.click()}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => {
@@ -91,165 +100,172 @@ export default function ImportView() {
               ref={fileInputRef}
               type="file"
               accept=".csv,.xlsx,.xls"
-              style={{ display: 'none' }}
+              className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) void handleFile(file);
               }}
             />
+            <UploadCloud className="h-6 w-6" />
             Trascina qui un file .csv o .xlsx, oppure clicca per selezionarlo
           </div>
         )}
 
         {error && (
-          <p style={{ color: 'var(--danger)', fontSize: 13, marginTop: 12 }}>{error}</p>
+          <Alert variant="destructive" className="mt-3">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         {step !== 'upload' && sheet && (
           <>
-            <p className="muted">
-              File: <strong>{fileName}</strong> — {sheet.rows.length} righe rilevate
+            <p className="text-sm text-muted-foreground">
+              File: <strong className="text-foreground">{fileName}</strong> — {sheet.rows.length} righe
+              rilevate
             </p>
 
-            <h3 style={{ marginTop: 18 }}>Mappa le colonne</h3>
+            <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Mappa le colonne
+            </h3>
             {INTERNAL_FIELDS.map((field) => (
-              <div className="field-row" key={field.key}>
-                <label>
+              <div className="mb-3 flex items-center gap-3" key={field.key}>
+                <Label className="w-48 shrink-0 font-normal text-muted-foreground">
                   {field.label}
                   {field.required ? ' *' : ''}
-                </label>
-                <select
-                  value={mapping[field.key]}
-                  onChange={(e) =>
-                    setMapping((m) => ({ ...m, [field.key]: Number(e.target.value) }))
-                  }
+                </Label>
+                <Select
+                  value={String(mapping[field.key])}
+                  onValueChange={(value) => setMapping((m) => ({ ...m, [field.key]: Number(value) }))}
                 >
-                  <option value={-1}>— nessuna —</option>
-                  {sheet.headers.map((h, idx) => (
-                    <option key={idx} value={idx}>
-                      {h || `Colonna ${idx + 1}`}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="-1">— nessuna —</SelectItem>
+                    {sheet.headers.map((h, idx) => (
+                      <SelectItem key={idx} value={String(idx)}>
+                        {h || `Colonna ${idx + 1}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             ))}
 
             {mapping.type === -1 && (
-              <div className="field-row">
-                <label>Come determinare costo/entrata</label>
-                <select
-                  value={typeFallback}
-                  onChange={(e) => setTypeFallback(e.target.value as TypeFallback)}
-                >
-                  <option value="all-cost">Tutte le righe sono costi</option>
-                  <option value="sign">Usa il segno dell'importo (negativo = costo)</option>
-                </select>
+              <div className="mb-3 flex items-center gap-3">
+                <Label className="w-48 shrink-0 font-normal text-muted-foreground">
+                  Come determinare costo/entrata
+                </Label>
+                <Select value={typeFallback} onValueChange={(v) => setTypeFallback(v as TypeFallback)}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all-cost">Tutte le righe sono costi</SelectItem>
+                    <SelectItem value="sign">Usa il segno dell&apos;importo (negativo = costo)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             )}
 
-            <h3 style={{ marginTop: 18 }}>Anteprima righe grezze</h3>
-            <div className="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    {sheet.headers.map((h, i) => (
-                      <th key={i}>{h || `Colonna ${i + 1}`}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {sheet.rows.slice(0, 5).map((row, i) => (
-                    <tr key={i}>
-                      {sheet.headers.map((_, j) => (
-                        <td key={j}>{row[j] ?? ''}</td>
-                      ))}
-                    </tr>
+            <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Anteprima righe grezze
+            </h3>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {sheet.headers.map((h, i) => (
+                    <TableHead key={i}>{h || `Colonna ${i + 1}`}</TableHead>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sheet.rows.slice(0, 5).map((row, i) => (
+                  <TableRow key={i}>
+                    {sheet.headers.map((_, j) => (
+                      <TableCell key={j}>{row[j] ?? ''}</TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
 
             {step === 'mapping' && (
-              <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
-                <button className="btn secondary" onClick={reset}>
+              <div className="mt-4 flex gap-2">
+                <Button variant="secondary" onClick={reset}>
                   Annulla
-                </button>
-                <button
-                  className="btn"
-                  disabled={!canProceedToConfirm}
-                  onClick={() => setStep('confirm')}
-                >
-                  Continua →
-                </button>
+                </Button>
+                <Button disabled={!canProceedToConfirm} onClick={() => setStep('confirm')}>
+                  Continua
+                  <ArrowRight />
+                </Button>
               </div>
             )}
 
             {step === 'confirm' && normalized && (
               <>
-                <h3 style={{ marginTop: 18 }}>
+                <h3 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Anteprima normalizzata ({normalized.items.length} righe valide
                   {normalized.skippedRowCount > 0
                     ? `, ${normalized.skippedRowCount} scartate (data/importo non validi)`
                     : ''}
                   )
                 </h3>
-                <div className="table-scroll">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Data</th>
-                        <th>Categoria</th>
-                        <th>Descrizione</th>
-                        <th>Importo</th>
-                        <th>Tipo</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {normalized.items.slice(0, 10).map((item, i) => (
-                        <tr key={i}>
-                          <td>{item.date}</td>
-                          <td>{item.category}</td>
-                          <td>{item.description}</td>
-                          <td>{item.amount.toFixed(2)} €</td>
-                          <td>
-                            <span className={`pill ${item.type}`}>
-                              {item.type === 'cost' ? 'Costo' : 'Entrata'}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Categoria</TableHead>
+                      <TableHead>Descrizione</TableHead>
+                      <TableHead>Importo</TableHead>
+                      <TableHead>Tipo</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {normalized.items.slice(0, 10).map((item, i) => (
+                      <TableRow key={i}>
+                        <TableCell>{item.date}</TableCell>
+                        <TableCell>{item.category}</TableCell>
+                        <TableCell>{item.description}</TableCell>
+                        <TableCell>{item.amount.toFixed(2)} €</TableCell>
+                        <TableCell>
+                          <Badge variant={item.type === 'cost' ? 'destructive' : 'success'}>
+                            {item.type === 'cost' ? 'Costo' : 'Entrata'}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+
+                <div className="mb-1 mt-4 flex items-center gap-3">
+                  <Label className="w-48 shrink-0 font-normal text-muted-foreground">Modalità import</Label>
+                  <Select value={importMode} onValueChange={(v) => setImportMode(v as 'append' | 'replace')}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="append">Aggiungi ai dati esistenti</SelectItem>
+                      <SelectItem value="replace">Sostituisci tutti i dati esistenti</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <div className="field-row" style={{ marginTop: 16 }}>
-                  <label>Modalità import</label>
-                  <select
-                    value={importMode}
-                    onChange={(e) => setImportMode(e.target.value as 'append' | 'replace')}
-                  >
-                    <option value="append">Aggiungi ai dati esistenti</option>
-                    <option value="replace">Sostituisci tutti i dati esistenti</option>
-                  </select>
-                </div>
-
-                <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
-                  <button className="btn secondary" onClick={() => setStep('mapping')}>
-                    ← Indietro
-                  </button>
-                  <button
-                    className="btn"
-                    disabled={normalized.items.length === 0}
-                    onClick={confirmImport}
-                  >
+                <div className="mt-4 flex gap-2">
+                  <Button variant="secondary" onClick={() => setStep('mapping')}>
+                    <ArrowLeft />
+                    Indietro
+                  </Button>
+                  <Button disabled={normalized.items.length === 0} onClick={confirmImport}>
                     Importa {normalized.items.length} righe
-                  </button>
+                  </Button>
                 </div>
               </>
             )}
           </>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,3 +1,4 @@
+import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -6,4 +7,9 @@ export default defineConfig({
   plugins: [react()],
   // Must match the GitHub repo name exactly: served from https://<user>.github.io/budgeting-matrimoni/
   base: '/budgeting-matrimoni/',
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
 });
