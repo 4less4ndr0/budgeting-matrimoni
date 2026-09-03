@@ -12,7 +12,7 @@ import type {
   RunwayAssumptions,
 } from '../../types/domain';
 
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 /**
  * Backfills fields added after data may already have been saved (persisted localStorage,
