@@ -114,9 +114,12 @@
      coprono l'ombra sottostante (scroll, ancorata al riquadro) quando si è arrivati a
      fine corsa — quindi la sfumatura si vede solo dal lato in cui c'è ancora da scorrere. */
   .scroll-fade-x {
+    /* I due "coperchi" restano pienamente opachi per i primi 18px — cioè più dell'ombra,
+       larga 16 — e solo dopo sfumano: senza questo tratto pieno l'ombra traspariva appena
+       anche quando non c'era niente da scorrere. */
     background-image:
-      linear-gradient(to right, hsl(var(--background)), hsl(var(--background) / 0)),
-      linear-gradient(to left, hsl(var(--background)), hsl(var(--background) / 0)),
+      linear-gradient(to right, hsl(var(--background)) 0 18px, hsl(var(--background) / 0) 32px),
+      linear-gradient(to left, hsl(var(--background)) 0 18px, hsl(var(--background) / 0) 32px),
       linear-gradient(to right, hsl(var(--foreground) / 0.14), hsl(var(--foreground) / 0)),
       linear-gradient(to left, hsl(var(--foreground) / 0.14), hsl(var(--foreground) / 0));
     background-position:
@@ -126,8 +129,8 @@
       right center;
     background-repeat: no-repeat;
     background-size:
-      28px 100%,
-      28px 100%,
+      32px 100%,
+      32px 100%,
       16px 100%,
       16px 100%;
     background-attachment: local, local, scroll, scroll;
