@@ -3,7 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/budgeting-matrimoni/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover: serve perché env(safe-area-inset-*) restituisca valori veri
+         sugli iPhone con notch/Dynamic Island, altrimenti resta sempre 0. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Colora la barra di Safari in tinta con l'app; il valore giusto lo imposta lo script
+         qui sotto, perché il tema è una scelta salvata e non prefers-color-scheme. -->
+    <meta name="theme-color" content="#ffffff" />
     <title>Budgeting matrimoni.top</title>
     <script>
       // Applica il tema prima del primo paint: senza questo, chi ha il tema scuro
@@ -14,7 +19,11 @@
           var dark =
             saved === 'dark' ||
             (saved !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-          if (dark) document.documentElement.classList.add('dark');
+          if (dark) {
+            document.documentElement.classList.add('dark');
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', '#0a0a0a');
+          }
         } catch (e) {
           /* localStorage non disponibile: resta il tema chiaro */
         }

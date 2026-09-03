@@ -38,7 +38,7 @@ export default function App() {
             away with the page, so there's nothing left to look like it's "moving" while
             scrolling. */}
         <div className="sticky top-0 z-20 bg-background">
-          <div className="mx-auto max-w-6xl px-5 pt-6">
+          <div className="mx-auto max-w-6xl px-safe pt-6">
             <header className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
               <div>
                 <h1 className="text-xl font-bold tracking-tight">Budgeting matrimoni.top</h1>
@@ -60,7 +60,7 @@ export default function App() {
           </div>
         </div>
 
-        <div className="mx-auto max-w-6xl px-5 pb-16 pt-4">
+        <div className="mx-auto max-w-6xl px-safe pb-safe pt-4">
           <TabsContent value="bep">
             {/* Own sub-navigation, only visible while BEP is the active top-level tab. */}
             <Tabs defaultValue="dashboard">

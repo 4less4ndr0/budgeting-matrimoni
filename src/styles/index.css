@@ -71,9 +71,17 @@
     @apply border-border;
   }
 
+  html {
+    /* Senza questo iOS ingrandisce da solo il testo ruotando in orizzontale. */
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    /* Toglie il rettangolo grigio che iOS lampeggia su ogni elemento toccato: gli stati
+       :active/:focus dei componenti danno già il riscontro visivo. */
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* Safari (macOS + iOS) centers the value of native date inputs by default,
@@ -83,5 +91,20 @@
   }
   input[type='date']::-webkit-datetime-edit {
     text-align: left;
+  }
+}
+
+@layer utilities {
+  /* Safe area degli iPhone con notch/Dynamic Island. Il `max()` tiene il padding attuale
+     (px-5 = 1.25rem) quando l'inset è zero — cioè su desktop e in verticale — e lo allarga
+     solo dove serve davvero, in orizzontale con il notch a lato. */
+  .px-safe {
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+  }
+
+  /* Spazio in fondo alla pagina, sopra la home indicator. */
+  .pb-safe {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
   }
 }
