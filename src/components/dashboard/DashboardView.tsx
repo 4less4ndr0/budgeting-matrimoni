@@ -102,6 +102,8 @@ export default function DashboardView() {
       fundEntries: s.fundEntries,
       budgetItems: s.budgetItems,
       budgetTotale: s.budgetTotale,
+      lineItemCategories: s.lineItemCategories,
+      fundCategories: s.fundCategories,
       revenueAssumptions: s.revenueAssumptions,
       runwayAssumptions: s.runwayAssumptions,
       schemaVersion: s.schemaVersion,
