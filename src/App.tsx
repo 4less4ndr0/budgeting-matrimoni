@@ -1,6 +1,7 @@
 import { useShallow } from 'zustand/react/shallow';
 import AssumptionsView from '@/components/assumptions/AssumptionsView';
 import BudgetView from '@/components/budget/BudgetView';
+import ChangelogButton from '@/components/changelog/ChangelogButton';
 import FundsTable from '@/components/costs/FundsTable';
 import LineItemsTable from '@/components/costs/LineItemsTable';
 import DashboardView from '@/components/dashboard/DashboardView';
@@ -39,7 +40,10 @@ export default function App() {
                 Burn rate e proiezione break-even per il business matrimoni.top
               </p>
             </div>
-            <ExportMenu state={state} />
+            <div className="flex flex-wrap items-center gap-2 self-start">
+              <ExportMenu state={state} />
+              <ChangelogButton />
+            </div>
           </header>
 
           <TabsList>

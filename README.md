@@ -2,6 +2,9 @@
 
 **Live: https://4less4ndr0.github.io/budgeting-matrimoni/**
 
+Vedi anche [`CHANGELOG.md`](CHANGELOG.md) per lo storico delle modifiche (stessa lista è
+visibile anche nell'app, dal bottone "Changelog" accanto a "Esporta").
+
 Dashboard finanziaria per **matrimoni.top**: importa i tuoi costi (CSV/Excel), tienili
 aggiornati in una dashboard interattiva e capisci il **burn rate**, l'**utile netto** e se
 raggiungerai il **break-even** entro la data che ti sei dato (default: 6 mesi da oggi).
@@ -100,6 +103,23 @@ gh pr create --base main
 Non serve l'approvazione dell'altra persona per mergere la propria PR (evita blocchi
 quando uno dei due non è online) — la PR è comunque il momento in cui build e test girano
 e in cui si vede il diff prima che vada in produzione.
+
+**Devono esistere solo due branch di lavoro: `alessandro/lavoro` e `leo/lavoro`.** Mai
+crearne altri (niente `git checkout -b <qualcos'altro>`) — si continua a lavorare sul
+proprio branch persistente, PR dopo PR, invece di aprirne uno nuovo ogni volta.
+
+**Occhio all'editor web di GitHub.** Se modifichi un file dalla UI di GitHub (la matita
+"Edit"), controlla di essere sul tuo branch — l'URL deve contenere `/tree/<tuo-nome>/lavoro/`
+o il menu del branch in alto deve mostrarlo — **prima** di premere la matita. Se lo fai
+mentre stai guardando `main`, che è protetto, GitHub non ti fa scegliere: crea da solo un
+branch nuovo tipo `<utente>-patch-1` e ci apre sopra una PR. È così che sono nati i branch
+fantasma ripuliti in passato — la fix è semplice, basta partire dal proprio branch invece
+che da `main`.
+
+**Aggiorna `CHANGELOG.md` prima di aprire la PR**: una riga sotto la data di oggi (va bene
+lo stesso testo del titolo della PR, tanto diventa anche il messaggio dello squash-merge
+su `main`). È quello che compare nel bottone "Changelog" dell'app — è così che l'altra
+persona vede rapidamente cosa è cambiato senza dover leggere la cronologia dei commit.
 
 ## Cartella `csv-imports/`
 
