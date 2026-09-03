@@ -33,7 +33,7 @@ function RecurringToggle({ item, onToggle }: { item: LineItem; onToggle: () => v
       onClick={onToggle}
       title={
         item.recurring
-          ? 'Ricorrente (clicca per rendere una tantum questa voce)'
+          ? 'Ricorrente — clicca per interrompere la serie dal mese successivo'
           : item.recurringGroupId
             ? 'Rendi di nuovo ricorrente questa voce'
             : 'Genera una voce identica per ogni mese fino al target di break-even'
@@ -112,11 +112,14 @@ export default function LineItemsTable() {
   const updateLineItem = useAppStore((s) => s.updateLineItem);
   const removeLineItem = useAppStore((s) => s.removeLineItem);
   const expandRecurring = useAppStore((s) => s.expandRecurring);
+  const endRecurringFrom = useAppStore((s) => s.endRecurringFrom);
 
   const groups = useMemo(() => groupByMonth(lineItems), [lineItems]);
   const currentMonthKey = new Date().toISOString().slice(0, 7);
   const [openMonth, setOpenMonth] = useState<string | undefined>(() => groups[0]?.[0]);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [pendingEndRecurringId, setPendingEndRecurringId] = useState<string | null>(null);
+  const pendingEndRecurringItem = lineItems.find((li) => li.id === pendingEndRecurringId) ?? null;
 
   function handleAdd() {
     addLineItem({
@@ -137,6 +140,19 @@ export default function LineItemsTable() {
     setPendingDeleteId(null);
   }
 
+  function handleToggleRecurring(item: LineItem) {
+    if (item.recurring) {
+      setPendingEndRecurringId(item.id);
+    } else {
+      expandRecurring(item.id);
+    }
+  }
+
+  function confirmEndRecurring() {
+    if (pendingEndRecurringId) endRecurringFrom(pendingEndRecurringId);
+    setPendingEndRecurringId(null);
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -145,7 +161,8 @@ export default function LineItemsTable() {
           Modifica liberamente qualsiasi valore: sono i tuoi dati di lavoro, non il file importato. Raggruppate
           per mese, dal più recente. L&apos;icona <Repeat className="inline h-3.5 w-3.5 align-text-bottom" /> genera
           una voce identica per ogni mese successivo fino alla data target di break-even, visibile e modificabile
-          come le altre.
+          come le altre. Ri-cliccandola su una voce già ricorrente, con conferma, interrompe la serie dal mese
+          successivo in poi.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -190,7 +207,7 @@ export default function LineItemsTable() {
                         key={item.id}
                         item={item}
                         onUpdate={(patch) => updateLineItem(item.id, patch)}
-                        onToggleRecurring={() => expandRecurring(item.id)}
+                        onToggleRecurring={() => handleToggleRecurring(item)}
                         onRequestDelete={() => setPendingDeleteId(item.id)}
                       />
                     ))}
@@ -257,7 +274,7 @@ export default function LineItemsTable() {
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center">
-                                <RecurringToggle item={item} onToggle={() => expandRecurring(item.id)} />
+                                <RecurringToggle item={item} onToggle={() => handleToggleRecurring(item)} />
                                 <Button
                                   variant="ghost"
                                   size="icon"
@@ -296,6 +313,36 @@ export default function LineItemsTable() {
               onClick={confirmDelete}
             >
               Elimina
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={pendingEndRecurringId !== null}
+        onOpenChange={(open) => !open && setPendingEndRecurringId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Interrompere la ricorrenza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingEndRecurringItem && (
+                <>
+                  Le voci generate per i mesi successivi a{' '}
+                  <strong>{formatMonthLabel(pendingEndRecurringItem.date.slice(0, 7))}</strong> verranno eliminate.
+                  Quella di {formatMonthLabel(pendingEndRecurringItem.date.slice(0, 7))} e le precedenti restano,
+                  ma non saranno più contate come ricorrenti.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={confirmEndRecurring}
+            >
+              Interrompi ricorrenza
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
