@@ -14,7 +14,7 @@ function Field({
   label,
   children,
 }: {
-  label: string;
+  label: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -170,7 +170,28 @@ export default function AssumptionsView() {
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Override run-rate costi mensile">
+          <Field
+            label={
+              <span className="flex items-center gap-1.5">
+                Override run-rate costi mensile
+                <InfoTooltip
+                  content={
+                    <>
+                      Serve a stimare quanto spenderai nei mesi futuri in cui non hai ancora registrato spese
+                      reali. Lasciando il campo vuoto, la dashboard calcola una stima automatica: la media delle
+                      spese degli ultimi 3 mesi con dati. Scrivici un numero se vuoi decidere tu quella cifra —
+                      utile quando la media automatica non ti rappresenta (es. un mese con una spesa una tantum
+                      che la falsa), oppure metti 0 se vuoi vedere la proiezione assumendo che da qui in avanti
+                      non ci siano altre spese. Se hai voci di costo ricorrenti attive, spunta la casella qui
+                      sotto per scrivere subito nel campo il loro totale mensile — è un&apos;azione singola, non
+                      resta collegata: dopo puoi modificare il campo liberamente, e se vuoi aggiornarlo di nuovo
+                      basta spuntare la casella un&apos;altra volta.
+                    </>
+                  }
+                />
+              </span>
+            }
+          >
             <Input
               type="number"
               step="0.01"
@@ -196,16 +217,6 @@ export default function AssumptionsView() {
                 : 'Usa il totale delle voci ricorrenti (nessuna voce ricorrente attiva)'}
             </Label>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Serve a stimare quanto spenderai nei mesi futuri in cui non hai ancora registrato spese reali.
-            Lasciando il campo vuoto, la dashboard calcola una stima automatica: la media delle spese degli
-            ultimi 3 mesi con dati. Scrivici un numero se vuoi decidere tu quella cifra — utile quando la media
-            automatica non ti rappresenta (es. un mese con una spesa una tantum che la falsa), oppure metti 0
-            se vuoi vedere la proiezione assumendo che da qui in avanti non ci siano altre spese. Se hai voci di
-            costo ricorrenti attive, spunta la casella qui sopra per scrivere subito nel campo il loro totale
-            mensile — è un'azione singola, non resta collegata: dopo puoi modificare il campo liberamente, e se
-            vuoi aggiornarlo di nuovo basta spuntare la casella un'altra volta.
-          </p>
         </CardContent>
       </Card>
 
