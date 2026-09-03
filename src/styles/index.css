@@ -107,4 +107,29 @@
   .pb-safe {
     padding-bottom: calc(4rem + env(safe-area-inset-bottom));
   }
+
+  /* Sfumatura ai bordi di un contenitore che scorre in orizzontale, per far capire che
+     c'è altro contenuto oltre il bordo. Funziona senza JavaScript sfruttando
+     background-attachment: i due strati "coperchio" (local) scorrono col contenuto e
+     coprono l'ombra sottostante (scroll, ancorata al riquadro) quando si è arrivati a
+     fine corsa — quindi la sfumatura si vede solo dal lato in cui c'è ancora da scorrere. */
+  .scroll-fade-x {
+    background-image:
+      linear-gradient(to right, hsl(var(--background)), hsl(var(--background) / 0)),
+      linear-gradient(to left, hsl(var(--background)), hsl(var(--background) / 0)),
+      linear-gradient(to right, hsl(var(--foreground) / 0.14), hsl(var(--foreground) / 0)),
+      linear-gradient(to left, hsl(var(--foreground) / 0.14), hsl(var(--foreground) / 0));
+    background-position:
+      left center,
+      right center,
+      left center,
+      right center;
+    background-repeat: no-repeat;
+    background-size:
+      28px 100%,
+      28px 100%,
+      16px 100%,
+      16px 100%;
+    background-attachment: local, local, scroll, scroll;
+  }
 }

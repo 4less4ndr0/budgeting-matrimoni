@@ -11,6 +11,7 @@ messaggio dello squash-merge su `main` — quindi trovi lo stesso testo anche in
 ## 2026-09-03
 
 ### Interfaccia
+- Comandi a 44px su mobile e indizio di scorrimento sui tab (#36)
 - iOS: niente auto-zoom sui campi, tastierino numerico, safe area e barra Safari in tinta (#35)
 - Tema scuro con interruttore nell'header (#34)
 - Notifiche di conferma su export, import ed eliminazioni (#33)

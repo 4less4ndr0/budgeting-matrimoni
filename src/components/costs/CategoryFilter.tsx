@@ -49,13 +49,15 @@ export default function CategoryFilter({
           {sorted.map((category) => {
             const id = `category-filter-${category}`;
             return (
-              <div key={category} className="flex items-center gap-2">
+              // La casella resta 16px come aspetto, ma l'etichetta accanto la attiva ed è alta
+              // 44px su mobile: è tutta la riga a essere toccabile, non il quadratino.
+              <div key={category} className="flex min-h-11 items-center gap-2 sm:min-h-0">
                 <Checkbox
                   id={id}
                   checked={selected.includes(category)}
                   onCheckedChange={(checked) => toggle(category, checked === true)}
                 />
-                <Label htmlFor={id} className="flex-1 truncate font-normal">
+                <Label htmlFor={id} className="flex flex-1 items-center self-stretch truncate font-normal">
                   {category}
                 </Label>
               </div>

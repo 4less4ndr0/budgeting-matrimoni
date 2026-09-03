@@ -220,7 +220,7 @@ export default function DashboardView() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6"
+                  className="h-9 w-9 sm:h-6 sm:w-6"
                   disabled={safeMonthIndex === 0}
                   onClick={() => setSelectedMonthIndex((i) => Math.max(i - 1, 0))}
                 >
@@ -229,7 +229,7 @@ export default function DashboardView() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6"
+                  className="h-9 w-9 sm:h-6 sm:w-6"
                   disabled={safeMonthIndex >= horizonProjections.length - 1}
                   onClick={() => setSelectedMonthIndex((i) => Math.min(i + 1, horizonProjections.length - 1))}
                 >
