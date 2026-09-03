@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 export default function CategoryCombobox({
@@ -101,17 +102,22 @@ export default function CategoryCombobox({
                       <Check className={cn('h-4 w-4 shrink-0', option === value ? 'opacity-100' : 'opacity-0')} />
                       <span className="truncate">{option}</span>
                     </span>
-                    <button
-                      type="button"
-                      title={`Elimina categoria "${option}"`}
-                      className="shrink-0 rounded p-0.5 text-muted-foreground/60 hover:text-foreground"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        requestDelete(option);
-                      }}
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label={`Elimina categoria "${option}"`}
+                          className="shrink-0 rounded p-0.5 text-muted-foreground/60 hover:text-foreground"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            requestDelete(option);
+                          }}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>Elimina categoria &quot;{option}&quot;</TooltipContent>
+                    </Tooltip>
                   </CommandItem>
                 ))}
               </CommandGroup>

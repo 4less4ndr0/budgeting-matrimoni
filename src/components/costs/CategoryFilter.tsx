@@ -35,13 +35,14 @@ export default function CategoryFilter({
             Filtra per categoria
           </span>
           {selected.length > 0 && (
-            <button
-              type="button"
-              className="text-xs text-muted-foreground underline hover:text-foreground"
+            <Button
+              variant="link"
+              size="sm"
+              className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
               onClick={() => onChange([])}
             >
               Azzera
-            </button>
+            </Button>
           )}
         </div>
         <div className="max-h-64 space-y-2 overflow-y-auto">

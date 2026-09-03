@@ -15,7 +15,7 @@ automatico in un link a quella PR — mantieni questo formato.
 
 Tassonomia fissa degli argomenti (usa uno di questi, o aggiungine uno nuovo solo se
 davvero non calza nessuno): **Categorie · Runway & Budget · Dashboard · Costi & Fondi ·
-Assunzioni ricavi · Import/Export · Fix tecnici · Documentazione & processo**.
+Assunzioni ricavi · Import/Export · Interfaccia · Fix tecnici · Documentazione & processo**.
 
 Questo file è anche quello che l'app mostra dal vivo nel popup del bottone "Changelog"
 accanto a "Esporta" (`src/components/changelog/ChangelogButton.tsx`, importato via `?raw`

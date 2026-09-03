@@ -10,6 +10,9 @@ messaggio dello squash-merge su `main` — quindi trovi lo stesso testo anche in
 
 ## 2026-09-03
 
+### Interfaccia
+- Componenti shadcn ufficiali al posto di menu e toggle fatti a mano (#32)
+
 ### Documentazione & processo
 - Changelog: popup grande organizzato per argomento e data (#31)
 - README diviso in istruzioni + CHANGELOG.md, changelog visibile nell'app (#30)
