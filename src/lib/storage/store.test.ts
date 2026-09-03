@@ -206,7 +206,7 @@ describe('expandRecurring', () => {
     expect(new Set(lineItems.map((li) => li.id)).size).toBe(4);
   });
 
-  it('a second click on an already-expanded item just flips its own flag, no regeneration', () => {
+  it('is a no-op on an item that is already recurring — ending a series needs endRecurringFrom instead', () => {
     useAppStore.getState().addLineItem({
       date: '2026-01-15',
       category: 'software',
@@ -219,12 +219,108 @@ describe('expandRecurring', () => {
     const [original] = useAppStore.getState().lineItems;
 
     useAppStore.getState().expandRecurring(original.id);
-    expect(useAppStore.getState().lineItems).toHaveLength(4);
+    const afterFirstClick = useAppStore.getState().lineItems;
+    expect(afterFirstClick).toHaveLength(4);
+
+    useAppStore.getState().expandRecurring(original.id);
+    expect(useAppStore.getState().lineItems).toEqual(afterFirstClick);
+  });
+
+  it('re-activates an item that was individually toggled off but is still linked to its group', () => {
+    useAppStore.getState().addLineItem({
+      date: '2026-01-15',
+      category: 'software',
+      description: 'abbonamento',
+      amount: 50,
+      type: 'cost',
+      source: 'manual',
+      recurring: false,
+    });
+    const [original] = useAppStore.getState().lineItems;
+    useAppStore.getState().expandRecurring(original.id);
+
+    useAppStore.getState().updateLineItem(original.id, { recurring: false });
+    expect(useAppStore.getState().lineItems.find((li) => li.id === original.id)?.recurringGroupId).toBeTruthy();
 
     useAppStore.getState().expandRecurring(original.id);
     const { lineItems } = useAppStore.getState();
+    expect(lineItems).toHaveLength(4); // no regeneration
+    expect(lineItems.find((li) => li.id === original.id)?.recurring).toBe(true);
+  });
+});
 
-    expect(lineItems).toHaveLength(4); // no new rows
-    expect(lineItems.find((li) => li.id === original.id)?.recurring).toBe(false); // just toggled off
+describe('endRecurringFrom', () => {
+  beforeEach(() => {
+    useAppStore.getState().resetAll();
+    useAppStore.getState().updateRevenueAssumptions({ targetBreakEvenDate: '2026-04-15' });
+  });
+
+  function seedRecurringSeries() {
+    useAppStore.getState().addLineItem({
+      date: '2026-01-15',
+      category: 'software',
+      description: 'abbonamento',
+      amount: 50,
+      type: 'cost',
+      source: 'manual',
+      recurring: false,
+    });
+    const [original] = useAppStore.getState().lineItems;
+    useAppStore.getState().expandRecurring(original.id);
+    return useAppStore
+      .getState()
+      .lineItems.slice()
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  it('deletes siblings dated after the clicked item and ends recurrence for it and every earlier one', () => {
+    const series = seedRecurringSeries(); // Jan, Feb, Mar, Apr
+
+    useAppStore.getState().endRecurringFrom(series[1].id); // click on February
+
+    const { lineItems } = useAppStore.getState();
+    expect(lineItems.map((li) => li.date).sort()).toEqual(['2026-01-15', '2026-02-15']);
+    expect(lineItems.every((li) => li.recurring === false)).toBe(true);
+    expect(lineItems.every((li) => li.recurringGroupId === undefined)).toBe(true);
+  });
+
+  it('ending it on the last month of the series deletes nothing but still ends recurrence for all', () => {
+    const series = seedRecurringSeries();
+
+    useAppStore.getState().endRecurringFrom(series[3].id); // click on April, the last month
+
+    const { lineItems } = useAppStore.getState();
+    expect(lineItems).toHaveLength(4); // nothing deleted
+    expect(lineItems.every((li) => li.recurring === false)).toBe(true);
+    expect(lineItems.every((li) => li.recurringGroupId === undefined)).toBe(true);
+  });
+
+  it('turns off a defensive recurring:true item that has no recurringGroupId, without touching anything else', () => {
+    useAppStore.getState().addLineItem({
+      date: '2026-02-01',
+      category: 'misc',
+      description: 'una tantum ma segnata ricorrente',
+      amount: 10,
+      type: 'cost',
+      source: 'manual',
+      recurring: true,
+    });
+    useAppStore.getState().addLineItem({
+      date: '2026-03-01',
+      category: 'altro',
+      description: 'voce indipendente',
+      amount: 20,
+      type: 'cost',
+      source: 'manual',
+      recurring: false,
+    });
+    const [orphan, other] = useAppStore.getState().lineItems;
+
+    useAppStore.getState().endRecurringFrom(orphan.id);
+
+    const { lineItems } = useAppStore.getState();
+    expect(lineItems).toHaveLength(2);
+    expect(lineItems.find((li) => li.id === orphan.id)?.recurring).toBe(false);
+    expect(lineItems.find((li) => li.id === other.id)).toEqual(other); // untouched
   });
 });

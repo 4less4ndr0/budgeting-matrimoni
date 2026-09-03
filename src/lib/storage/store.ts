@@ -60,10 +60,19 @@ export interface AppStore extends AppState {
   /**
    * First click on a not-yet-expanded item: materializes one real LineItem per month from
    * the item's own month through targetBreakEvenDate (same category/description/amount/type),
-   * all sharing a recurringGroupId. Any later click (on that item or a generated sibling)
-   * just flips its own `recurring` flag — no regeneration, no cascading effects on siblings.
+   * all sharing a recurringGroupId. Click on a not-currently-recurring item that still has a
+   * recurringGroupId (individually toggled off before): just flips it back on, no regeneration.
+   * A no-op if the item is already recurring — ending an active series goes through
+   * `endRecurringFrom` instead (it needs user confirmation first, since it deletes rows).
    */
   expandRecurring: (id: string) => void;
+  /**
+   * Ends a recurring series starting the month after the given item: deletes every sibling
+   * (same recurringGroupId) dated after it, and clears `recurring`/`recurringGroupId` on the
+   * item itself and every earlier sibling — the whole surviving series stops counting as
+   * recurring, not just the future. A no-op if the item doesn't exist.
+   */
+  endRecurringFrom: (id: string) => void;
 
   addFundEntry: (entry: Omit<FundEntry, 'id'>) => void;
   updateFundEntry: (id: string, patch: Partial<Omit<FundEntry, 'id'>>) => void;
@@ -120,13 +129,13 @@ export const useAppStore = create<AppStore>()(
       expandRecurring: (id) =>
         set((state) => {
           const item = state.lineItems.find((li) => li.id === id);
-          if (!item) return {};
+          // Ending an already-active series needs confirmation first — see endRecurringFrom.
+          if (!item || item.recurring) return {};
 
-          // Already expanded (or defensively, flagged without a group) — just flip the flag
-          // on this one row, no regeneration and no effect on any sibling.
-          if (item.recurringGroupId || item.recurring) {
+          // Individually toggled off before, still linked to its group — just flip it back on.
+          if (item.recurringGroupId) {
             return {
-              lineItems: state.lineItems.map((li) => (li.id === id ? { ...li, recurring: !li.recurring } : li)),
+              lineItems: state.lineItems.map((li) => (li.id === id ? { ...li, recurring: true } : li)),
             };
           }
 
@@ -155,6 +164,27 @@ export const useAppStore = create<AppStore>()(
               ),
               ...generated,
             ],
+          };
+        }),
+
+      endRecurringFrom: (id) =>
+        set((state) => {
+          const item = state.lineItems.find((li) => li.id === id);
+          if (!item) return {};
+
+          const groupId = item.recurringGroupId;
+          // Without a real group, the clicked item is its own group of one — the logic below
+          // still reduces to just switching that single row off.
+          const inGroup = (li: LineItem) => (groupId ? li.recurringGroupId === groupId : li.id === id);
+
+          return {
+            lineItems: state.lineItems
+              .filter((li) => !(inGroup(li) && li.date > item.date))
+              .map((li) =>
+                inGroup(li) && li.date <= item.date
+                  ? { ...li, recurring: false, recurringGroupId: undefined }
+                  : li,
+              ),
           };
         }),
 
