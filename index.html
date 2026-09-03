@@ -5,6 +5,21 @@
     <link rel="icon" type="image/svg+xml" href="/budgeting-matrimoni/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Budgeting matrimoni.top</title>
+    <script>
+      // Applica il tema prima del primo paint: senza questo, chi ha il tema scuro
+      // vedrebbe un lampo bianco finché React non monta e non applica la classe.
+      (function () {
+        try {
+          var saved = localStorage.getItem('budgeting-matrimoni-theme');
+          var dark =
+            saved === 'dark' ||
+            (saved !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) {
+          /* localStorage non disponibile: resta il tema chiaro */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -8,12 +8,14 @@ import DashboardView from '@/components/dashboard/DashboardView';
 import ExportMenu from '@/components/export/ExportMenu';
 import ImportView from '@/components/import/ImportView';
 import SnapshotRestoreCard from '@/components/import/SnapshotRestoreCard';
+import ThemeToggle, { useTheme } from '@/components/theme/ThemeToggle';
 import { Toaster } from '@/components/ui/sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useAppStore } from '@/lib/storage/store';
 
 export default function App() {
+  const { theme, toggleTheme } = useTheme();
   const state = useAppStore(
     useShallow((s) => ({
       lineItems: s.lineItems,
@@ -47,6 +49,7 @@ export default function App() {
               <div className="flex flex-wrap items-center gap-2 self-start">
                 <ExportMenu state={state} />
                 <ChangelogButton />
+                <ThemeToggle theme={theme} onToggle={toggleTheme} />
               </div>
             </header>
 
@@ -93,7 +96,7 @@ export default function App() {
           </TabsContent>
         </div>
       </Tabs>
-      <Toaster position="bottom-right" />
+      <Toaster position="bottom-right" theme={theme} />
     </TooltipProvider>
   );
 }

@@ -135,7 +135,7 @@ export default function FundsTable() {
                         {entries.length} {entries.length === 1 ? 'fondo' : 'fondi'}
                       </span>
                     </span>
-                    <span className="font-semibold text-emerald-600">{formatEUR(total)}</span>
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">{formatEUR(total)}</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
