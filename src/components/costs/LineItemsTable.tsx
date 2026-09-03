@@ -220,7 +220,7 @@ export default function LineItemsTable() {
                         {items.length} {items.length === 1 ? 'voce' : 'voci'}
                       </span>
                     </span>
-                    <span className={cn('font-semibold', net < 0 ? 'text-destructive' : 'text-emerald-600')}>
+                    <span className={cn('font-semibold', net < 0 ? 'text-destructive' : 'text-emerald-600 dark:text-emerald-400')}>
                       {formatEUR(net)}
                     </span>
                   </div>

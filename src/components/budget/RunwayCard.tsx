@@ -201,7 +201,9 @@ export default function RunwayCard() {
         </CardContent>
       </Card>
 
-      <Card className="border-l-4 border-l-emerald-500 bg-slate-900 text-slate-50">
+      {/* Pannello scuro anche in tema chiaro: in tema scuro va schiarito, altrimenti si
+          confonderebbe con lo sfondo della pagina e smetterebbe di risaltare. */}
+      <Card className="border-l-4 border-l-emerald-500 bg-slate-900 text-slate-50 dark:bg-slate-800">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Runway</span>
