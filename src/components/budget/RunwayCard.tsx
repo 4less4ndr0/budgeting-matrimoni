@@ -57,7 +57,7 @@ function SegmentedToggle<T extends string>({
           key={opt.value}
           value={opt.value}
           className={cn(
-            'h-auto rounded-none px-3 py-2 text-sm font-medium text-muted-foreground',
+            'h-auto rounded-none px-3 py-3 text-sm font-medium text-muted-foreground sm:py-2',
             'hover:bg-transparent hover:text-foreground',
             'data-[state=on]:bg-primary data-[state=on]:text-primary-foreground',
           )}

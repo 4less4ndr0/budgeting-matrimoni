@@ -15,7 +15,11 @@ const TabsList = React.forwardRef<
       // scroll-behavior/overflow-anchor: any scroll correction the browser makes on this
       // element happens instantly, never as a visible sliding animation. The bar itself is
       // pinned via `position: sticky` on its parent in App.tsx, so it doesn't move on scroll.
-      'flex h-9 w-full items-center justify-start gap-1 overflow-x-auto border-b border-border bg-transparent p-0 text-muted-foreground [-ms-overflow-style:none] [scroll-behavior:auto] [overflow-anchor:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+      // scroll-fade-x: la scrollbar qui è nascosta di proposito (vedi sopra), quindi senza un
+      // indizio visivo non si capisce che ci sono altri tab oltre il bordo — su iPhone i
+      // sotto-tab non ci stanno tutti. La sfumatura compare e sparisce da sola in base allo
+      // scorrimento, senza JavaScript.
+      'scroll-fade-x flex h-11 w-full items-center justify-start gap-1 overflow-x-auto border-b border-border bg-transparent p-0 text-muted-foreground [-ms-overflow-style:none] [scroll-behavior:auto] [overflow-anchor:none] [scrollbar-width:none] sm:h-9 [&::-webkit-scrollbar]:hidden',
       className,
     )}
     {...props}
@@ -30,7 +34,9 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      'inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-none border-b-2 border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition-colors disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-primary data-[state=active]:text-foreground hover:text-foreground focus-visible:outline-none',
+      // h-full: il tab riempie l'altezza della lista, così su mobile l'area toccabile è
+      // quella dei 44px della TabsList e non solo quella del testo.
+      'inline-flex h-full shrink-0 items-center justify-center whitespace-nowrap rounded-none border-b-2 border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition-colors disabled:pointer-events-none disabled:opacity-50 data-[state=active]:border-primary data-[state=active]:text-foreground hover:text-foreground focus-visible:outline-none',
       className,
     )}
     {...props}
