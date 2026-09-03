@@ -2,6 +2,7 @@ import { useMemo, type ReactNode } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { computeRunway } from '@/lib/calculations/runway';
 import { useAppStore } from '@/lib/storage/store';
 import { cn } from '@/lib/utils';
@@ -41,23 +42,30 @@ function SegmentedToggle<T extends string>({
   onChange: (value: T) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 overflow-hidden rounded-md border border-input">
+    <ToggleGroup
+      type="single"
+      value={value}
+      // Radix emette stringa vuota quando si ri-clicca l'opzione attiva: qui una scelta
+      // deve sempre esserci, quindi il valore vuoto si ignora.
+      onValueChange={(next) => {
+        if (next) onChange(next as T);
+      }}
+      className="grid grid-cols-2 gap-0 overflow-hidden rounded-md border border-input"
+    >
       {options.map((opt) => (
-        <button
+        <ToggleGroupItem
           key={opt.value}
-          type="button"
-          onClick={() => onChange(opt.value)}
+          value={opt.value}
           className={cn(
-            'px-3 py-2 text-sm font-medium transition-colors',
-            value === opt.value
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-transparent text-muted-foreground hover:text-foreground',
+            'h-auto rounded-none px-3 py-2 text-sm font-medium text-muted-foreground',
+            'hover:bg-transparent hover:text-foreground',
+            'data-[state=on]:bg-primary data-[state=on]:text-primary-foreground',
           )}
         >
           {opt.label}
-        </button>
+        </ToggleGroupItem>
       ))}
-    </div>
+    </ToggleGroup>
   );
 }
 
