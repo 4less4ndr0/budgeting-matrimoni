@@ -21,6 +21,7 @@ export interface FundEntry {
   date: string; // ISO yyyy-mm-dd
   amount: number; // capital available (savings, investment, prior revenue already collected)
   description: string;
+  category: string;
 }
 
 /** A free-form voce di budget: name + amount, shown as a slice of the donut chart in "Budget". */
@@ -125,6 +126,11 @@ export interface AppState {
   fundEntries: FundEntry[];
   budgetItems: BudgetItem[];
   budgetTotale: number; // 0 = non impostato, nessun avviso di sforamento
+  // Elenchi gestiti delle categorie disponibili per nuove scelte — indipendenti tra loro.
+  // Eliminare una categoria da qui NON tocca le voci esistenti che la usano già (restano
+  // com'erano, semplicemente quella categoria non ricompare più tra le opzioni).
+  lineItemCategories: string[];
+  fundCategories: string[];
   revenueAssumptions: RevenueAssumptions;
   runwayAssumptions: RunwayAssumptions;
   schemaVersion: number;

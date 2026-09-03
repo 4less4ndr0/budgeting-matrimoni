@@ -68,7 +68,7 @@ export function exportWorkbook(state: AppState): void {
   XLSX.utils.book_append_sheet(
     wb,
     XLSX.utils.json_to_sheet(
-      state.fundEntries.map(({ date, amount, description }) => ({ date, amount, description })),
+      state.fundEntries.map(({ date, category, amount, description }) => ({ date, category, amount, description })),
     ),
     'Fund Entries',
   );

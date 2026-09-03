@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import CategoryCombobox from '@/components/costs/CategoryCombobox';
+import CategoryFilter from '@/components/costs/CategoryFilter';
 import { formatMonthLabel, groupByMonth } from '@/lib/groupByMonth';
 import { useAppStore } from '@/lib/storage/store';
 import type { FundEntry } from '@/types/domain';
@@ -15,11 +17,15 @@ function formatEUR(n: number): string {
 
 function FundEntryCard({
   entry,
+  categories,
   onUpdate,
+  onDeleteCategory,
   onRemove,
 }: {
   entry: FundEntry;
+  categories: string[];
   onUpdate: (patch: Partial<Omit<FundEntry, 'id'>>) => void;
+  onDeleteCategory: (name: string) => void;
   onRemove: () => void;
 }) {
   return (
@@ -34,6 +40,14 @@ function FundEntryCard({
         <Button variant="ghost" size="icon" onClick={onRemove} title="Elimina">
           <Trash2 className="text-muted-foreground hover:text-destructive" />
         </Button>
+      </div>
+      <div className="mb-2">
+        <CategoryCombobox
+          value={entry.category}
+          options={categories}
+          onChange={(category) => onUpdate({ category })}
+          onDelete={onDeleteCategory}
+        />
       </div>
       <Input
         type="text"
@@ -58,14 +72,22 @@ export default function FundsTable() {
   const addFundEntry = useAppStore((s) => s.addFundEntry);
   const updateFundEntry = useAppStore((s) => s.updateFundEntry);
   const removeFundEntry = useAppStore((s) => s.removeFundEntry);
+  const fundCategories = useAppStore((s) => s.fundCategories);
+  const removeFundCategory = useAppStore((s) => s.removeFundCategory);
 
-  const groups = useMemo(() => groupByMonth(fundEntries), [fundEntries]);
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
+  const filteredFundEntries = useMemo(
+    () => (categoryFilter.length === 0 ? fundEntries : fundEntries.filter((e) => categoryFilter.includes(e.category))),
+    [fundEntries, categoryFilter],
+  );
+  const groups = useMemo(() => groupByMonth(filteredFundEntries), [filteredFundEntries]);
   const currentMonthKey = new Date().toISOString().slice(0, 7);
   const [openMonth, setOpenMonth] = useState<string | undefined>(() => groups[0]?.[0]);
 
   function handleAdd() {
     addFundEntry({
       date: new Date().toISOString().slice(0, 10),
+      category: '',
       amount: 0,
       description: '',
     });
@@ -83,10 +105,13 @@ export default function FundsTable() {
       </CardHeader>
       <CardContent>
         {/* Top CTA: adding a fund shouldn't require scrolling past the whole list first. */}
-        <Button variant="secondary" className="mb-4 w-full sm:w-auto" onClick={handleAdd}>
-          <Plus />
-          Aggiungi fondo
-        </Button>
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <Button variant="secondary" className="w-full sm:w-auto" onClick={handleAdd}>
+            <Plus />
+            Aggiungi fondo
+          </Button>
+          <CategoryFilter categories={fundCategories} selected={categoryFilter} onChange={setCategoryFilter} />
+        </div>
 
         {groups.length === 0 && <p className="py-4 text-sm text-muted-foreground">Nessun fondo ancora registrato.</p>}
 
@@ -114,7 +139,9 @@ export default function FundsTable() {
                       <FundEntryCard
                         key={entry.id}
                         entry={entry}
+                        categories={fundCategories}
                         onUpdate={(patch) => updateFundEntry(entry.id, patch)}
+                        onDeleteCategory={removeFundCategory}
                         onRemove={() => removeFundEntry(entry.id)}
                       />
                     ))}
@@ -126,6 +153,7 @@ export default function FundsTable() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Data</TableHead>
+                          <TableHead>Categoria</TableHead>
                           <TableHead>Descrizione</TableHead>
                           <TableHead>Importo (€)</TableHead>
                           <TableHead />
@@ -139,6 +167,14 @@ export default function FundsTable() {
                                 type="date"
                                 value={entry.date}
                                 onChange={(e) => updateFundEntry(entry.id, { date: e.target.value })}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <CategoryCombobox
+                                value={entry.category}
+                                options={fundCategories}
+                                onChange={(category) => updateFundEntry(entry.id, { category })}
+                                onDelete={removeFundCategory}
                               />
                             </TableCell>
                             <TableCell>
