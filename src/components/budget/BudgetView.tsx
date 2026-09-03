@@ -3,7 +3,8 @@ import { AlertTriangle, CheckCircle2, Lock, Plus, Trash2, Unlock } from 'lucide-
 import { Cell, Pie, PieChart } from 'recharts';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 import {
   ChartContainer,
   ChartLegend,
@@ -121,11 +122,10 @@ export default function BudgetView() {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Budget totale</CardTitle>
-          <CardDescription>
-            Il tetto di spesa previsto. Blocca le voci già decise e gioca con le altre restando dentro questo
-            limite.
-          </CardDescription>
+          <CardTitle className="flex items-center gap-1.5">
+            Budget totale
+            <InfoTooltip content="Il tetto di spesa previsto. Blocca le voci già decise e gioca con le altre restando dentro questo limite." />
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="mb-4 flex flex-col gap-1.5 sm:max-w-xs">
@@ -181,11 +181,10 @@ export default function BudgetView() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Voci di budget</CardTitle>
-            <CardDescription>
-              Nome libero e importo per ogni voce — aggiungine quante ne servono. Blocca una voce per escluderla
-              dalle modifiche mentre riequilibri le altre.
-            </CardDescription>
+            <CardTitle className="flex items-center gap-1.5">
+              Voci di budget
+              <InfoTooltip content="Nome libero e importo per ogni voce — aggiungine quante ne servono. Blocca una voce per escluderla dalle modifiche mentre riequilibri le altre." />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {/* Mobile: one card per row, consistent with LineItemsTable/FundsTable. */}
@@ -279,8 +278,10 @@ export default function BudgetView() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Ripartizione del budget</CardTitle>
-            <CardDescription>Ogni voce con un importo &gt; 0 diventa una fetta della ciambella.</CardDescription>
+            <CardTitle className="flex items-center gap-1.5">
+              Ripartizione del budget
+              <InfoTooltip content="Ogni voce con un importo > 0 diventa una fetta della ciambella." />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {chartData.length === 0 ? (

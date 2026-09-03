@@ -3,7 +3,8 @@ import { FileJson } from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { listRepoSnapshots } from '@/lib/import/repoImports';
 import { useAppStore } from '@/lib/storage/store';
 
@@ -31,12 +32,18 @@ export default function SnapshotRestoreCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Stato salvato</CardTitle>
-        <CardDescription>
-          Rilevato in <code>csv-imports/</code>: sostituisce costi, fondi e assunzioni ricavi con quelli
-          salvati in quel momento (override compresi). Utile per riportare un altro dispositivo alla stessa
-          identica situazione.
-        </CardDescription>
+        <CardTitle className="flex items-center gap-1.5">
+          Stato salvato
+          <InfoTooltip
+            content={
+              <>
+                Rilevato in <code>csv-imports/</code>: sostituisce costi, fondi e assunzioni ricavi con quelli
+                salvati in quel momento (override compresi). Utile per riportare un altro dispositivo alla stessa
+                identica situazione.
+              </>
+            }
+          />
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <ul className="flex flex-col gap-2">

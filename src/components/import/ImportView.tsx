@@ -4,7 +4,8 @@ import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -85,11 +86,10 @@ export default function ImportView() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Importa costi/entrate da CSV o Excel</CardTitle>
-        <CardDescription>
-          Il file originale non viene mai modificato: i dati vengono letti una sola volta e copiati nella
-          dashboard, dove puoi editarli liberamente.
-        </CardDescription>
+        <CardTitle className="flex items-center gap-1.5">
+          Importa costi/entrate da CSV o Excel
+          <InfoTooltip content="Il file originale non viene mai modificato: i dati vengono letti una sola volta e copiati nella dashboard, dove puoi editarli liberamente." />
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {step === 'upload' && repoFiles.length > 0 && (
