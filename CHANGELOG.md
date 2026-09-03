@@ -11,6 +11,7 @@ messaggio dello squash-merge su `main` — quindi trovi lo stesso testo anche in
 ## 2026-09-03
 
 ### Interfaccia
+- Anche la nota sull'override run-rate costi dietro l'icona con tooltip (#40)
 - Descrizioni delle card dietro un'icona con tooltip, invece di testo sempre visibile (#39)
 - Fix: velo grigio sulla riga di tab che non scorre (#38)
 - Grafici e campi adattati alle larghezze iPhone (#37)
