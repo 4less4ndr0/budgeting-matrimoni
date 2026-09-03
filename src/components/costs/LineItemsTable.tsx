@@ -101,7 +101,9 @@ function LineItemCard({
           onChange={(e) => onUpdate({ amount: Number(e.target.value) })}
         />
         <Select value={item.type} onValueChange={(value) => onUpdate({ type: value as EntryType })}>
-          <SelectTrigger className="w-32 shrink-0">
+          {/* w-32 fisso lasciava troppo poco all'importo sugli iPhone stretti: qui basta
+              quanto serve a "Entrata", e sui telefoni più larghi torna alla misura di prima. */}
+          <SelectTrigger className="w-[7.5rem] shrink-0 sm:w-32">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

@@ -38,6 +38,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { buildProjection, computeBreakEvenStatus } from '@/lib/calculations/projection';
 import { computeRunway } from '@/lib/calculations/runway';
 import { CHART_COLORS as CATEGORY_COLORS } from '@/lib/charts/colors';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { formatMonthLabel } from '@/lib/groupByMonth';
 import { useAppStore } from '@/lib/storage/store';
 import type { BreakEvenStatus } from '@/types/domain';
@@ -74,6 +75,17 @@ function eur(n: number): string {
   return n.toLocaleString('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 }
 
+// Su iPhone l'asse Y aveva 80px fissi su ~335 di larghezza: con la notazione compatta
+// ("12 K €" invece di "12.000 €") ne bastano 44 e il grafico respira.
+function eurCompact(n: number): string {
+  return n.toLocaleString('it-IT', {
+    style: 'currency',
+    currency: 'EUR',
+    notation: 'compact',
+    maximumFractionDigits: 0,
+  });
+}
+
 // Stessa logica di formattazione del box Runway in Budget — qui mostriamo lo stesso identico
 // risultato, non un secondo calcolo indipendente.
 function formatRunway(result: { isProfitable: boolean; runwayMonths: number | null }): string {
@@ -96,6 +108,7 @@ function StatTile({ label, value }: { label: string; value: string }) {
 }
 
 export default function DashboardView() {
+  const isMobile = useIsMobile();
   const state = useAppStore(
     useShallow((s) => ({
       lineItems: s.lineItems,
@@ -256,8 +269,20 @@ export default function DashboardView() {
           <ChartContainer config={CUMULATIVE_CHART_CONFIG} className="h-[280px] w-full">
             <AreaChart data={projections}>
               <CartesianGrid vertical={false} />
-              <XAxis dataKey="month" tickLine={false} axisLine={false} fontSize={11} />
-              <YAxis tickLine={false} axisLine={false} fontSize={11} tickFormatter={(v: number) => eur(v)} width={80} />
+              <XAxis
+                dataKey="month"
+                tickLine={false}
+                axisLine={false}
+                fontSize={11}
+                minTickGap={isMobile ? 24 : 5}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                fontSize={11}
+                tickFormatter={(v: number) => (isMobile ? eurCompact(v) : eur(v))}
+                width={isMobile ? 44 : 80}
+              />
               <ChartTooltip content={<ChartTooltipContent formatter={(v) => eur(Number(v))} />} />
               <ChartLegend content={<ChartLegendContent />} />
               <Area
@@ -288,13 +313,19 @@ export default function DashboardView() {
             <ChartContainer config={BURN_RATE_CHART_CONFIG} className="h-[240px] w-full">
               <BarChart data={projections}>
                 <CartesianGrid vertical={false} />
-                <XAxis dataKey="month" tickLine={false} axisLine={false} fontSize={11} />
+                <XAxis
+                dataKey="month"
+                tickLine={false}
+                axisLine={false}
+                fontSize={11}
+                minTickGap={isMobile ? 24 : 5}
+              />
                 <YAxis
                   tickLine={false}
                   axisLine={false}
                   fontSize={11}
-                  tickFormatter={(v: number) => eur(v)}
-                  width={80}
+                  tickFormatter={(v: number) => (isMobile ? eurCompact(v) : eur(v))}
+                  width={isMobile ? 44 : 80}
                 />
                 <ChartTooltip content={<ChartTooltipContent formatter={(v) => eur(Number(v))} />} />
                 <Bar dataKey="burnRate" fill="var(--color-burnRate)" radius={[3, 3, 0, 0]} />
@@ -346,8 +377,20 @@ export default function DashboardView() {
           <ChartContainer config={NET_PROFIT_CHART_CONFIG} className="h-[280px] w-full">
             <ComposedChart data={projections}>
               <CartesianGrid vertical={false} />
-              <XAxis dataKey="month" tickLine={false} axisLine={false} fontSize={11} />
-              <YAxis tickLine={false} axisLine={false} fontSize={11} tickFormatter={(v: number) => eur(v)} width={80} />
+              <XAxis
+                dataKey="month"
+                tickLine={false}
+                axisLine={false}
+                fontSize={11}
+                minTickGap={isMobile ? 24 : 5}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                fontSize={11}
+                tickFormatter={(v: number) => (isMobile ? eurCompact(v) : eur(v))}
+                width={isMobile ? 44 : 80}
+              />
               <ChartTooltip content={<ChartTooltipContent formatter={(v) => eur(Number(v))} />} />
               <ChartLegend content={<ChartLegendContent />} />
               <Bar dataKey="netCashFlow" fill="var(--color-netCashFlow)" radius={[3, 3, 0, 0]} />
