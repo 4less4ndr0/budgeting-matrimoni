@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import RunwayCard from '@/components/budget/RunwayCard';
 import { CHART_COLORS } from '@/lib/charts/colors';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useAppStore } from '@/lib/storage/store';
 import type { BudgetItem } from '@/types/domain';
 
@@ -82,6 +83,7 @@ function BudgetItemCard({
 }
 
 export default function BudgetView() {
+  const isMobile = useIsMobile();
   const budgetItems = useAppStore((s) => s.budgetItems);
   const addBudgetItem = useAppStore((s) => s.addBudgetItem);
   const updateBudgetItem = useAppStore((s) => s.updateBudgetItem);
@@ -296,8 +298,8 @@ export default function BudgetView() {
                       data={chartData}
                       dataKey="value"
                       nameKey="name"
-                      innerRadius={80}
-                      outerRadius={130}
+                      innerRadius={isMobile ? 55 : 80}
+                      outerRadius={isMobile ? 92 : 130}
                       paddingAngle={chartData.length > 1 ? 2 : 0}
                     >
                       {chartData.map((entry, i) => (
