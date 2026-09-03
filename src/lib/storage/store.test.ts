@@ -23,9 +23,13 @@ describe('loadSnapshot', () => {
           recurring: false,
         },
       ],
-      fundEntries: [{ id: 'f1', date: '2026-01-01', amount: 500, description: 'Fondo iniziale' }],
+      fundEntries: [
+        { id: 'f1', date: '2026-01-01', amount: 500, description: 'Fondo iniziale', category: 'Capitale' },
+      ],
       budgetItems: [{ id: 'b1', nome: 'Location', importo: 5000, bloccato: true }],
       budgetTotale: 8000,
+      lineItemCategories: ['Dominio'],
+      fundCategories: ['Capitale'],
       revenueAssumptions: { ...defaultRevenueAssumptions(), costRunRateOverride: 0 },
       runwayAssumptions: defaultRunwayAssumptions(),
       schemaVersion: 1,
@@ -39,6 +43,8 @@ describe('loadSnapshot', () => {
     expect(state.fundEntries).toEqual(snapshot.fundEntries);
     expect(state.budgetItems).toEqual(snapshot.budgetItems);
     expect(state.budgetTotale).toBe(8000);
+    expect(state.lineItemCategories).toEqual(['Dominio']);
+    expect(state.fundCategories).toEqual(['Capitale']);
     // The whole point: an override deliberately left at 0 must survive as 0, not be
     // dropped/coerced to null ("automatico") by the round-trip.
     expect(state.revenueAssumptions.costRunRateOverride).toBe(0);
@@ -121,6 +127,112 @@ describe('loadSnapshot', () => {
     expect(simple.tier3SitesPerMonth).toBe(defaultRevenueAssumptions().simple.tier3SitesPerMonth);
     // Fields the old snapshot did have must survive, not just fall back to defaults.
     expect(simple.tier1Price).toBe(200);
+  });
+
+  it('seeds lineItemCategories/fundCategories from historical data when loading a snapshot saved before managed categories existed', () => {
+    const oldSnapshot = {
+      lineItems: [
+        {
+          id: 'x',
+          date: '2026-02-20',
+          category: 'Marketing',
+          description: 'Meta ads',
+          amount: 100,
+          type: 'cost',
+          source: 'manual',
+          recurring: false,
+        },
+      ],
+      fundEntries: [{ id: 'f1', date: '2026-01-01', amount: 2800, description: 'Capitale iniziale', category: 'Capitale' }],
+      revenueAssumptions: defaultRevenueAssumptions(),
+    } as unknown as Pick<AppState, 'lineItems' | 'fundEntries' | 'revenueAssumptions'>;
+
+    useAppStore.getState().loadSnapshot(oldSnapshot);
+
+    expect(useAppStore.getState().lineItemCategories).toEqual(['Marketing']);
+    expect(useAppStore.getState().fundCategories).toEqual(['Capitale']);
+  });
+});
+
+describe('category management', () => {
+  beforeEach(() => {
+    useAppStore.getState().resetAll();
+  });
+
+  it('auto-registers a new lineItem category on add, without duplicating an existing one (case-insensitive)', () => {
+    useAppStore.getState().addLineItem({
+      date: '2026-01-01',
+      category: 'Marketing',
+      description: 'ads',
+      amount: 10,
+      type: 'cost',
+      source: 'manual',
+      recurring: false,
+    });
+    expect(useAppStore.getState().lineItemCategories).toEqual(['Marketing']);
+
+    useAppStore.getState().addLineItem({
+      date: '2026-01-02',
+      category: 'marketing', // same category, different casing
+      description: 'ads 2',
+      amount: 5,
+      type: 'cost',
+      source: 'manual',
+      recurring: false,
+    });
+    expect(useAppStore.getState().lineItemCategories).toEqual(['Marketing']);
+  });
+
+  it('auto-registers a lineItem category on update', () => {
+    useAppStore.getState().addLineItem({
+      date: '2026-01-01',
+      category: '',
+      description: 'voce',
+      amount: 10,
+      type: 'cost',
+      source: 'manual',
+      recurring: false,
+    });
+    const [item] = useAppStore.getState().lineItems;
+
+    useAppStore.getState().updateLineItem(item.id, { category: 'Lovable' });
+    expect(useAppStore.getState().lineItemCategories).toEqual(['Lovable']);
+  });
+
+  it('auto-registers every distinct category on importLineItems', () => {
+    useAppStore.getState().importLineItems(
+      [
+        { date: '2026-01-01', category: 'Marketing', description: 'a', amount: 1, type: 'cost', source: 'imported', recurring: false },
+        { date: '2026-01-02', category: 'Lovable', description: 'b', amount: 2, type: 'cost', source: 'imported', recurring: false },
+        { date: '2026-01-03', category: 'Marketing', description: 'c', amount: 3, type: 'cost', source: 'imported', recurring: false },
+      ],
+      'append',
+    );
+    expect(useAppStore.getState().lineItemCategories.sort()).toEqual(['Lovable', 'Marketing']);
+  });
+
+  it('removeLineItemCategory only removes it from the managed list, leaving existing voci untouched', () => {
+    useAppStore.getState().addLineItem({
+      date: '2026-01-01',
+      category: 'Marketing',
+      description: 'ads',
+      amount: 10,
+      type: 'cost',
+      source: 'manual',
+      recurring: false,
+    });
+    const [item] = useAppStore.getState().lineItems;
+
+    useAppStore.getState().removeLineItemCategory('Marketing');
+
+    expect(useAppStore.getState().lineItemCategories).toEqual([]);
+    expect(useAppStore.getState().lineItems.find((li) => li.id === item.id)?.category).toBe('Marketing');
+  });
+
+  it('keeps lineItem and fund category lists independent', () => {
+    useAppStore.getState().addFundEntry({ date: '2026-01-01', amount: 2800, description: 'Capitale iniziale', category: 'Capitale' });
+    expect(useAppStore.getState().fundCategories).toEqual(['Capitale']);
+    expect(useAppStore.getState().lineItemCategories).toEqual([]);
   });
 });
 

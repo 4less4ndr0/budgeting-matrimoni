@@ -49,6 +49,8 @@ describe('buildProjection', () => {
       budgetItems: [],
       runwayAssumptions: defaultRunwayAssumptions(),
       budgetTotale: 0,
+      lineItemCategories: [],
+      fundCategories: [],
       schemaVersion: 1,
     };
 
@@ -66,11 +68,13 @@ describe('buildProjection', () => {
       lineItems: [
         { id: '1', date: todayISO, category: 'setup', description: 'dominio', amount: 100, type: 'cost', source: 'manual', recurring: false },
       ],
-      fundEntries: [{ id: 'f1', date: todayISO, amount: 1000, description: 'capitale iniziale' }],
+      fundEntries: [{ id: 'f1', date: todayISO, amount: 1000, description: 'capitale iniziale', category: '' }],
       revenueAssumptions: baseAssumptions(),
       budgetItems: [],
       runwayAssumptions: defaultRunwayAssumptions(),
       budgetTotale: 0,
+      lineItemCategories: [],
+      fundCategories: [],
       schemaVersion: 1,
     };
 
@@ -94,6 +98,8 @@ describe('buildProjection', () => {
       budgetItems: [],
       runwayAssumptions: defaultRunwayAssumptions(),
       budgetTotale: 0,
+      lineItemCategories: [],
+      fundCategories: [],
       schemaVersion: 1,
     };
 
@@ -126,6 +132,8 @@ describe('buildProjection', () => {
       budgetItems: [],
       runwayAssumptions: defaultRunwayAssumptions(),
       budgetTotale: 0,
+      lineItemCategories: [],
+      fundCategories: [],
       schemaVersion: 1,
     };
 
@@ -137,7 +145,7 @@ describe('buildProjection', () => {
   it('funnel model with referral commission computes revenue as leads * conversion * price * commission', () => {
     const state: AppState = {
       lineItems: [],
-      fundEntries: [{ id: 'f1', date: todayISO, amount: 0, description: 'none' }],
+      fundEntries: [{ id: 'f1', date: todayISO, amount: 0, description: 'none', category: '' }],
       revenueAssumptions: baseAssumptions({
         activeModel: 'funnel',
         costRunRateOverride: 0,
@@ -154,6 +162,8 @@ describe('buildProjection', () => {
       budgetItems: [],
       runwayAssumptions: defaultRunwayAssumptions(),
       budgetTotale: 0,
+      lineItemCategories: [],
+      fundCategories: [],
       schemaVersion: 1,
     };
 
@@ -168,11 +178,13 @@ describe('buildProjection', () => {
         { id: '1', date: todayISO, category: 'setup', description: 'costo', amount: 100, type: 'cost', source: 'manual', recurring: false },
         { id: '2', date: todayISO, category: 'vendite', description: 'entrata', amount: 40, type: 'income', source: 'manual', recurring: false },
       ],
-      fundEntries: [{ id: 'f1', date: todayISO, amount: 1000, description: 'capitale iniziale' }],
+      fundEntries: [{ id: 'f1', date: todayISO, amount: 1000, description: 'capitale iniziale', category: '' }],
       revenueAssumptions: baseAssumptions(),
       budgetItems: [],
       runwayAssumptions: defaultRunwayAssumptions(),
       budgetTotale: 0,
+      lineItemCategories: [],
+      fundCategories: [],
       schemaVersion: 1,
     };
 

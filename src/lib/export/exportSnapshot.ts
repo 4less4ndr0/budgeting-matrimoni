@@ -8,6 +8,8 @@ export interface StateSnapshot {
   fundEntries: AppState['fundEntries'];
   budgetItems: AppState['budgetItems'];
   budgetTotale: AppState['budgetTotale'];
+  lineItemCategories: AppState['lineItemCategories'];
+  fundCategories: AppState['fundCategories'];
   revenueAssumptions: AppState['revenueAssumptions'];
   runwayAssumptions: AppState['runwayAssumptions'];
   schemaVersion: number;
@@ -26,6 +28,8 @@ export function exportStateSnapshot(state: AppState): void {
     fundEntries: state.fundEntries,
     budgetItems: state.budgetItems,
     budgetTotale: state.budgetTotale,
+    lineItemCategories: state.lineItemCategories,
+    fundCategories: state.fundCategories,
     revenueAssumptions: state.revenueAssumptions,
     runwayAssumptions: state.runwayAssumptions,
     schemaVersion: state.schemaVersion,

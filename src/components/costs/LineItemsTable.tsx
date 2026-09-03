@@ -16,6 +16,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import CategoryCombobox from '@/components/costs/CategoryCombobox';
+import CategoryFilter from '@/components/costs/CategoryFilter';
 import { formatMonthLabel, groupByMonth } from '@/lib/groupByMonth';
 import { useAppStore } from '@/lib/storage/store';
 import { cn } from '@/lib/utils';
@@ -46,12 +48,16 @@ function RecurringToggle({ item, onToggle }: { item: LineItem; onToggle: () => v
 
 function LineItemCard({
   item,
+  categories,
   onUpdate,
+  onDeleteCategory,
   onToggleRecurring,
   onRequestDelete,
 }: {
   item: LineItem;
+  categories: string[];
   onUpdate: (patch: Partial<Omit<LineItem, 'id'>>) => void;
+  onDeleteCategory: (name: string) => void;
   onToggleRecurring: () => void;
   onRequestDelete: () => void;
 }) {
@@ -69,13 +75,14 @@ function LineItemCard({
           <Trash2 className="text-muted-foreground hover:text-destructive" />
         </Button>
       </div>
-      <Input
-        type="text"
-        placeholder="Categoria"
-        className="mb-2"
-        value={item.category}
-        onChange={(e) => onUpdate({ category: e.target.value })}
-      />
+      <div className="mb-2">
+        <CategoryCombobox
+          value={item.category}
+          options={categories}
+          onChange={(category) => onUpdate({ category })}
+          onDelete={onDeleteCategory}
+        />
+      </div>
       <Input
         type="text"
         placeholder="Descrizione"
@@ -113,8 +120,15 @@ export default function LineItemsTable() {
   const removeLineItem = useAppStore((s) => s.removeLineItem);
   const expandRecurring = useAppStore((s) => s.expandRecurring);
   const endRecurringFrom = useAppStore((s) => s.endRecurringFrom);
+  const lineItemCategories = useAppStore((s) => s.lineItemCategories);
+  const removeLineItemCategory = useAppStore((s) => s.removeLineItemCategory);
 
-  const groups = useMemo(() => groupByMonth(lineItems), [lineItems]);
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
+  const filteredLineItems = useMemo(
+    () => (categoryFilter.length === 0 ? lineItems : lineItems.filter((li) => categoryFilter.includes(li.category))),
+    [lineItems, categoryFilter],
+  );
+  const groups = useMemo(() => groupByMonth(filteredLineItems), [filteredLineItems]);
   const currentMonthKey = new Date().toISOString().slice(0, 7);
   const [openMonth, setOpenMonth] = useState<string | undefined>(() => groups[0]?.[0]);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -167,10 +181,13 @@ export default function LineItemsTable() {
       </CardHeader>
       <CardContent>
         {/* Top CTA: adding an entry shouldn't require scrolling past the whole list first. */}
-        <Button variant="secondary" className="mb-4 w-full sm:w-auto" onClick={handleAdd}>
-          <Plus />
-          Aggiungi voce
-        </Button>
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <Button variant="secondary" className="w-full sm:w-auto" onClick={handleAdd}>
+            <Plus />
+            Aggiungi voce
+          </Button>
+          <CategoryFilter categories={lineItemCategories} selected={categoryFilter} onChange={setCategoryFilter} />
+        </div>
 
         {groups.length === 0 && (
           <p className="py-4 text-sm text-muted-foreground">
@@ -206,6 +223,8 @@ export default function LineItemsTable() {
                       <LineItemCard
                         key={item.id}
                         item={item}
+                        categories={lineItemCategories}
+                        onDeleteCategory={removeLineItemCategory}
                         onUpdate={(patch) => updateLineItem(item.id, patch)}
                         onToggleRecurring={() => handleToggleRecurring(item)}
                         onRequestDelete={() => setPendingDeleteId(item.id)}
@@ -237,10 +256,11 @@ export default function LineItemsTable() {
                               />
                             </TableCell>
                             <TableCell>
-                              <Input
-                                type="text"
+                              <CategoryCombobox
                                 value={item.category}
-                                onChange={(e) => updateLineItem(item.id, { category: e.target.value })}
+                                options={lineItemCategories}
+                                onChange={(category) => updateLineItem(item.id, { category })}
+                                onDelete={removeLineItemCategory}
                               />
                             </TableCell>
                             <TableCell>

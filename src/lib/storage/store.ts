@@ -52,6 +52,29 @@ function withLineItemDefaults(
   return items.map((item) => ({ recurring: false, ...item }));
 }
 
+/** Backfills `category` on fondi saved before categories existed. */
+function withFundEntryDefaults(items: Array<Omit<FundEntry, 'category'> & { category?: string }>): FundEntry[] {
+  return items.map((item) => ({ category: '', ...item }));
+}
+
+/**
+ * Seeds a managed category list from whatever's already in use in the data, so historical
+ * free-text categories aren't invisible in the new managed list the first time it's built
+ * (from an old snapshot/localStorage that predates managed categories entirely).
+ */
+function withCategoryListDefaults(list: string[] | undefined, items: { category: string }[]): string[] {
+  const inUse = items.map((i) => i.category).filter((c): c is string => Boolean(c));
+  return Array.from(new Set([...(list ?? []), ...inUse]));
+}
+
+/** Adds `name` to `list` if it's non-empty and not already present (case-insensitive). */
+function registerCategory(list: string[], name: string | undefined): string[] {
+  const trimmed = name?.trim();
+  if (!trimmed) return list;
+  const exists = list.some((c) => c.toLowerCase() === trimmed.toLowerCase());
+  return exists ? list : [...list, trimmed];
+}
+
 export interface AppStore extends AppState {
   addLineItem: (item: Omit<LineItem, 'id'>) => void;
   updateLineItem: (id: string, patch: Partial<Omit<LineItem, 'id'>>) => void;
@@ -83,14 +106,20 @@ export interface AppStore extends AppState {
   removeBudgetItem: (id: string) => void;
   setBudgetTotale: (value: number) => void;
 
+  /** Rimuove solo dall'elenco gestito — non tocca le voci che già usano questa categoria. */
+  removeLineItemCategory: (name: string) => void;
+  removeFundCategory: (name: string) => void;
+
   updateRevenueAssumptions: (patch: Partial<RevenueAssumptions>) => void;
   updateRunwayAssumptions: (patch: Partial<RunwayAssumptions>) => void;
   loadSnapshot: (
     snapshot: Pick<AppState, 'lineItems' | 'fundEntries' | 'revenueAssumptions'> & {
-      // Optional: snapshots saved before "Gestione del bilancio"/Runway/Budget esistessero non le hanno.
+      // Optional: snapshots saved before "Gestione del bilancio"/Runway/Budget/categorie esistessero non li hanno.
       budgetItems?: AppState['budgetItems'];
       budgetTotale?: AppState['budgetTotale'];
       runwayAssumptions?: AppState['runwayAssumptions'];
+      lineItemCategories?: AppState['lineItemCategories'];
+      fundCategories?: AppState['fundCategories'];
     },
   ) => void;
   resetAll: () => void;
@@ -103,16 +132,22 @@ export const useAppStore = create<AppStore>()(
       fundEntries: [],
       budgetItems: [],
       budgetTotale: 0,
+      lineItemCategories: [],
+      fundCategories: [],
       revenueAssumptions: defaultRevenueAssumptions(),
       runwayAssumptions: defaultRunwayAssumptions(),
       schemaVersion: SCHEMA_VERSION,
 
       addLineItem: (item) =>
-        set((state) => ({ lineItems: [...state.lineItems, { ...item, id: nanoid() }] })),
+        set((state) => ({
+          lineItems: [...state.lineItems, { ...item, id: nanoid() }],
+          lineItemCategories: registerCategory(state.lineItemCategories, item.category),
+        })),
 
       updateLineItem: (id, patch) =>
         set((state) => ({
           lineItems: state.lineItems.map((li) => (li.id === id ? { ...li, ...patch } : li)),
+          lineItemCategories: registerCategory(state.lineItemCategories, patch.category),
         })),
 
       removeLineItem: (id) =>
@@ -121,8 +156,13 @@ export const useAppStore = create<AppStore>()(
       importLineItems: (items, mode) =>
         set((state) => {
           const newItems = items.map((item) => ({ ...item, id: nanoid() }));
+          let lineItemCategories = state.lineItemCategories;
+          for (const item of items) {
+            lineItemCategories = registerCategory(lineItemCategories, item.category);
+          }
           return {
             lineItems: mode === 'replace' ? newItems : [...state.lineItems, ...newItems],
+            lineItemCategories,
           };
         }),
 
@@ -189,11 +229,15 @@ export const useAppStore = create<AppStore>()(
         }),
 
       addFundEntry: (entry) =>
-        set((state) => ({ fundEntries: [...state.fundEntries, { ...entry, id: nanoid() }] })),
+        set((state) => ({
+          fundEntries: [...state.fundEntries, { ...entry, id: nanoid() }],
+          fundCategories: registerCategory(state.fundCategories, entry.category),
+        })),
 
       updateFundEntry: (id, patch) =>
         set((state) => ({
           fundEntries: state.fundEntries.map((f) => (f.id === id ? { ...f, ...patch } : f)),
+          fundCategories: registerCategory(state.fundCategories, patch.category),
         })),
 
       removeFundEntry: (id) =>
@@ -212,24 +256,39 @@ export const useAppStore = create<AppStore>()(
 
       setBudgetTotale: (value) => set({ budgetTotale: value }),
 
+      removeLineItemCategory: (name) =>
+        set((state) => ({
+          lineItemCategories: state.lineItemCategories.filter((c) => c !== name),
+        })),
+
+      removeFundCategory: (name) =>
+        set((state) => ({
+          fundCategories: state.fundCategories.filter((c) => c !== name),
+        })),
+
       updateRevenueAssumptions: (patch) =>
         set((state) => ({ revenueAssumptions: { ...state.revenueAssumptions, ...patch } })),
 
       updateRunwayAssumptions: (patch) =>
         set((state) => ({ runwayAssumptions: { ...state.runwayAssumptions, ...patch } })),
 
-      loadSnapshot: (snapshot) =>
+      loadSnapshot: (snapshot) => {
+        const lineItems = withLineItemDefaults(snapshot.lineItems);
+        const fundEntries = withFundEntryDefaults(snapshot.fundEntries);
         set({
-          lineItems: withLineItemDefaults(snapshot.lineItems),
-          fundEntries: snapshot.fundEntries,
+          lineItems,
+          fundEntries,
           budgetItems: withBudgetItemDefaults(snapshot.budgetItems ?? []),
           budgetTotale: snapshot.budgetTotale ?? 0,
+          lineItemCategories: withCategoryListDefaults(snapshot.lineItemCategories, lineItems),
+          fundCategories: withCategoryListDefaults(snapshot.fundCategories, fundEntries),
           revenueAssumptions: withAssumptionDefaults(snapshot.revenueAssumptions),
           runwayAssumptions: snapshot.runwayAssumptions
             ? withRunwayDefaults(snapshot.runwayAssumptions)
             : defaultRunwayAssumptions(),
           schemaVersion: SCHEMA_VERSION,
-        }),
+        });
+      },
 
       resetAll: () =>
         set({
@@ -237,6 +296,8 @@ export const useAppStore = create<AppStore>()(
           fundEntries: [],
           budgetItems: [],
           budgetTotale: 0,
+          lineItemCategories: [],
+          fundCategories: [],
           revenueAssumptions: defaultRevenueAssumptions(),
           runwayAssumptions: defaultRunwayAssumptions(),
           schemaVersion: SCHEMA_VERSION,
@@ -247,10 +308,14 @@ export const useAppStore = create<AppStore>()(
       version: SCHEMA_VERSION,
       migrate: (persisted) => {
         const state = persisted as AppStore;
+        const fundEntries = withFundEntryDefaults(state.fundEntries ?? []);
         return {
           ...state,
+          fundEntries,
           revenueAssumptions: withAssumptionDefaults(state.revenueAssumptions),
           budgetItems: withBudgetItemDefaults(state.budgetItems ?? []),
+          lineItemCategories: withCategoryListDefaults(state.lineItemCategories, state.lineItems ?? []),
+          fundCategories: withCategoryListDefaults(state.fundCategories, fundEntries),
         };
       },
     },
