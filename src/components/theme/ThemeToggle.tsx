@@ -7,6 +7,9 @@ export type Theme = 'light' | 'dark';
 
 const STORAGE_KEY = 'budgeting-matrimoni-theme';
 
+/** Stessi valori dei token --background: la barra di Safari resta in tinta con la pagina. */
+const THEME_COLOR: Record<Theme, string> = { light: '#ffffff', dark: '#0a0a0a' };
+
 /** Stessa logica dello script inline in index.html, che applica il tema prima del primo paint. */
 function getInitialTheme(): Theme {
   try {
@@ -27,6 +30,7 @@ export function useTheme() {
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLOR[theme]);
     try {
       localStorage.setItem(STORAGE_KEY, theme);
     } catch {
