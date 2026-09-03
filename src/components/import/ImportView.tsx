@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, FolderSync, UploadCloud } from 'lucide-react';
+import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -73,7 +74,11 @@ export default function ImportView() {
 
   function confirmImport() {
     if (!normalized) return;
+    const count = normalized.items.length;
     importLineItems(normalized.items, importMode);
+    toast.success(`${count} ${count === 1 ? 'voce importata' : 'voci importate'}`, {
+      description: importMode === 'replace' ? 'Le voci precedenti sono state sostituite.' : 'Aggiunte alle voci esistenti.',
+    });
     reset();
   }
 

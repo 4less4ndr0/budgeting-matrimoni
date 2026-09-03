@@ -8,6 +8,7 @@ import DashboardView from '@/components/dashboard/DashboardView';
 import ExportMenu from '@/components/export/ExportMenu';
 import ImportView from '@/components/import/ImportView';
 import SnapshotRestoreCard from '@/components/import/SnapshotRestoreCard';
+import { Toaster } from '@/components/ui/sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useAppStore } from '@/lib/storage/store';
@@ -92,6 +93,7 @@ export default function App() {
           </TabsContent>
         </div>
       </Tabs>
+      <Toaster position="bottom-right" />
     </TooltipProvider>
   );
 }

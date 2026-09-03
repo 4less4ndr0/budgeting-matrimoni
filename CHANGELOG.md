@@ -11,6 +11,7 @@ messaggio dello squash-merge su `main` — quindi trovi lo stesso testo anche in
 ## 2026-09-03
 
 ### Interfaccia
+- Notifiche di conferma su export, import ed eliminazioni (#33)
 - Componenti shadcn ufficiali al posto di menu e toggle fatti a mano (#32)
 
 ### Documentazione & processo

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Plus, Repeat, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -150,7 +151,10 @@ export default function LineItemsTable() {
   }
 
   function confirmDelete() {
-    if (pendingDeleteId) removeLineItem(pendingDeleteId);
+    if (pendingDeleteId) {
+      removeLineItem(pendingDeleteId);
+      toast.success('Voce eliminata');
+    }
     setPendingDeleteId(null);
   }
 
@@ -163,7 +167,12 @@ export default function LineItemsTable() {
   }
 
   function confirmEndRecurring() {
-    if (pendingEndRecurringId) endRecurringFrom(pendingEndRecurringId);
+    if (pendingEndRecurringId) {
+      endRecurringFrom(pendingEndRecurringId);
+      toast.success('Serie ricorrente interrotta', {
+        description: 'Le voci dei mesi successivi sono state rimosse.',
+      });
+    }
     setPendingEndRecurringId(null);
   }
 
