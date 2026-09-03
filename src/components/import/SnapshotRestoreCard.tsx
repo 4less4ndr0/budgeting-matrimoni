@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { FileJson } from 'lucide-react';
+import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -68,6 +69,9 @@ export default function SnapshotRestoreCard() {
                         onClick={() => {
                           loadSnapshot(snapshot);
                           setPendingName(null);
+                          toast.success('Stato ripristinato', {
+                            description: 'Costi, fondi e assunzioni sono quelli dello snapshot.',
+                          });
                         }}
                       >
                         Sì, sovrascrivi

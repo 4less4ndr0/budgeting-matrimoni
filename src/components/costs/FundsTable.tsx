@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -94,6 +95,11 @@ export default function FundsTable() {
     setOpenMonth(currentMonthKey);
   }
 
+  function handleRemove(id: string) {
+    removeFundEntry(id);
+    toast.success('Fondo eliminato');
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -142,7 +148,7 @@ export default function FundsTable() {
                         categories={fundCategories}
                         onUpdate={(patch) => updateFundEntry(entry.id, patch)}
                         onDeleteCategory={removeFundCategory}
-                        onRemove={() => removeFundEntry(entry.id)}
+                        onRemove={() => handleRemove(entry.id)}
                       />
                     ))}
                   </div>
@@ -196,7 +202,7 @@ export default function FundsTable() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => removeFundEntry(entry.id)}
+                                onClick={() => handleRemove(entry.id)}
                                 title="Elimina"
                               >
                                 <Trash2 className="text-muted-foreground hover:text-destructive" />

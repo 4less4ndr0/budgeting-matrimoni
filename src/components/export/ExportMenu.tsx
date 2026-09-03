@@ -1,4 +1,5 @@
 import { Download, FileJson, FileSpreadsheet } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -20,7 +21,13 @@ export default function ExportMenu({ state }: { state: AppState }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-72">
-        <DropdownMenuItem className="items-start" onSelect={() => exportWorkbook(state)}>
+        <DropdownMenuItem
+          className="items-start"
+          onSelect={() => {
+            exportWorkbook(state);
+            toast.success('Excel esportato', { description: 'Controlla la cartella dei download.' });
+          }}
+        >
           <FileSpreadsheet className="mt-0.5" />
           <span>
             <span className="block font-medium">Excel (.xlsx)</span>
@@ -29,7 +36,13 @@ export default function ExportMenu({ state }: { state: AppState }) {
             </span>
           </span>
         </DropdownMenuItem>
-        <DropdownMenuItem className="items-start" onSelect={() => exportStateSnapshot(state)}>
+        <DropdownMenuItem
+          className="items-start"
+          onSelect={() => {
+            exportStateSnapshot(state);
+            toast.success('Stato salvato', { description: 'Snapshot .json scaricato.' });
+          }}
+        >
           <FileJson className="mt-0.5" />
           <span>
             <span className="block font-medium">Salva stato (.json)</span>

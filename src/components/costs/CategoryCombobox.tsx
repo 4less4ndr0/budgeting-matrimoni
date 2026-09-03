@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Check, ChevronsUpDown, Plus, X } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,7 +62,12 @@ export default function CategoryCombobox({
   }
 
   function confirmDelete() {
-    if (pendingDelete) onDelete(pendingDelete);
+    if (pendingDelete) {
+      onDelete(pendingDelete);
+      toast.success(`Categoria "${pendingDelete}" eliminata`, {
+        description: 'Le voci che la usavano mantengono il loro testo.',
+      });
+    }
     setPendingDelete(null);
   }
 
