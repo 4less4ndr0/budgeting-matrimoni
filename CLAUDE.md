@@ -7,11 +7,19 @@ cosa è già stato fatto (anche dall'altra persona) prima di continuare.
 ## Changelog
 
 Ogni PR che questa sessione apre deve includere una riga nuova in `CHANGELOG.md`, sotto la
-data di oggi (crea la sezione `## YYYY-MM-DD` se non esiste ancora per oggi). Usa la stessa
+data di oggi (crea la sezione `## YYYY-MM-DD` se non esiste ancora per oggi) **e** sotto
+l'argomento giusto (`### Argomento`, crealo dentro la data se non c'è già). Usa la stessa
 frase del titolo della PR — diventa anche il messaggio dello squash-merge su `main`, quindi
-restano coerenti. Questo file è anche quello che l'app mostra dal vivo nel bottone
-"Changelog" accanto a "Esporta" (`src/components/changelog/ChangelogButton.tsx`, importato
-via `?raw` — ogni build prende automaticamente l'ultima versione, non serve altro).
+restano coerenti. Se la voce menziona la PR con `(#N)` alla fine, l'app la trasforma in
+automatico in un link a quella PR — mantieni questo formato.
+
+Tassonomia fissa degli argomenti (usa uno di questi, o aggiungine uno nuovo solo se
+davvero non calza nessuno): **Categorie · Runway & Budget · Dashboard · Costi & Fondi ·
+Assunzioni ricavi · Import/Export · Fix tecnici · Documentazione & processo**.
+
+Questo file è anche quello che l'app mostra dal vivo nel popup del bottone "Changelog"
+accanto a "Esporta" (`src/components/changelog/ChangelogButton.tsx`, importato via `?raw`
+— ogni build prende automaticamente l'ultima versione, non serve altro).
 
 ## Branch
 

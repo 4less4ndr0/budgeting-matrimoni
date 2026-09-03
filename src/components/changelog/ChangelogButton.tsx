@@ -1,61 +1,86 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import changelogRaw from '../../../CHANGELOG.md?raw';
 
-type ChangelogEntry = { date: string } | { text: string };
+const PR_BASE_URL = 'https://github.com/4less4ndr0/budgeting-matrimoni/pull/';
+const PR_SUFFIX_RE = /^(.*)\s\(#(\d+)\)$/;
 
-/** Parser minimo su misura per il nostro CHANGELOG.md: `## data` -> intestazione, `- voce` -> voce. */
-function parseChangelog(raw: string): ChangelogEntry[] {
+type ChangelogNode =
+  | { kind: 'date'; text: string }
+  | { kind: 'topic'; text: string }
+  | { kind: 'item'; text: string; prNumber?: string };
+
+/** Parser minimo su misura per il nostro CHANGELOG.md: `## data` -> data, `### argomento` -> argomento, `- voce` -> voce. */
+function parseChangelog(raw: string): ChangelogNode[] {
   return raw
     .split('\n')
     .map((line) => line.trim())
-    .filter((line) => line.startsWith('## ') || line.startsWith('- '))
-    .map((line) => (line.startsWith('## ') ? { date: line.slice(3) } : { text: line.slice(2) }));
+    .filter((line) => line.startsWith('## ') || line.startsWith('### ') || line.startsWith('- '))
+    .map((line): ChangelogNode => {
+      if (line.startsWith('## ')) return { kind: 'date', text: line.slice(3) };
+      if (line.startsWith('### ')) return { kind: 'topic', text: line.slice(4) };
+      const text = line.slice(2);
+      const match = text.match(PR_SUFFIX_RE);
+      return match ? { kind: 'item', text: match[1], prNumber: match[2] } : { kind: 'item', text };
+    });
 }
 
 export default function ChangelogButton() {
   const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const entries = useMemo(() => parseChangelog(changelogRaw), []);
-
-  useEffect(() => {
-    if (!open) return;
-    function onPointerDown(e: PointerEvent) {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
-    }
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') setOpen(false);
-    }
-    document.addEventListener('pointerdown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [open]);
+  const nodes = useMemo(() => parseChangelog(changelogRaw), []);
 
   return (
-    <div className="relative self-start" ref={rootRef}>
-      <Button variant="secondary" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
-        <Info />
-        Changelog
-      </Button>
-      {open && (
-        <div className="absolute right-0 z-10 mt-1 max-h-80 w-80 overflow-y-auto rounded-md border border-border bg-popover p-3 text-popover-foreground shadow-md">
-          {entries.map((entry, i) =>
-            'date' in entry ? (
-              <p key={i} className="mb-1 mt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground first:mt-0">
-                {entry.date}
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="secondary">
+          <Info />
+          Changelog
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Info className="h-5 w-5" />
+            Changelog
+          </DialogTitle>
+          <DialogDescription>Storico delle modifiche pubblicate su main, raggruppate per argomento e per data.</DialogDescription>
+        </DialogHeader>
+        <div className="flex-1 overflow-y-auto pr-1">
+          {nodes.map((node, i) => {
+            if (node.kind === 'date') {
+              return (
+                <h2 key={i} className="mb-2 mt-6 text-base font-bold first:mt-0">
+                  {node.text}
+                </h2>
+              );
+            }
+            if (node.kind === 'topic') {
+              return (
+                <h3 key={i} className="mb-1.5 mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground first:mt-0">
+                  {node.text}
+                </h3>
+              );
+            }
+            return (
+              <p key={i} className="flex items-baseline justify-between gap-3 py-0.5 text-sm">
+                <span>{node.text}</span>
+                {node.prNumber && (
+                  <a
+                    href={`${PR_BASE_URL}${node.prNumber}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="shrink-0 text-xs text-muted-foreground hover:text-foreground hover:underline"
+                  >
+                    #{node.prNumber}
+                  </a>
+                )}
               </p>
-            ) : (
-              <p key={i} className="py-0.5 text-sm">
-                {entry.text}
-              </p>
-            ),
-          )}
+            );
+          })}
         </div>
-      )}
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
