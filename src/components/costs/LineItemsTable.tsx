@@ -13,7 +13,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -181,14 +182,21 @@ export default function LineItemsTable() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Voci di costo ed entrata</CardTitle>
-        <CardDescription>
-          Modifica liberamente qualsiasi valore: sono i tuoi dati di lavoro, non il file importato. Raggruppate
-          per mese, dal più recente. L&apos;icona <Repeat className="inline h-3.5 w-3.5 align-text-bottom" /> genera
-          una voce identica per ogni mese successivo fino alla data target di break-even, visibile e modificabile
-          come le altre. Ri-cliccandola su una voce già ricorrente, con conferma, interrompe la serie dal mese
-          successivo in poi.
-        </CardDescription>
+        <CardTitle className="flex items-center gap-1.5">
+          Voci di costo ed entrata
+          <InfoTooltip
+            content={
+              <>
+                Modifica liberamente qualsiasi valore: sono i tuoi dati di lavoro, non il file importato.
+                Raggruppate per mese, dal più recente. L&apos;icona{' '}
+                <Repeat className="inline h-3.5 w-3.5 align-text-bottom" /> genera una voce identica per ogni mese
+                successivo fino alla data target di break-even, visibile e modificabile come le altre.
+                Ri-cliccandola su una voce già ricorrente, con conferma, interrompe la serie dal mese successivo
+                in poi.
+              </>
+            }
+          />
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {/* Top CTA: adding an entry shouldn't require scrolling past the whole list first. */}

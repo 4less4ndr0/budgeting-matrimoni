@@ -1,7 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { parseISO } from 'date-fns';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -211,10 +212,10 @@ export default function AssumptionsView() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Modello semplice</CardTitle>
-            <CardDescription>
-              Ricavo mensile = prezzo × numero di siti venduti al mese, con crescita composta.
-            </CardDescription>
+            <CardTitle className="flex items-center gap-1.5">
+              Modello semplice
+              <InfoTooltip content="Ricavo mensile = prezzo × numero di siti venduti al mese, con crescita composta." />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -346,11 +347,10 @@ export default function AssumptionsView() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Modello funnel B2B</CardTitle>
-            <CardDescription>
-              Ricavo mensile = lead × tasso di conversione × prezzo (vendita diretta o commissione di
-              segnalazione).
-            </CardDescription>
+            <CardTitle className="flex items-center gap-1.5">
+              Modello funnel B2B
+              <InfoTooltip content="Ricavo mensile = lead × tasso di conversione × prezzo (vendita diretta o commissione di segnalazione)." />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <Field label="Lead mensili">

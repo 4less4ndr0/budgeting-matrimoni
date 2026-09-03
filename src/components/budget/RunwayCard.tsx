@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -79,8 +80,10 @@ export default function RunwayCard() {
     <div className="grid gap-4 md:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle>Runway</CardTitle>
-          <CardDescription>Quanti mesi di liquidità hai, da oggi.</CardDescription>
+          <CardTitle className="flex items-center gap-1.5">
+            Runway
+            <InfoTooltip content="Quanti mesi di liquidità hai, da oggi." />
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>

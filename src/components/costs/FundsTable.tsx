@@ -3,7 +3,8 @@ import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import CategoryCombobox from '@/components/costs/CategoryCombobox';
@@ -103,11 +104,10 @@ export default function FundsTable() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Fondi disponibili</CardTitle>
-        <CardDescription>
-          Capitale già disponibile per il business (risparmi, investimenti, incassi già raccolti) — si somma ai
-          ricavi proiettati per calcolare il break-even. Raggruppati per mese, dal più recente.
-        </CardDescription>
+        <CardTitle className="flex items-center gap-1.5">
+          Fondi disponibili
+          <InfoTooltip content="Capitale già disponibile per il business (risparmi, investimenti, incassi già raccolti) — si somma ai ricavi proiettati per calcolare il break-even. Raggruppati per mese, dal più recente." />
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {/* Top CTA: adding a fund shouldn't require scrolling past the whole list first. */}

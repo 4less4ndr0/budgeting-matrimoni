@@ -26,6 +26,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 import {
   ChartContainer,
   ChartLegend,
@@ -367,13 +368,12 @@ export default function DashboardView() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Utile netto: mensile e cumulato</CardTitle>
+          <CardTitle className="flex items-center gap-1.5">
+            Utile netto: mensile e cumulato
+            <InfoTooltip content="Entrate + ricavi meno costi, senza contare i Fondi disponibili — è il conto economico puro, diverso dalla posizione cumulativa qui sopra (che invece include il capitale)." />
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="mb-3 text-sm text-muted-foreground">
-            Entrate + ricavi meno costi, senza contare i Fondi disponibili — è il conto economico puro, diverso
-            dalla posizione cumulativa qui sopra (che invece include il capitale).
-          </p>
           <ChartContainer config={NET_PROFIT_CHART_CONFIG} className="h-[280px] w-full">
             <ComposedChart data={projections}>
               <CartesianGrid vertical={false} />
