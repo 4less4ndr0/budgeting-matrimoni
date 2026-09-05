@@ -70,7 +70,14 @@ export async function fetchReleases(): Promise<ReleaseEntry[]> {
   if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) return cached.entries;
 
   try {
-    const response = await fetch(RELEASES_API_URL, { headers: { Accept: 'application/vnd.github+json' } });
+    const response = await fetch(RELEASES_API_URL, {
+      headers: { Accept: 'application/vnd.github+json' },
+      // GitHub serves unauthenticated reads with max-age=60, so a plain fetch
+      // can reuse a browser-cached response from just before a release was
+      // published — and we'd then pin that stale list for the whole TTL below.
+      // Revalidating costs nothing: a 304 doesn't count against the rate limit.
+      cache: 'no-cache',
+    });
     if (!response.ok) throw new Error(`GitHub API ha risposto ${response.status}`);
 
     const entries = ((await response.json()) as GitHubRelease[]).filter((r) => !r.draft).map(toEntry);
