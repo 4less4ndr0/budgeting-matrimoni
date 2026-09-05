@@ -18,7 +18,7 @@ export default function ChangelogButton() {
     try {
       setReleases(await fetchReleases());
     } catch {
-      // `releases` stays null, so simply reopening the dialog retries.
+      // No retry logic needed: every reopen tries again.
       setFailed(true);
     } finally {
       setLoading(false);
@@ -27,9 +27,11 @@ export default function ChangelogButton() {
 
   function handleOpenChange(next: boolean) {
     setOpen(next);
-    // Fetch on first open rather than on mount: the dialog is behind a button,
-    // so the page load pays nothing for a changelog nobody may look at.
-    if (next && releases === null && !loading) void load();
+    // Every open, not just the first: a release published or edited a moment
+    // ago has to show up without reloading the page. Nothing is fetched on
+    // mount, though — the dialog is behind a button, so a page load pays
+    // nothing for a changelog nobody may open.
+    if (next && !loading) void load();
   }
 
   return (
@@ -52,14 +54,16 @@ export default function ChangelogButton() {
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto pr-1">
-          {loading && (
+          {/* Only while there is nothing to show: a revalidation over an
+              already-rendered list must not push it down behind a spinner. */}
+          {loading && releases === null && (
             <p className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               Carico le release…
             </p>
           )}
 
-          {failed && (
+          {failed && releases === null && (
             <p className="py-6 text-sm text-muted-foreground">
               Non sono riuscito a leggere le release da GitHub. Controlla la connessione e riapri il changelog, oppure{' '}
               <a href={RELEASES_PAGE_URL} target="_blank" rel="noreferrer" className="underline hover:text-foreground">
