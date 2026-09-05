@@ -74,8 +74,8 @@ export default function ChangelogButton() {
           )}
 
           {releases?.map((release) => (
-            <section key={release.id}>
-              <h2 className="mb-2 mt-6 flex items-baseline justify-between gap-3 text-base font-bold first:mt-0">
+            <section key={release.id} className="mt-6 first:mt-0">
+              <h2 className="mb-2 flex items-baseline justify-between gap-3 text-base font-bold">
                 {release.title}
                 <a
                   href={release.htmlUrl}
@@ -90,7 +90,7 @@ export default function ChangelogButton() {
                 node.kind === 'topic' ? (
                   <h3
                     key={i}
-                    className="mb-1.5 mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground first:mt-0"
+                    className="mb-1.5 mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground first-of-type:mt-0"
                   >
                     {node.text}
                   </h3>
