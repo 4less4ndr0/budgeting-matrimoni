@@ -2,8 +2,9 @@
 
 **Live: https://4less4ndr0.github.io/budgeting-matrimoni/**
 
-Vedi anche [`CHANGELOG.md`](CHANGELOG.md) per lo storico delle modifiche (stessa lista è
-visibile anche nell'app, dal bottone "Changelog" accanto a "Esporta").
+Lo storico delle modifiche sono le
+[Release](https://github.com/4less4ndr0/budgeting-matrimoni/releases) della repo (stessa
+lista è visibile anche nell'app, dal bottone "Changelog" accanto a "Esporta").
 
 Dashboard finanziaria per **matrimoni.top**: importa i tuoi costi (CSV/Excel), tienili
 aggiornati in una dashboard interattiva e capisci il **burn rate**, l'**utile netto** e se
@@ -116,10 +117,22 @@ branch nuovo tipo `<utente>-patch-1` e ci apre sopra una PR. È così che sono n
 fantasma ripuliti in passato — la fix è semplice, basta partire dal proprio branch invece
 che da `main`.
 
-**Aggiorna `CHANGELOG.md` prima di aprire la PR**: una riga sotto la data di oggi (va bene
-lo stesso testo del titolo della PR, tanto diventa anche il messaggio dello squash-merge
-su `main`). È quello che compare nel bottone "Changelog" dell'app — è così che l'altra
-persona vede rapidamente cosa è cambiato senza dover leggere la cronologia dei commit.
+**Metti una label sulla PR prima di aprirla.** Non c'è nessun changelog da aggiornare a
+mano: lo storico sono le Release, e GitHub le compila da solo usando i titoli delle PR
+mergiate. La label (`interfaccia`, `dashboard`, `costi-fondi`, `runway-budget`,
+`categorie`, `assunzioni-ricavi`, `import-export`, `fix-tecnici`,
+`documentazione-processo`) decide solo in che sezione finisce la voce; senza label la PR
+compare sotto "Altro".
+
+**A fine sessione di lavoro pubblica una release**, così le PR mergiate diventano una voce
+di changelog visibile all'altra persona e dentro l'app:
+
+```bash
+gh release create v0.3.0 --title "$(date +%F)" --generate-notes
+```
+
+Il popup "Changelog" dell'app legge le release da GitHub a runtime: appena pubblichi
+compare, senza aspettare un nuovo deploy.
 
 ## Cartella `csv-imports/`
 

@@ -1,38 +1,39 @@
-import { useMemo, useState } from 'react';
-import { Info } from 'lucide-react';
+import { useState } from 'react';
+import { ExternalLink, Info, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import changelogRaw from '../../../CHANGELOG.md?raw';
+import { fetchReleases, RELEASES_PAGE_URL, type ReleaseEntry } from '@/lib/changelog/fetchReleases';
 
 const PR_BASE_URL = 'https://github.com/4less4ndr0/budgeting-matrimoni/pull/';
-const PR_SUFFIX_RE = /^(.*)\s\(#(\d+)\)$/;
-
-type ChangelogNode =
-  | { kind: 'date'; text: string }
-  | { kind: 'topic'; text: string }
-  | { kind: 'item'; text: string; prNumber?: string };
-
-/** Parser minimo su misura per il nostro CHANGELOG.md: `## data` -> data, `### argomento` -> argomento, `- voce` -> voce. */
-function parseChangelog(raw: string): ChangelogNode[] {
-  return raw
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line.startsWith('## ') || line.startsWith('### ') || line.startsWith('- '))
-    .map((line): ChangelogNode => {
-      if (line.startsWith('## ')) return { kind: 'date', text: line.slice(3) };
-      if (line.startsWith('### ')) return { kind: 'topic', text: line.slice(4) };
-      const text = line.slice(2);
-      const match = text.match(PR_SUFFIX_RE);
-      return match ? { kind: 'item', text: match[1], prNumber: match[2] } : { kind: 'item', text };
-    });
-}
 
 export default function ChangelogButton() {
   const [open, setOpen] = useState(false);
-  const nodes = useMemo(() => parseChangelog(changelogRaw), []);
+  const [releases, setReleases] = useState<ReleaseEntry[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  async function load() {
+    setLoading(true);
+    setFailed(false);
+    try {
+      setReleases(await fetchReleases());
+    } catch {
+      // `releases` stays null, so simply reopening the dialog retries.
+      setFailed(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleOpenChange(next: boolean) {
+    setOpen(next);
+    // Fetch on first open rather than on mount: the dialog is behind a button,
+    // so the page load pays nothing for a changelog nobody may look at.
+    if (next && releases === null && !loading) void load();
+  }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="secondary">
           <Info />
@@ -45,41 +46,83 @@ export default function ChangelogButton() {
             <Info className="h-5 w-5" />
             Changelog
           </DialogTitle>
-          <DialogDescription>Storico delle modifiche pubblicate su main, raggruppate per argomento e per data.</DialogDescription>
+          <DialogDescription>
+            Storico delle modifiche pubblicate su main, preso dalle release della repo e raggruppato per argomento.
+          </DialogDescription>
         </DialogHeader>
+
         <div className="flex-1 overflow-y-auto pr-1">
-          {nodes.map((node, i) => {
-            if (node.kind === 'date') {
-              return (
-                <h2 key={i} className="mb-2 mt-6 text-base font-bold first:mt-0">
-                  {node.text}
-                </h2>
-              );
-            }
-            if (node.kind === 'topic') {
-              return (
-                <h3 key={i} className="mb-1.5 mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground first:mt-0">
-                  {node.text}
-                </h3>
-              );
-            }
-            return (
-              <p key={i} className="flex items-baseline justify-between gap-3 py-0.5 text-sm">
-                <span>{node.text}</span>
-                {node.prNumber && (
-                  <a
-                    href={`${PR_BASE_URL}${node.prNumber}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="shrink-0 text-xs text-muted-foreground hover:text-foreground hover:underline"
+          {loading && (
+            <p className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Carico le release…
+            </p>
+          )}
+
+          {failed && (
+            <p className="py-6 text-sm text-muted-foreground">
+              Non sono riuscito a leggere le release da GitHub. Controlla la connessione e riapri il changelog, oppure{' '}
+              <a href={RELEASES_PAGE_URL} target="_blank" rel="noreferrer" className="underline hover:text-foreground">
+                aprile direttamente su GitHub
+              </a>
+              .
+            </p>
+          )}
+
+          {releases?.length === 0 && (
+            <p className="py-6 text-sm text-muted-foreground">Non c'è ancora nessuna release pubblicata.</p>
+          )}
+
+          {releases?.map((release) => (
+            <section key={release.id} className="mt-6 first:mt-0">
+              <h2 className="mb-2 flex items-baseline justify-between gap-3 text-base font-bold">
+                {release.title}
+                <a
+                  href={release.htmlUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="shrink-0 text-xs font-normal text-muted-foreground hover:text-foreground hover:underline"
+                >
+                  {release.tagName}
+                </a>
+              </h2>
+              {release.nodes.map((node, i) =>
+                node.kind === 'topic' ? (
+                  <h3
+                    key={i}
+                    className="mb-1.5 mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground first-of-type:mt-0"
                   >
-                    #{node.prNumber}
-                  </a>
-                )}
-              </p>
-            );
-          })}
+                    {node.text}
+                  </h3>
+                ) : (
+                  <p key={i} className="flex items-baseline justify-between gap-3 py-0.5 text-sm">
+                    <span>{node.text}</span>
+                    {node.prNumber && (
+                      <a
+                        href={`${PR_BASE_URL}${node.prNumber}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="shrink-0 text-xs text-muted-foreground hover:text-foreground hover:underline"
+                      >
+                        #{node.prNumber}
+                      </a>
+                    )}
+                  </p>
+                ),
+              )}
+            </section>
+          ))}
         </div>
+
+        <a
+          href={RELEASES_PAGE_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:underline"
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+          Vedi tutte le release su GitHub
+        </a>
       </DialogContent>
     </Dialog>
   );
