@@ -7,15 +7,15 @@ import { parseReleaseNotes, type ChangelogNode } from './parseReleaseNotes';
  * the browser hits the public API directly (the repo is public, no token
  * needed, and api.github.com allows cross-origin reads). The upside over the
  * old bundled CHANGELOG.md is that publishing a release shows up in the app
- * immediately, with no rebuild.
+ * immediately, with no rebuild — which is why this revalidates on every open
+ * instead of trusting a stored copy for a while.
  */
 
 const RELEASES_API_URL = 'https://api.github.com/repos/4less4ndr0/budgeting-matrimoni/releases?per_page=20';
 export const RELEASES_PAGE_URL = 'https://github.com/4less4ndr0/budgeting-matrimoni/releases';
 
-/** Deliberately not the zustand key (`budgeting-matrimoni-store`) — this cache is disposable. */
+/** Deliberately not the zustand key (`budgeting-matrimoni-store`) — this copy is only an offline fallback. */
 const CACHE_KEY = 'budgeting-matrimoni-releases';
-const CACHE_TTL_MS = 60 * 60 * 1000;
 
 export type ReleaseEntry = {
   id: number;
@@ -35,23 +35,25 @@ type GitHubRelease = {
   draft: boolean;
 };
 
-type Cache = { fetchedAt: number; entries: ReleaseEntry[] };
+type Cache = { entries: ReleaseEntry[] };
 
-function readCache(): Cache | null {
+function readCache(): ReleaseEntry[] | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
-    return raw ? (JSON.parse(raw) as Cache) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<Cache>;
+    return Array.isArray(parsed?.entries) ? parsed.entries : null;
   } catch {
-    // Private browsing or corrupted entry: just go to the network.
+    // Private browsing, or an entry left over in a shape we no longer write.
     return null;
   }
 }
 
 function writeCache(entries: ReleaseEntry[]): void {
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ fetchedAt: Date.now(), entries } satisfies Cache));
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ entries } satisfies Cache));
   } catch {
-    // Cache is an optimization, never a requirement.
+    // The fallback is a nicety, never a requirement.
   }
 }
 
@@ -66,16 +68,13 @@ function toEntry(release: GitHubRelease): ReleaseEntry {
 }
 
 export async function fetchReleases(): Promise<ReleaseEntry[]> {
-  const cached = readCache();
-  if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) return cached.entries;
-
   try {
     const response = await fetch(RELEASES_API_URL, {
       headers: { Accept: 'application/vnd.github+json' },
-      // GitHub serves unauthenticated reads with max-age=60, so a plain fetch
-      // can reuse a browser-cached response from just before a release was
-      // published — and we'd then pin that stale list for the whole TTL below.
-      // Revalidating costs nothing: a 304 doesn't count against the rate limit.
+      // GitHub serves unauthenticated reads with max-age=60, so a default
+      // fetch can hand back a response from just before a release was
+      // published. Revalidating keeps the dialog honest and costs nothing:
+      // a conditional request answered 304 doesn't count against the limit.
       cache: 'no-cache',
     });
     if (!response.ok) throw new Error(`GitHub API ha risposto ${response.status}`);
@@ -84,9 +83,10 @@ export async function fetchReleases(): Promise<ReleaseEntry[]> {
     writeCache(entries);
     return entries;
   } catch (error) {
-    // Offline, or the 60 req/h unauthenticated limit: a stale list still beats
-    // an empty dialog, since the changelog is read-only reference material.
-    if (cached) return cached.entries;
+    // Offline, or the 60 req/h unauthenticated limit: the stored copy still
+    // beats an empty dialog, since the changelog is read-only reference material.
+    const cached = readCache();
+    if (cached) return cached;
     throw error;
   }
 }
