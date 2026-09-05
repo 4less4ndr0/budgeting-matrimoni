@@ -1,25 +1,41 @@
 # Istruzioni per Claude Code in questa repo
 
 Prima di iniziare un task in questa repo, dai un'occhiata a [`README.md`](README.md) (setup,
-workflow, convenzioni) e alle voci più recenti di [`CHANGELOG.md`](CHANGELOG.md) — così sai
-cosa è già stato fatto (anche dall'altra persona) prima di continuare.
+workflow, convenzioni) e alle [release più
+recenti](https://github.com/4less4ndr0/budgeting-matrimoni/releases) — così sai cosa è già
+stato fatto (anche dall'altra persona) prima di continuare.
 
-## Changelog
+## Release
 
-Ogni PR che questa sessione apre deve includere una riga nuova in `CHANGELOG.md`, sotto la
-data di oggi (crea la sezione `## YYYY-MM-DD` se non esiste ancora per oggi) **e** sotto
-l'argomento giusto (`### Argomento`, crealo dentro la data se non c'è già). Usa la stessa
-frase del titolo della PR — diventa anche il messaggio dello squash-merge su `main`, quindi
-restano coerenti. Se la voce menziona la PR con `(#N)` alla fine, l'app la trasforma in
-automatico in un link a quella PR — mantieni questo formato.
+Lo storico delle modifiche **non** sta in un file: sono le Release della repo. `CHANGELOG.md`
+non esiste più, non ricrearlo.
 
-Tassonomia fissa degli argomenti (usa uno di questi, o aggiungine uno nuovo solo se
-davvero non calza nessuno): **Categorie · Runway & Budget · Dashboard · Costi & Fondi ·
-Assunzioni ricavi · Import/Export · Interfaccia · Fix tecnici · Documentazione & processo**.
+Per ogni PR che questa sessione apre:
+- il **titolo della PR** è la voce di changelog — finisce tale e quale nelle note generate
+  da GitHub, quindi scrivilo come lo vorresti leggere nello storico;
+- mettici sopra **una label** della tassonomia qui sotto (`gh pr edit <N> --add-label
+  <label>`): è quella che decide in che sezione finisce la voce. Senza label la PR compare
+  comunque, ma sotto "Altro".
 
-Questo file è anche quello che l'app mostra dal vivo nel popup del bottone "Changelog"
-accanto a "Esporta" (`src/components/changelog/ChangelogButton.tsx`, importato via `?raw`
-— ogni build prende automaticamente l'ultima versione, non serve altro).
+Tassonomia fissa: `interfaccia` · `dashboard` · `costi-fondi` · `runway-budget` ·
+`categorie` · `assunzioni-ricavi` · `import-export` · `fix-tecnici` ·
+`documentazione-processo`. La mappa label → titolo di sezione sta in
+[`.github/release.yml`](.github/release.yml): per aggiungere un argomento nuovo servono sia
+la label sulla repo sia una voce lì.
+
+**A fine sessione di lavoro**, quando le PR sono mergiate, pubblica una release:
+
+```bash
+gh release create v0.3.0 --title "$(date +%F)" --generate-notes
+```
+
+Convenzione: tag `vX.Y.Z` progressivo, titolo = data `YYYY-MM-DD` (è l'intestazione che
+l'app mostra nel popup). `--generate-notes` raccoglie da sé tutte le PR mergiate dall'ultimo
+tag, già divise per sezione.
+
+Il popup "Changelog" dell'app legge le release dall'API di GitHub a runtime
+(`src/lib/changelog/fetchReleases.ts`): appena pubblichi la release compare nell'app, **senza
+rebuild né redeploy**.
 
 ## Branch
 
