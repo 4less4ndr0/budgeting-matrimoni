@@ -36,6 +36,14 @@ nella dashboard.
   assunzioni ricavi, override inclusi) per portare l'identica situazione su un altro
   dispositivo — la tab "Importa" lo rileva e lo ricarica con un click se lo metti in
   `csv-imports/` come `stato-sito.json`
+- **HR** (area separata da "Gestione economica", che raccoglie BEP e Budget):
+  - *Dipendenti*: anagrafica con nome, cognome, ruolo, data di nascita, data di assunzione,
+    email, telefono e note, più il riquadro dei **compleanni dei prossimi 30 giorni**;
+  - *Organigramma*: i ruoli, ognuno con "Riporta a", generano da soli il grafico della
+    struttura aziendale, con i dipendenti sotto il proprio ruolo.
+
+  ⚠️ Lo snapshot JSON include anche i dati dei dipendenti: la repo è pubblica, quindi
+  committare `stato-sito.json` li rende leggibili a chiunque.
 
 ## Stack UI
 

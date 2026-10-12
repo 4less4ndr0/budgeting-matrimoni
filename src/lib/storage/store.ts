@@ -6,13 +6,16 @@ import { defaultRevenueAssumptions, defaultRunwayAssumptions } from '../defaults
 import type {
   AppState,
   BudgetItem,
+  Dipendente,
   FundEntry,
   LineItem,
   RevenueAssumptions,
+  Ruolo,
   RunwayAssumptions,
 } from '../../types/domain';
+import { wouldCreateCycle } from '../hr/hr';
 
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 
 /**
  * Backfills fields added after data may already have been saved (persisted localStorage,
@@ -110,6 +113,21 @@ export interface AppStore extends AppState {
   removeLineItemCategory: (name: string) => void;
   removeFundCategory: (name: string) => void;
 
+  /** Returns the new dipendente's id. */
+  addDipendente: (dipendente: Omit<Dipendente, 'id'>) => string;
+  updateDipendente: (id: string, patch: Partial<Omit<Dipendente, 'id'>>) => void;
+  removeDipendente: (id: string) => void;
+
+  /** Returns the new ruolo's id, so a form can create a ruolo and assign it in one go. */
+  addRuolo: (nome: string, superioreId?: string | null) => string;
+  /** Ignores a `superioreId` that would make the organigramma loop back on itself. */
+  updateRuolo: (id: string, patch: Partial<Omit<Ruolo, 'id'>>) => void;
+  /**
+   * Removes the ruolo without losing anyone: its sub-ruoli move up to its own superiore
+   * and its dipendenti are left without a ruolo (they stay in the list).
+   */
+  removeRuolo: (id: string) => void;
+
   updateRevenueAssumptions: (patch: Partial<RevenueAssumptions>) => void;
   updateRunwayAssumptions: (patch: Partial<RunwayAssumptions>) => void;
   loadSnapshot: (
@@ -120,6 +138,9 @@ export interface AppStore extends AppState {
       runwayAssumptions?: AppState['runwayAssumptions'];
       lineItemCategories?: AppState['lineItemCategories'];
       fundCategories?: AppState['fundCategories'];
+      // Optional: snapshots saved before the HR section existed don't have them.
+      dipendenti?: AppState['dipendenti'];
+      ruoli?: AppState['ruoli'];
     },
   ) => void;
   resetAll: () => void;
@@ -136,6 +157,8 @@ export const useAppStore = create<AppStore>()(
       fundCategories: [],
       revenueAssumptions: defaultRevenueAssumptions(),
       runwayAssumptions: defaultRunwayAssumptions(),
+      dipendenti: [],
+      ruoli: [],
       schemaVersion: SCHEMA_VERSION,
 
       addLineItem: (item) =>
@@ -266,6 +289,46 @@ export const useAppStore = create<AppStore>()(
           fundCategories: state.fundCategories.filter((c) => c !== name),
         })),
 
+      addDipendente: (dipendente) => {
+        const id = nanoid();
+        set((state) => ({ dipendenti: [...state.dipendenti, { ...dipendente, id }] }));
+        return id;
+      },
+
+      updateDipendente: (id, patch) =>
+        set((state) => ({
+          dipendenti: state.dipendenti.map((d) => (d.id === id ? { ...d, ...patch } : d)),
+        })),
+
+      removeDipendente: (id) =>
+        set((state) => ({ dipendenti: state.dipendenti.filter((d) => d.id !== id) })),
+
+      addRuolo: (nome, superioreId = null) => {
+        const id = nanoid();
+        set((state) => ({ ruoli: [...state.ruoli, { id, nome: nome.trim(), superioreId }] }));
+        return id;
+      },
+
+      updateRuolo: (id, patch) =>
+        set((state) => {
+          if (patch.superioreId !== undefined && wouldCreateCycle(state.ruoli, id, patch.superioreId)) {
+            return {};
+          }
+          return { ruoli: state.ruoli.map((r) => (r.id === id ? { ...r, ...patch } : r)) };
+        }),
+
+      removeRuolo: (id) =>
+        set((state) => {
+          const removed = state.ruoli.find((r) => r.id === id);
+          if (!removed) return {};
+          return {
+            ruoli: state.ruoli
+              .filter((r) => r.id !== id)
+              .map((r) => (r.superioreId === id ? { ...r, superioreId: removed.superioreId } : r)),
+            dipendenti: state.dipendenti.map((d) => (d.ruoloId === id ? { ...d, ruoloId: null } : d)),
+          };
+        }),
+
       updateRevenueAssumptions: (patch) =>
         set((state) => ({ revenueAssumptions: { ...state.revenueAssumptions, ...patch } })),
 
@@ -286,6 +349,8 @@ export const useAppStore = create<AppStore>()(
           runwayAssumptions: snapshot.runwayAssumptions
             ? withRunwayDefaults(snapshot.runwayAssumptions)
             : defaultRunwayAssumptions(),
+          dipendenti: snapshot.dipendenti ?? [],
+          ruoli: snapshot.ruoli ?? [],
           schemaVersion: SCHEMA_VERSION,
         });
       },
@@ -300,6 +365,8 @@ export const useAppStore = create<AppStore>()(
           fundCategories: [],
           revenueAssumptions: defaultRevenueAssumptions(),
           runwayAssumptions: defaultRunwayAssumptions(),
+          dipendenti: [],
+          ruoli: [],
           schemaVersion: SCHEMA_VERSION,
         }),
     }),
@@ -316,6 +383,8 @@ export const useAppStore = create<AppStore>()(
           budgetItems: withBudgetItemDefaults(state.budgetItems ?? []),
           lineItemCategories: withCategoryListDefaults(state.lineItemCategories, state.lineItems ?? []),
           fundCategories: withCategoryListDefaults(state.fundCategories, fundEntries),
+          dipendenti: state.dipendenti ?? [],
+          ruoli: state.ruoli ?? [],
         };
       },
     },

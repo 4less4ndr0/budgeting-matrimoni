@@ -86,5 +86,34 @@ export function exportWorkbook(state: AppState): void {
 
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(projections), 'Monthly Projections');
 
+  const ruoloById = new Map(state.ruoli.map((r) => [r.id, r]));
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.json_to_sheet(
+      state.dipendenti.map((d) => ({
+        nome: d.nome,
+        cognome: d.cognome,
+        ruolo: (d.ruoloId && ruoloById.get(d.ruoloId)?.nome) || '',
+        data_nascita: d.dataNascita,
+        data_assunzione: d.dataAssunzione,
+        email: d.email,
+        telefono: d.telefono,
+        note: d.note,
+      })),
+    ),
+    'Dipendenti',
+  );
+
+  XLSX.utils.book_append_sheet(
+    wb,
+    XLSX.utils.json_to_sheet(
+      state.ruoli.map((r) => ({
+        ruolo: r.nome,
+        riporta_a: (r.superioreId && ruoloById.get(r.superioreId)?.nome) || '',
+      })),
+    ),
+    'Ruoli',
+  );
+
   XLSX.writeFile(wb, `budgeting-matrimoni-export-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
 }
