@@ -136,3 +136,76 @@
     background-attachment: local, local, scroll, scroll;
   }
 }
+
+@layer components {
+  /* Organigramma (HR): albero dall'alto verso il basso fatto con liste annidate. Ogni <li>
+     disegna con ::before/::after la sua metà del tratto orizzontale che lo unisce ai
+     fratelli più il trattino verticale che scende su di lui; ogni <ul> annidato disegna il
+     trattino che scende dal genitore. */
+  .org-tree {
+    --org-line: hsl(var(--muted-foreground) / 0.45);
+    --org-gap: 1.25rem;
+  }
+  .org-tree ul {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding-top: var(--org-gap);
+  }
+  .org-tree li {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--org-gap) 0.375rem 0;
+  }
+  .org-tree li::before,
+  .org-tree li::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 50%;
+    width: 50%;
+    height: var(--org-gap);
+    border-top: 1px solid var(--org-line);
+  }
+  .org-tree li::after {
+    right: auto;
+    left: 50%;
+    border-left: 1px solid var(--org-line);
+  }
+  .org-tree li:only-child {
+    padding-top: 0;
+  }
+  .org-tree li:only-child::before,
+  .org-tree li:only-child::after {
+    display: none;
+  }
+  .org-tree li:first-child::before,
+  .org-tree li:last-child::after {
+    border: 0 none;
+  }
+  .org-tree li:last-child::before {
+    border-right: 1px solid var(--org-line);
+  }
+  .org-tree ul ul::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    height: var(--org-gap);
+    border-left: 1px solid var(--org-line);
+  }
+  /* Più ruoli di vertice: affiancati, senza linee tra loro (non hanno un genitore comune). */
+  .org-tree > ul {
+    padding-top: 0;
+    gap: 2rem;
+  }
+  .org-tree > ul > li {
+    padding-top: 0;
+  }
+  .org-tree > ul > li::before,
+  .org-tree > ul > li::after {
+    display: none;
+  }
+}

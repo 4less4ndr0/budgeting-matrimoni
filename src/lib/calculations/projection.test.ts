@@ -51,6 +51,8 @@ describe('buildProjection', () => {
       budgetTotale: 0,
       lineItemCategories: [],
       fundCategories: [],
+      dipendenti: [],
+      ruoli: [],
       schemaVersion: 1,
     };
 
@@ -75,6 +77,8 @@ describe('buildProjection', () => {
       budgetTotale: 0,
       lineItemCategories: [],
       fundCategories: [],
+      dipendenti: [],
+      ruoli: [],
       schemaVersion: 1,
     };
 
@@ -100,6 +104,8 @@ describe('buildProjection', () => {
       budgetTotale: 0,
       lineItemCategories: [],
       fundCategories: [],
+      dipendenti: [],
+      ruoli: [],
       schemaVersion: 1,
     };
 
@@ -134,6 +140,8 @@ describe('buildProjection', () => {
       budgetTotale: 0,
       lineItemCategories: [],
       fundCategories: [],
+      dipendenti: [],
+      ruoli: [],
       schemaVersion: 1,
     };
 
@@ -164,6 +172,8 @@ describe('buildProjection', () => {
       budgetTotale: 0,
       lineItemCategories: [],
       fundCategories: [],
+      dipendenti: [],
+      ruoli: [],
       schemaVersion: 1,
     };
 
@@ -185,6 +195,8 @@ describe('buildProjection', () => {
       budgetTotale: 0,
       lineItemCategories: [],
       fundCategories: [],
+      dipendenti: [],
+      ruoli: [],
       schemaVersion: 1,
     };
 

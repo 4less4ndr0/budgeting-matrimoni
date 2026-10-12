@@ -121,6 +121,28 @@ export interface RunwayResult {
   runwayMonths: number | null; // con decimali; null quando isProfitable
 }
 
+/**
+ * Un ruolo aziendale (HR). I ruoli, collegati tra loro da `superioreId`, formano l'albero
+ * dell'organigramma; i dipendenti si appendono al proprio ruolo.
+ */
+export interface Ruolo {
+  id: string;
+  nome: string;
+  superioreId: string | null; // null = ruolo di vertice
+}
+
+export interface Dipendente {
+  id: string;
+  nome: string;
+  cognome: string;
+  dataNascita: string; // ISO yyyy-mm-dd, '' = non indicata
+  ruoloId: string | null; // null = nessun ruolo assegnato
+  email: string;
+  telefono: string;
+  dataAssunzione: string; // ISO yyyy-mm-dd, '' = non indicata
+  note: string;
+}
+
 export interface AppState {
   lineItems: LineItem[];
   fundEntries: FundEntry[];
@@ -133,5 +155,7 @@ export interface AppState {
   fundCategories: string[];
   revenueAssumptions: RevenueAssumptions;
   runwayAssumptions: RunwayAssumptions;
+  dipendenti: Dipendente[];
+  ruoli: Ruolo[];
   schemaVersion: number;
 }

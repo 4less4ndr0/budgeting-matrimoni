@@ -17,6 +17,8 @@ changelog:
       labels: [assunzioni-ricavi]
     - title: Import/Export
       labels: [import-export]
+    - title: HR
+      labels: [hr]
     - title: Fix tecnici
       labels: [fix-tecnici]
     - title: Documentazione & processo

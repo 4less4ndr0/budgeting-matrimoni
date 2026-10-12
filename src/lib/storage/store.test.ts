@@ -32,6 +32,20 @@ describe('loadSnapshot', () => {
       fundCategories: ['Capitale'],
       revenueAssumptions: { ...defaultRevenueAssumptions(), costRunRateOverride: 0 },
       runwayAssumptions: defaultRunwayAssumptions(),
+      dipendenti: [
+        {
+          id: 'd1',
+          nome: 'Anna',
+          cognome: 'Rossi',
+          dataNascita: '1990-05-04',
+          ruoloId: 'r1',
+          email: '',
+          telefono: '',
+          dataAssunzione: '',
+          note: '',
+        },
+      ],
+      ruoli: [{ id: 'r1', nome: 'CEO', superioreId: null }],
       schemaVersion: 1,
       savedAt: '2026-09-02T12:00:00.000Z',
     };
@@ -45,6 +59,8 @@ describe('loadSnapshot', () => {
     expect(state.budgetTotale).toBe(8000);
     expect(state.lineItemCategories).toEqual(['Dominio']);
     expect(state.fundCategories).toEqual(['Capitale']);
+    expect(state.dipendenti).toEqual(snapshot.dipendenti);
+    expect(state.ruoli).toEqual(snapshot.ruoli);
     // The whole point: an override deliberately left at 0 must survive as 0, not be
     // dropped/coerced to null ("automatico") by the round-trip.
     expect(state.revenueAssumptions.costRunRateOverride).toBe(0);
@@ -61,6 +77,19 @@ describe('loadSnapshot', () => {
 
     expect(useAppStore.getState().budgetItems).toEqual([]);
     expect(useAppStore.getState().budgetTotale).toBe(0);
+  });
+
+  it('defaults dipendenti/ruoli to [] when loading a snapshot saved before the HR section existed', () => {
+    const oldSnapshot = {
+      lineItems: [],
+      fundEntries: [],
+      revenueAssumptions: defaultRevenueAssumptions(),
+    } as unknown as Pick<AppState, 'lineItems' | 'fundEntries' | 'revenueAssumptions'>;
+
+    useAppStore.getState().loadSnapshot(oldSnapshot);
+
+    expect(useAppStore.getState().dipendenti).toEqual([]);
+    expect(useAppStore.getState().ruoli).toEqual([]);
   });
 
   it('backfills bloccato:false on voci saved before the lock feature existed', () => {
@@ -434,5 +463,47 @@ describe('endRecurringFrom', () => {
     expect(lineItems).toHaveLength(2);
     expect(lineItems.find((li) => li.id === orphan.id)?.recurring).toBe(false);
     expect(lineItems.find((li) => li.id === other.id)).toEqual(other); // untouched
+  });
+});
+
+describe('HR: ruoli e dipendenti', () => {
+  beforeEach(() => {
+    useAppStore.getState().resetAll();
+  });
+
+  const nuovoDipendente = (ruoloId: string | null) => ({
+    nome: 'Anna',
+    cognome: 'Rossi',
+    dataNascita: '',
+    ruoloId,
+    email: '',
+    telefono: '',
+    dataAssunzione: '',
+    note: '',
+  });
+
+  it('refuses a superiore that would make the organigramma loop', () => {
+    const { addRuolo, updateRuolo } = useAppStore.getState();
+    const ceo = addRuolo('CEO');
+    const cto = addRuolo('CTO', ceo);
+
+    updateRuolo(ceo, { superioreId: cto });
+
+    expect(useAppStore.getState().ruoli.find((r) => r.id === ceo)?.superioreId).toBeNull();
+  });
+
+  it('removing a ruolo moves its sub-ruoli up and unassigns its dipendenti without deleting them', () => {
+    const { addRuolo, addDipendente, removeRuolo } = useAppStore.getState();
+    const ceo = addRuolo('CEO');
+    const cto = addRuolo('CTO', ceo);
+    const dev = addRuolo('Sviluppatore', cto);
+    const anna = addDipendente(nuovoDipendente(cto));
+
+    removeRuolo(cto);
+    const state = useAppStore.getState();
+
+    expect(state.ruoli.map((r) => r.id)).toEqual([ceo, dev]);
+    expect(state.ruoli.find((r) => r.id === dev)?.superioreId).toBe(ceo);
+    expect(state.dipendenti.find((d) => d.id === anna)?.ruoloId).toBeNull();
   });
 });

@@ -120,6 +120,8 @@ export default function DashboardView() {
       fundCategories: s.fundCategories,
       revenueAssumptions: s.revenueAssumptions,
       runwayAssumptions: s.runwayAssumptions,
+      dipendenti: s.dipendenti,
+      ruoli: s.ruoli,
       schemaVersion: s.schemaVersion,
     })),
   );
