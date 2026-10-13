@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { buildOrgTree, fullName, wouldCreateCycle, type OrgNode } from '@/lib/hr/hr';
 import { useAppStore } from '@/lib/storage/store';
+import { cn } from '@/lib/utils';
 import type { Ruolo } from '@/types/domain';
 
 const VERTICE = '__vertice__';
@@ -52,13 +53,21 @@ function SuperioreSelect({ ruolo, ruoli }: { ruolo: Ruolo; ruoli: Ruolo[] }) {
 }
 
 function OrgBranch({ node }: { node: OrgNode }) {
+  const vacante = node.dipendenti.length === 0;
   return (
     <li>
-      <div className="min-w-[9rem] max-w-[13rem] rounded-lg border bg-card px-3 py-2 text-center shadow-sm">
-        <div className="text-sm font-semibold leading-tight">{node.ruolo.nome || 'Ruolo senza nome'}</div>
+      <div
+        className={cn(
+          'min-w-[9rem] max-w-[13rem] rounded-lg border bg-card px-3 py-2 text-center shadow-sm',
+          vacante && 'border-red-500/70 bg-red-500/10',
+        )}
+      >
+        <div className={cn('text-sm font-semibold leading-tight', vacante && 'text-red-600 dark:text-red-400')}>
+          {node.ruolo.nome || 'Ruolo senza nome'}
+        </div>
         <div className="mt-1 space-y-0.5 text-xs">
-          {node.dipendenti.length === 0 ? (
-            <div className="italic text-muted-foreground">Posizione vacante</div>
+          {vacante ? (
+            <div className="italic text-red-600 dark:text-red-400">Posizione vacante</div>
           ) : (
             node.dipendenti.map((d) => (
               <div key={d.id} className="truncate text-muted-foreground" title={fullName(d)}>

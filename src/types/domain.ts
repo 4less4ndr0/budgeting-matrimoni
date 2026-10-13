@@ -143,6 +143,39 @@ export interface Dipendente {
   note: string;
 }
 
+/**
+ * I tre sistemi di amministrazione e controllo delle S.p.A. italiane. "Dualistico orizzontale"
+ * è il sistema tradizionale (CdA e collegio sindacale affiancati, entrambi nominati
+ * dall'assemblea); "dualistico verticale" è il dualistico vero e proprio (sorveglianza sopra
+ * la gestione).
+ */
+export type ModelloGovernance = 'monistico' | 'dualistico-verticale' | 'dualistico-orizzontale';
+
+export type OrganoId =
+  | 'assemblea'
+  | 'cda'
+  | 'collegio-sindacale'
+  | 'consiglio-sorveglianza'
+  | 'consiglio-gestione'
+  | 'comitato-controllo'
+  | 'revisore';
+
+/** Una persona dentro un organo: un dipendente dell'anagrafica oppure un esterno (nome libero). */
+export interface MembroOrgano {
+  id: string;
+  organo: OrganoId;
+  dipendenteId: string | null; // null = persona esterna, vedi nomeEsterno
+  nomeEsterno: string;
+  carica: string;
+}
+
+export interface Governance {
+  modello: ModelloGovernance | null; // null = non ancora scelto
+  // Tenuti per organo, non per modello: cambiando modello gli organi in comune (assemblea,
+  // CdA, revisore) conservano i loro membri, gli altri restano salvati ma nascosti.
+  membri: MembroOrgano[];
+}
+
 export interface AppState {
   lineItems: LineItem[];
   fundEntries: FundEntry[];
@@ -157,5 +190,6 @@ export interface AppState {
   runwayAssumptions: RunwayAssumptions;
   dipendenti: Dipendente[];
   ruoli: Ruolo[];
+  governance: Governance;
   schemaVersion: number;
 }

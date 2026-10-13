@@ -122,6 +122,7 @@ export default function DashboardView() {
       runwayAssumptions: s.runwayAssumptions,
       dipendenti: s.dipendenti,
       ruoli: s.ruoli,
+      governance: s.governance,
       schemaVersion: s.schemaVersion,
     })),
   );

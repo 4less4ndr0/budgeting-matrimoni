@@ -7,6 +7,7 @@ import LineItemsTable from '@/components/costs/LineItemsTable';
 import DashboardView from '@/components/dashboard/DashboardView';
 import ExportMenu from '@/components/export/ExportMenu';
 import DipendentiView from '@/components/hr/DipendentiView';
+import GovernanceView from '@/components/hr/GovernanceView';
 import OrganigrammaView from '@/components/hr/OrganigrammaView';
 import ImportView from '@/components/import/ImportView';
 import SnapshotRestoreCard from '@/components/import/SnapshotRestoreCard';
@@ -37,6 +38,7 @@ export default function App() {
       runwayAssumptions: s.runwayAssumptions,
       dipendenti: s.dipendenti,
       ruoli: s.ruoli,
+      governance: s.governance,
       schemaVersion: s.schemaVersion,
     })),
   );
@@ -124,12 +126,16 @@ export default function App() {
               <TabsList>
                 <TabsTrigger value="dipendenti">Dipendenti</TabsTrigger>
                 <TabsTrigger value="organigramma">Organigramma</TabsTrigger>
+                <TabsTrigger value="governance">Governance</TabsTrigger>
               </TabsList>
               <TabsContent value="dipendenti">
                 <DipendentiView />
               </TabsContent>
               <TabsContent value="organigramma">
                 <OrganigrammaView />
+              </TabsContent>
+              <TabsContent value="governance">
+                <GovernanceView />
               </TabsContent>
             </Tabs>
           </TabsContent>

@@ -40,7 +40,15 @@ nella dashboard.
   - *Dipendenti*: anagrafica con nome, cognome, ruolo, data di nascita, data di assunzione,
     email, telefono e note, più il riquadro dei **compleanni dei prossimi 30 giorni**;
   - *Organigramma*: i ruoli, ognuno con "Riporta a", generano da soli il grafico della
-    struttura aziendale, con i dipendenti sotto il proprio ruolo.
+    struttura aziendale, con i dipendenti sotto il proprio ruolo; le posizioni vacanti sono
+    in rosso;
+  - *Governance*: scegli il modello della società tra **dualistico orizzontale**
+    (tradizionale: CdA + collegio sindacale), **dualistico verticale** (consiglio di
+    sorveglianza → consiglio di gestione) e **monistico** (CdA con comitato per il controllo
+    interno). Per ogni organo assegni dipendenti o persone esterne con la loro carica; il
+    grafico mostra chi siede dove, la tabella "Chi fa cosa" lo stesso per persona, e gli
+    avvisi segnalano le principali incompatibilità e composizioni minime del codice civile
+    (sono avvisi, non blocchi: l'ultima parola resta al commercialista).
 
   ⚠️ Lo snapshot JSON include anche i dati dei dipendenti: la repo è pubblica, quindi
   committare `stato-sito.json` li rende leggibili a chiunque.

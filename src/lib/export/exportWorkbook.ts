@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
 import type { AppState, MonthlyProjection } from '../../types/domain';
 import { buildProjection } from '../calculations/projection';
+import { ORGANI, modelloDef, nomeMembro, organiDelModello } from '../governance/modelli';
 
 function flattenAssumptions(state: AppState) {
   const a = state.revenueAssumptions;
@@ -114,6 +115,26 @@ export function exportWorkbook(state: AppState): void {
     ),
     'Ruoli',
   );
+
+  const { modello, membri } = state.governance;
+  if (modello) {
+    const organi = organiDelModello(modello);
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.json_to_sheet([
+        { organo: 'Modello', persona: modelloDef(modello).nome, carica: '' },
+        ...membri
+          .filter((m) => organi.includes(m.organo))
+          .sort((a, b) => organi.indexOf(a.organo) - organi.indexOf(b.organo))
+          .map((m) => ({
+            organo: ORGANI[m.organo].nome,
+            persona: nomeMembro(m, state.dipendenti),
+            carica: m.carica,
+          })),
+      ]),
+      'Governance',
+    );
+  }
 
   XLSX.writeFile(wb, `budgeting-matrimoni-export-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
 }
