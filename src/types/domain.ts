@@ -176,6 +176,42 @@ export interface Governance {
   membri: MembroOrgano[];
 }
 
+/** Le nove attività della catena del valore di Porter: 5 primarie + 4 di supporto. */
+export type AttivitaPorter =
+  | 'logistica-entrata'
+  | 'operations'
+  | 'logistica-uscita'
+  | 'marketing-vendite'
+  | 'servizi'
+  | 'infrastruttura'
+  | 'risorse-umane'
+  | 'tecnologia'
+  | 'approvvigionamento';
+
+export type TipoAttore = 'interno' | 'fornitore' | 'partner' | 'distributore' | 'consulente' | 'altro';
+
+export interface Prodotto {
+  id: string;
+  nome: string;
+  descrizione: string;
+}
+
+/** Chi presidia un'attività della catena del valore per un certo prodotto. */
+export interface AttoreFiliera {
+  id: string;
+  prodottoId: string;
+  attivita: AttivitaPorter;
+  tipo: TipoAttore;
+  dipendenteId: string | null; // solo per tipo 'interno': collegato all'anagrafica HR
+  nome: string; // nome libero; ignorato in visualizzazione se dipendenteId è valorizzato
+  note: string;
+}
+
+export interface SupplyChain {
+  prodotti: Prodotto[];
+  attori: AttoreFiliera[];
+}
+
 export interface AppState {
   lineItems: LineItem[];
   fundEntries: FundEntry[];
@@ -191,5 +227,6 @@ export interface AppState {
   dipendenti: Dipendente[];
   ruoli: Ruolo[];
   governance: Governance;
+  supplyChain: SupplyChain;
   schemaVersion: number;
 }

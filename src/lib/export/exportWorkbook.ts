@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
 import type { AppState, MonthlyProjection } from '../../types/domain';
 import { buildProjection } from '../calculations/projection';
+import { attivitaDef, nomeAttore, tipoLabel } from '../supplyChain/porter';
 import { ORGANI, modelloDef, nomeMembro, organiDelModello } from '../governance/modelli';
 
 function flattenAssumptions(state: AppState) {
@@ -136,5 +137,23 @@ export function exportWorkbook(state: AppState): void {
     );
   }
 
-  XLSX.writeFile(wb, `budgeting-matrimoni-export-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+  const prodottoById = new Map(state.supplyChain.prodotti.map((p) => [p.id, p.nome]));
+  if (state.supplyChain.prodotti.length > 0) {
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.json_to_sheet(
+        state.supplyChain.attori.map((a) => ({
+          prodotto: prodottoById.get(a.prodottoId) ?? '',
+          area: attivitaDef(a.attivita).area,
+          attivita: attivitaDef(a.attivita).nome,
+          attore: nomeAttore(a, state.dipendenti),
+          tipo: tipoLabel(a.tipo),
+          note: a.note,
+        })),
+      ),
+      'Supply chain',
+    );
+  }
+
+  XLSX.writeFile(wb, `regia-export-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
 }

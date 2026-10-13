@@ -15,6 +15,7 @@ export interface StateSnapshot {
   dipendenti: AppState['dipendenti'];
   ruoli: AppState['ruoli'];
   governance: AppState['governance'];
+  supplyChain: AppState['supplyChain'];
   schemaVersion: number;
   savedAt: string;
 }
@@ -38,6 +39,7 @@ export function exportStateSnapshot(state: AppState): void {
     dipendenti: state.dipendenti,
     ruoli: state.ruoli,
     governance: state.governance,
+    supplyChain: state.supplyChain,
     schemaVersion: state.schemaVersion,
     savedAt: new Date().toISOString(),
   };

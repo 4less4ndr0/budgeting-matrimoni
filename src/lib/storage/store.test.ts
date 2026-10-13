@@ -50,6 +50,12 @@ describe('loadSnapshot', () => {
         modello: 'monistico',
         membri: [{ id: 'm1', organo: 'cda', dipendenteId: 'd1', nomeEsterno: '', carica: 'Presidente' }],
       },
+      supplyChain: {
+        prodotti: [{ id: 'p1', nome: 'Sito Tier 1', descrizione: '' }],
+        attori: [
+          { id: 'a1', prodottoId: 'p1', attivita: 'operations', tipo: 'interno', dipendenteId: 'd1', nome: '', note: '' },
+        ],
+      },
       schemaVersion: 1,
       savedAt: '2026-09-02T12:00:00.000Z',
     };
@@ -66,6 +72,7 @@ describe('loadSnapshot', () => {
     expect(state.dipendenti).toEqual(snapshot.dipendenti);
     expect(state.ruoli).toEqual(snapshot.ruoli);
     expect(state.governance).toEqual(snapshot.governance);
+    expect(state.supplyChain).toEqual(snapshot.supplyChain);
     // The whole point: an override deliberately left at 0 must survive as 0, not be
     // dropped/coerced to null ("automatico") by the round-trip.
     expect(state.revenueAssumptions.costRunRateOverride).toBe(0);
@@ -96,6 +103,7 @@ describe('loadSnapshot', () => {
     expect(useAppStore.getState().dipendenti).toEqual([]);
     expect(useAppStore.getState().ruoli).toEqual([]);
     expect(useAppStore.getState().governance).toEqual({ modello: null, membri: [] });
+    expect(useAppStore.getState().supplyChain).toEqual({ prodotti: [], attori: [] });
   });
 
   it('backfills bloccato:false on voci saved before the lock feature existed', () => {
@@ -525,5 +533,46 @@ describe('HR: ruoli e dipendenti', () => {
       nomeEsterno: 'Anna Rossi',
       carica: 'Socio',
     });
+  });
+});
+
+describe('supply chain', () => {
+  beforeEach(() => {
+    useAppStore.getState().resetAll();
+  });
+
+  it('removing a prodotto removes its attori too, and only its own', () => {
+    const { addProdotto, addAttore, removeProdotto } = useAppStore.getState();
+    const a = addProdotto('A');
+    const b = addProdotto('B');
+    const base = { attivita: 'operations' as const, tipo: 'fornitore' as const, dipendenteId: null, nome: 'X', note: '' };
+    addAttore({ ...base, prodottoId: a });
+    addAttore({ ...base, prodottoId: b });
+
+    removeProdotto(a);
+    const { prodotti, attori } = useAppStore.getState().supplyChain;
+
+    expect(prodotti.map((p) => p.id)).toEqual([b]);
+    expect(attori.map((x) => x.prodottoId)).toEqual([b]);
+  });
+
+  it('removing a dipendente keeps them as a named actor of the activity', () => {
+    const { addDipendente, addProdotto, addAttore, removeDipendente } = useAppStore.getState();
+    const anna = addDipendente({
+      nome: 'Anna',
+      cognome: 'Rossi',
+      dataNascita: '',
+      ruoloId: null,
+      email: '',
+      telefono: '',
+      dataAssunzione: '',
+      note: '',
+    });
+    const p = addProdotto('A');
+    addAttore({ prodottoId: p, attivita: 'servizi', tipo: 'interno', dipendenteId: anna, nome: '', note: '' });
+
+    removeDipendente(anna);
+
+    expect(useAppStore.getState().supplyChain.attori[0]).toMatchObject({ dipendenteId: null, nome: 'Anna Rossi' });
   });
 });

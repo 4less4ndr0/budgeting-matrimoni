@@ -19,6 +19,8 @@ changelog:
       labels: [import-export]
     - title: HR
       labels: [hr]
+    - title: Supply Chain
+      labels: [supply-chain]
     - title: Fix tecnici
       labels: [fix-tecnici]
     - title: Documentazione & processo

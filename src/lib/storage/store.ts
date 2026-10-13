@@ -5,6 +5,7 @@ import { persist } from 'zustand/middleware';
 import { defaultRevenueAssumptions, defaultRunwayAssumptions } from '../defaults';
 import type {
   AppState,
+  AttoreFiliera,
   BudgetItem,
   Dipendente,
   FundEntry,
@@ -12,13 +13,15 @@ import type {
   LineItem,
   MembroOrgano,
   ModelloGovernance,
+  Prodotto,
   RevenueAssumptions,
   Ruolo,
   RunwayAssumptions,
+  SupplyChain,
 } from '../../types/domain';
 import { fullName, wouldCreateCycle } from '../hr/hr';
 
-const SCHEMA_VERSION = 5;
+const SCHEMA_VERSION = 6;
 
 /**
  * Backfills fields added after data may already have been saved (persisted localStorage,
@@ -51,6 +54,14 @@ function defaultGovernance(): Governance {
 /** Backfills the governance section on data saved before it existed (or saved partially). */
 function withGovernanceDefaults(governance: Partial<Governance> | undefined): Governance {
   return { ...defaultGovernance(), ...governance };
+}
+
+function defaultSupplyChain(): SupplyChain {
+  return { prodotti: [], attori: [] };
+}
+
+function withSupplyChainDefaults(supplyChain: Partial<SupplyChain> | undefined): SupplyChain {
+  return { ...defaultSupplyChain(), ...supplyChain };
 }
 
 /** Backfills `bloccato` on voci saved before the lock feature existed. */
@@ -145,6 +156,15 @@ export interface AppStore extends AppState {
   updateMembroOrgano: (id: string, patch: Partial<Omit<MembroOrgano, 'id'>>) => void;
   removeMembroOrgano: (id: string) => void;
 
+  /** Returns the new prodotto's id, so the view can select it right away. */
+  addProdotto: (nome: string) => string;
+  updateProdotto: (id: string, patch: Partial<Omit<Prodotto, 'id'>>) => void;
+  /** Also removes every attore of that prodotto. */
+  removeProdotto: (id: string) => void;
+  addAttore: (attore: Omit<AttoreFiliera, 'id'>) => void;
+  updateAttore: (id: string, patch: Partial<Omit<AttoreFiliera, 'id'>>) => void;
+  removeAttore: (id: string) => void;
+
   updateRevenueAssumptions: (patch: Partial<RevenueAssumptions>) => void;
   updateRunwayAssumptions: (patch: Partial<RunwayAssumptions>) => void;
   loadSnapshot: (
@@ -159,6 +179,7 @@ export interface AppStore extends AppState {
       dipendenti?: AppState['dipendenti'];
       ruoli?: AppState['ruoli'];
       governance?: Partial<AppState['governance']>;
+      supplyChain?: Partial<AppState['supplyChain']>;
     },
   ) => void;
   resetAll: () => void;
@@ -178,6 +199,7 @@ export const useAppStore = create<AppStore>()(
       dipendenti: [],
       ruoli: [],
       governance: defaultGovernance(),
+      supplyChain: defaultSupplyChain(),
       schemaVersion: SCHEMA_VERSION,
 
       addLineItem: (item) =>
@@ -334,6 +356,15 @@ export const useAppStore = create<AppStore>()(
                   : m,
               ),
             },
+            // Same for the supply chain: the activity keeps its actor, by name.
+            supplyChain: {
+              ...state.supplyChain,
+              attori: state.supplyChain.attori.map((a) =>
+                a.dipendenteId === id
+                  ? { ...a, dipendenteId: null, nome: removed ? fullName(removed) : a.nome }
+                  : a,
+              ),
+            },
           };
         }),
 
@@ -384,6 +415,51 @@ export const useAppStore = create<AppStore>()(
           governance: { ...state.governance, membri: state.governance.membri.filter((m) => m.id !== id) },
         })),
 
+      addProdotto: (nome) => {
+        const id = nanoid();
+        set((state) => ({
+          supplyChain: {
+            ...state.supplyChain,
+            prodotti: [...state.supplyChain.prodotti, { id, nome: nome.trim(), descrizione: '' }],
+          },
+        }));
+        return id;
+      },
+
+      updateProdotto: (id, patch) =>
+        set((state) => ({
+          supplyChain: {
+            ...state.supplyChain,
+            prodotti: state.supplyChain.prodotti.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+          },
+        })),
+
+      removeProdotto: (id) =>
+        set((state) => ({
+          supplyChain: {
+            prodotti: state.supplyChain.prodotti.filter((p) => p.id !== id),
+            attori: state.supplyChain.attori.filter((a) => a.prodottoId !== id),
+          },
+        })),
+
+      addAttore: (attore) =>
+        set((state) => ({
+          supplyChain: { ...state.supplyChain, attori: [...state.supplyChain.attori, { ...attore, id: nanoid() }] },
+        })),
+
+      updateAttore: (id, patch) =>
+        set((state) => ({
+          supplyChain: {
+            ...state.supplyChain,
+            attori: state.supplyChain.attori.map((a) => (a.id === id ? { ...a, ...patch } : a)),
+          },
+        })),
+
+      removeAttore: (id) =>
+        set((state) => ({
+          supplyChain: { ...state.supplyChain, attori: state.supplyChain.attori.filter((a) => a.id !== id) },
+        })),
+
       updateRevenueAssumptions: (patch) =>
         set((state) => ({ revenueAssumptions: { ...state.revenueAssumptions, ...patch } })),
 
@@ -407,6 +483,7 @@ export const useAppStore = create<AppStore>()(
           dipendenti: snapshot.dipendenti ?? [],
           ruoli: snapshot.ruoli ?? [],
           governance: withGovernanceDefaults(snapshot.governance),
+          supplyChain: withSupplyChainDefaults(snapshot.supplyChain),
           schemaVersion: SCHEMA_VERSION,
         });
       },
@@ -424,6 +501,7 @@ export const useAppStore = create<AppStore>()(
           dipendenti: [],
           ruoli: [],
           governance: defaultGovernance(),
+          supplyChain: defaultSupplyChain(),
           schemaVersion: SCHEMA_VERSION,
         }),
     }),
@@ -443,6 +521,7 @@ export const useAppStore = create<AppStore>()(
           dipendenti: state.dipendenti ?? [],
           ruoli: state.ruoli ?? [],
           governance: withGovernanceDefaults(state.governance),
+          supplyChain: withSupplyChainDefaults(state.supplyChain),
         };
       },
     },
