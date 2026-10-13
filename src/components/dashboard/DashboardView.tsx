@@ -123,6 +123,7 @@ export default function DashboardView() {
       dipendenti: s.dipendenti,
       ruoli: s.ruoli,
       governance: s.governance,
+      supplyChain: s.supplyChain,
       schemaVersion: s.schemaVersion,
     })),
   );

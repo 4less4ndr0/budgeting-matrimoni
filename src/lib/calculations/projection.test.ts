@@ -54,6 +54,7 @@ describe('buildProjection', () => {
       dipendenti: [],
       ruoli: [],
       governance: { modello: null, membri: [] },
+      supplyChain: { prodotti: [], attori: [] },
       schemaVersion: 1,
     };
 
@@ -81,6 +82,7 @@ describe('buildProjection', () => {
       dipendenti: [],
       ruoli: [],
       governance: { modello: null, membri: [] },
+      supplyChain: { prodotti: [], attori: [] },
       schemaVersion: 1,
     };
 
@@ -109,6 +111,7 @@ describe('buildProjection', () => {
       dipendenti: [],
       ruoli: [],
       governance: { modello: null, membri: [] },
+      supplyChain: { prodotti: [], attori: [] },
       schemaVersion: 1,
     };
 
@@ -146,6 +149,7 @@ describe('buildProjection', () => {
       dipendenti: [],
       ruoli: [],
       governance: { modello: null, membri: [] },
+      supplyChain: { prodotti: [], attori: [] },
       schemaVersion: 1,
     };
 
@@ -179,6 +183,7 @@ describe('buildProjection', () => {
       dipendenti: [],
       ruoli: [],
       governance: { modello: null, membri: [] },
+      supplyChain: { prodotti: [], attori: [] },
       schemaVersion: 1,
     };
 
@@ -203,6 +208,7 @@ describe('buildProjection', () => {
       dipendenti: [],
       ruoli: [],
       governance: { modello: null, membri: [] },
+      supplyChain: { prodotti: [], attori: [] },
       schemaVersion: 1,
     };
 

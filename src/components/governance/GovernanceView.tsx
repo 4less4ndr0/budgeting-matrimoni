@@ -258,7 +258,7 @@ function OrganoCard({
   const mieiAvvisi = avvisi.filter((a) => a.organo === organo && !(vuoto && a.testo === 'Nessuno ne fa parte.'));
 
   return (
-    <Card id={`organo-${organo}`} className={cn('scroll-mt-48', vuoto && 'border-red-500/60')}>
+    <Card id={`organo-${organo}`} className={cn('scroll-mt-[17rem] sm:scroll-mt-40', vuoto && 'border-red-500/60')}>
       <CardHeader>
         <CardTitle className="flex flex-wrap items-center gap-2">
           <span className={cn(vuoto && 'text-red-600 dark:text-red-400')}>{def.nome}</span>

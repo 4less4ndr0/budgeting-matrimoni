@@ -6,11 +6,12 @@ import FundsTable from '@/components/costs/FundsTable';
 import LineItemsTable from '@/components/costs/LineItemsTable';
 import DashboardView from '@/components/dashboard/DashboardView';
 import ExportMenu from '@/components/export/ExportMenu';
+import GovernanceView from '@/components/governance/GovernanceView';
 import DipendentiView from '@/components/hr/DipendentiView';
-import GovernanceView from '@/components/hr/GovernanceView';
 import OrganigrammaView from '@/components/hr/OrganigrammaView';
 import ImportView from '@/components/import/ImportView';
 import SnapshotRestoreCard from '@/components/import/SnapshotRestoreCard';
+import SupplyChainView from '@/components/supplyChain/SupplyChainView';
 import ThemeToggle, { useTheme } from '@/components/theme/ThemeToggle';
 import { Toaster } from '@/components/ui/sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,9 +19,10 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { useAppStore } from '@/lib/storage/store';
 
 // Primo livello (aree dell'azienda) come controllo segmentato, così si distingue a colpo
-// d'occhio dai livelli sotto, che restano tab sottolineate. Niente sfumatura di scorrimento
-// (scroll-fade-x): le aree stanno sempre tutte nello schermo e coprirebbe lo sfondo.
-const AREA_LIST = 'h-auto w-full gap-1 rounded-lg border-b-0 bg-muted !bg-none p-1 sm:w-fit';
+// d'occhio dai livelli sotto, che restano tab sottolineate. Su telefono le quattro aree non
+// stanno in una riga: griglia 2×2, così restano tutte visibili senza scorrere. Niente
+// sfumatura di scorrimento (scroll-fade-x): coprirebbe lo sfondo.
+const AREA_LIST = 'grid h-auto w-full grid-cols-2 gap-1 rounded-lg border-b-0 bg-muted !bg-none p-1 sm:flex sm:w-fit';
 const AREA_TRIGGER =
   'flex-1 rounded-md border-b-0 px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:flex-none sm:py-1.5';
 
@@ -39,6 +41,7 @@ export default function App() {
       dipendenti: s.dipendenti,
       ruoli: s.ruoli,
       governance: s.governance,
+      supplyChain: s.supplyChain,
       schemaVersion: s.schemaVersion,
     })),
   );
@@ -54,9 +57,9 @@ export default function App() {
           <div className="mx-auto max-w-6xl px-safe pt-6">
             <header className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
               <div>
-                <h1 className="text-xl font-bold tracking-tight">Budgeting matrimoni.top</h1>
+                <h1 className="text-xl font-bold tracking-tight">Regia</h1>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Burn rate e proiezione break-even per il business matrimoni.top
+                  Il sistema unico di controllo d&apos;impresa: conti, persone, governance e filiera
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2 self-start">
@@ -72,6 +75,12 @@ export default function App() {
               </TabsTrigger>
               <TabsTrigger value="hr" className={AREA_TRIGGER}>
                 HR
+              </TabsTrigger>
+              <TabsTrigger value="governance" className={AREA_TRIGGER}>
+                Governance
+              </TabsTrigger>
+              <TabsTrigger value="supply-chain" className={AREA_TRIGGER}>
+                Supply Chain
               </TabsTrigger>
             </TabsList>
           </div>
@@ -126,7 +135,6 @@ export default function App() {
               <TabsList>
                 <TabsTrigger value="dipendenti">Dipendenti</TabsTrigger>
                 <TabsTrigger value="organigramma">Organigramma</TabsTrigger>
-                <TabsTrigger value="governance">Governance</TabsTrigger>
               </TabsList>
               <TabsContent value="dipendenti">
                 <DipendentiView />
@@ -134,10 +142,15 @@ export default function App() {
               <TabsContent value="organigramma">
                 <OrganigrammaView />
               </TabsContent>
-              <TabsContent value="governance">
-                <GovernanceView />
-              </TabsContent>
             </Tabs>
+          </TabsContent>
+
+          <TabsContent value="governance">
+            <GovernanceView />
+          </TabsContent>
+
+          <TabsContent value="supply-chain">
+            <SupplyChainView />
           </TabsContent>
         </div>
       </Tabs>

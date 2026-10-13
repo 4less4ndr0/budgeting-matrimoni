@@ -2,11 +2,15 @@
 
 **Live: https://4less4ndr0.github.io/budgeting-matrimoni/**
 
+L'app si chiama **Regia**: il sistema unico di controllo d'impresa (nato come dashboard
+finanziaria per matrimoni.top). In alto quattro aree: **Gestione economica**, **HR**,
+**Governance** e **Supply Chain**.
+
 Lo storico delle modifiche sono le
 [Release](https://github.com/4less4ndr0/budgeting-matrimoni/releases) della repo (stessa
 lista è visibile anche nell'app, dal bottone "Changelog" accanto a "Esporta").
 
-Dashboard finanziaria per **matrimoni.top**: importa i tuoi costi (CSV/Excel), tienili
+Nella **Gestione economica** importi i tuoi costi (CSV/Excel), tienili
 aggiornati in una dashboard interattiva e capisci il **burn rate**, l'**utile netto** e se
 raggiungerai il **break-even** entro la data che ti sei dato (default: 6 mesi da oggi).
 
@@ -41,17 +45,21 @@ nella dashboard.
     email, telefono e note, più il riquadro dei **compleanni dei prossimi 30 giorni**;
   - *Organigramma*: i ruoli, ognuno con "Riporta a", generano da soli il grafico della
     struttura aziendale, con i dipendenti sotto il proprio ruolo; le posizioni vacanti sono
-    in rosso;
-  - *Governance*: scegli il modello della società tra **dualistico orizzontale**
-    (tradizionale: CdA + collegio sindacale), **dualistico verticale** (consiglio di
-    sorveglianza → consiglio di gestione) e **monistico** (CdA con comitato per il controllo
-    interno). Per ogni organo assegni dipendenti o persone esterne con la loro carica; il
-    grafico mostra chi siede dove, la tabella "Chi fa cosa" lo stesso per persona, e gli
-    avvisi segnalano le principali incompatibilità e composizioni minime del codice civile
-    (sono avvisi, non blocchi: l'ultima parola resta al commercialista).
+    in rosso.
+- **Governance**: scegli il modello della società tra **dualistico orizzontale**
+  (tradizionale: CdA + collegio sindacale), **dualistico verticale** (consiglio di
+  sorveglianza → consiglio di gestione) e **monistico** (CdA con comitato per il controllo
+  interno). Per ogni organo assegni dipendenti o persone esterne con la loro carica; il
+  grafico mostra chi siede dove, la tabella "Chi fa cosa" lo stesso per persona, e gli
+  avvisi segnalano le principali incompatibilità e composizioni minime del codice civile
+  (sono avvisi, non blocchi: l'ultima parola resta al commercialista).
+- **Supply Chain**, per prodotto: la catena del valore di Porter (4 attività di supporto
+  + 5 primarie, con il margine) dove per ogni attività indichi chi la presidia — interni
+  (anche collegati all'anagrafica HR), fornitori, partner, distributori, consulenti — più
+  la mappa degli attori con tutte le attività che ciascuno copre.
 
-  ⚠️ Lo snapshot JSON include anche i dati dei dipendenti: la repo è pubblica, quindi
-  committare `stato-sito.json` li rende leggibili a chiunque.
+  ⚠️ Lo snapshot JSON include anche i dati di dipendenti, organi sociali e filiera: la
+  repo è pubblica, quindi committare `stato-sito.json` li rende leggibili a chiunque.
 
 ## Stack UI
 
