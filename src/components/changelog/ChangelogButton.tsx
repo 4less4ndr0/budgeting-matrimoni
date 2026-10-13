@@ -37,9 +37,10 @@ export default function ChangelogButton() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="secondary">
+        {/* Solo icona su telefono: accanto a "Importa / Esporta" e al tema non ci starebbe in una riga. */}
+        <Button variant="secondary" aria-label="Changelog">
           <Info />
-          Changelog
+          <span className="hidden sm:inline">Changelog</span>
         </Button>
       </DialogTrigger>
       <DialogContent>

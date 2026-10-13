@@ -1,4 +1,4 @@
-import type { StateSnapshot } from '@/lib/export/exportSnapshot';
+import { parseSnapshotJson, type StateSnapshot } from '@/lib/export/exportSnapshot';
 
 /**
  * Auto-discovers CSV/JSON files committed in `csv-imports/` at the repo root.
@@ -49,26 +49,8 @@ export function listRepoSnapshots(): RepoSnapshotFile[] {
   const found: RepoSnapshotFile[] = [];
   for (const [path, content] of Object.entries(jsonModules)) {
     const name = path.split('/').pop() ?? path;
-    const parsed = parseSnapshot(content);
+    const parsed = parseSnapshotJson(content);
     if (parsed) found.push({ name, snapshot: parsed });
   }
   return found.sort((a, b) => a.name.localeCompare(b.name, 'it'));
-}
-
-function parseSnapshot(content: string): StateSnapshot | null {
-  try {
-    const data: unknown = JSON.parse(content);
-    if (
-      typeof data !== 'object' ||
-      data === null ||
-      !Array.isArray((data as Partial<StateSnapshot>).lineItems) ||
-      !Array.isArray((data as Partial<StateSnapshot>).fundEntries) ||
-      typeof (data as Partial<StateSnapshot>).revenueAssumptions !== 'object'
-    ) {
-      return null;
-    }
-    return data as StateSnapshot;
-  } catch {
-    return null;
-  }
 }

@@ -20,14 +20,9 @@ export interface StateSnapshot {
   savedAt: string;
 }
 
-/**
- * Downloads the full app state (costi, fondi, assunzioni ricavi — override inclusi) as JSON.
- * Pensato per essere spostato manualmente in csv-imports/: non è un CSV di movimenti, ma
- * uno snapshot "cosa vedevo io in quel momento" da poter ricaricare in un click, anche da
- * un altro dispositivo (il browser non può scrivere da solo nel repo).
- */
-export function exportStateSnapshot(state: AppState): void {
-  const snapshot: StateSnapshot = {
+/** Everything needed to restore the app exactly — all four areas, override included. */
+export function buildSnapshot(state: AppState, savedAt: string = new Date().toISOString()): StateSnapshot {
+  return {
     lineItems: state.lineItems,
     fundEntries: state.fundEntries,
     budgetItems: state.budgetItems,
@@ -41,8 +36,39 @@ export function exportStateSnapshot(state: AppState): void {
     governance: state.governance,
     supplyChain: state.supplyChain,
     schemaVersion: state.schemaVersion,
-    savedAt: new Date().toISOString(),
+    savedAt,
   };
+}
+
+/**
+ * Parses a snapshot from JSON text; null if it isn't one. Only the fields every snapshot
+ * ever had are required — anything newer is optional and backfilled by loadSnapshot.
+ */
+export function parseSnapshotJson(content: string): StateSnapshot | null {
+  try {
+    const data: unknown = JSON.parse(content);
+    if (
+      typeof data !== 'object' ||
+      data === null ||
+      !Array.isArray((data as Partial<StateSnapshot>).lineItems) ||
+      !Array.isArray((data as Partial<StateSnapshot>).fundEntries) ||
+      typeof (data as Partial<StateSnapshot>).revenueAssumptions !== 'object'
+    ) {
+      return null;
+    }
+    return data as StateSnapshot;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Downloads the whole Regia as JSON. Pensato anche per essere spostato manualmente in
+ * csv-imports/ come stato-sito.json: il sito lo rileva e lo ricarica in un click, anche da
+ * un altro dispositivo (il browser non può scrivere da solo nel repo).
+ */
+export function exportStateSnapshot(state: AppState): void {
+  const snapshot = buildSnapshot(state);
   const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
