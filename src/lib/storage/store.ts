@@ -8,8 +8,10 @@ import type {
   AttoreFiliera,
   BudgetItem,
   Dipendente,
+  DimensioneImpresa,
   FundEntry,
   Governance,
+  ImpresaLegata,
   LineItem,
   MembroOrgano,
   ModelloGovernance,
@@ -21,7 +23,7 @@ import type {
 } from '../../types/domain';
 import { fullName, wouldCreateCycle } from '../hr/hr';
 
-const SCHEMA_VERSION = 6;
+const SCHEMA_VERSION = 7;
 
 /**
  * Backfills fields added after data may already have been saved (persisted localStorage,
@@ -62,6 +64,14 @@ function defaultSupplyChain(): SupplyChain {
 
 function withSupplyChainDefaults(supplyChain: Partial<SupplyChain> | undefined): SupplyChain {
   return { ...defaultSupplyChain(), ...supplyChain };
+}
+
+function defaultDimensioneImpresa(): DimensioneImpresa {
+  return { esercizio: '', ulaManuale: null, fatturato: null, totaleBilancio: null, imprese: [] };
+}
+
+function withDimensioneDefaults(d: Partial<DimensioneImpresa> | undefined): DimensioneImpresa {
+  return { ...defaultDimensioneImpresa(), ...d };
 }
 
 /** Backfills `bloccato` on voci saved before the lock feature existed. */
@@ -165,6 +175,11 @@ export interface AppStore extends AppState {
   updateAttore: (id: string, patch: Partial<Omit<AttoreFiliera, 'id'>>) => void;
   removeAttore: (id: string) => void;
 
+  updateDimensioneImpresa: (patch: Partial<Omit<DimensioneImpresa, 'imprese'>>) => void;
+  addImpresaLegata: () => void;
+  updateImpresaLegata: (id: string, patch: Partial<Omit<ImpresaLegata, 'id'>>) => void;
+  removeImpresaLegata: (id: string) => void;
+
   updateRevenueAssumptions: (patch: Partial<RevenueAssumptions>) => void;
   updateRunwayAssumptions: (patch: Partial<RunwayAssumptions>) => void;
   loadSnapshot: (
@@ -180,6 +195,7 @@ export interface AppStore extends AppState {
       ruoli?: AppState['ruoli'];
       governance?: Partial<AppState['governance']>;
       supplyChain?: Partial<AppState['supplyChain']>;
+      dimensioneImpresa?: Partial<AppState['dimensioneImpresa']>;
     },
   ) => void;
   resetAll: () => void;
@@ -200,6 +216,7 @@ export const useAppStore = create<AppStore>()(
       ruoli: [],
       governance: defaultGovernance(),
       supplyChain: defaultSupplyChain(),
+      dimensioneImpresa: defaultDimensioneImpresa(),
       schemaVersion: SCHEMA_VERSION,
 
       addLineItem: (item) =>
@@ -460,6 +477,45 @@ export const useAppStore = create<AppStore>()(
           supplyChain: { ...state.supplyChain, attori: state.supplyChain.attori.filter((a) => a.id !== id) },
         })),
 
+      updateDimensioneImpresa: (patch) =>
+        set((state) => ({ dimensioneImpresa: { ...state.dimensioneImpresa, ...patch } })),
+
+      addImpresaLegata: () =>
+        set((state) => ({
+          dimensioneImpresa: {
+            ...state.dimensioneImpresa,
+            imprese: [
+              ...state.dimensioneImpresa.imprese,
+              {
+                id: nanoid(),
+                nome: '',
+                quota: 0,
+                controlloCda: false,
+                investitoreEsente: false,
+                ula: null,
+                fatturato: null,
+                totaleBilancio: null,
+              },
+            ],
+          },
+        })),
+
+      updateImpresaLegata: (id, patch) =>
+        set((state) => ({
+          dimensioneImpresa: {
+            ...state.dimensioneImpresa,
+            imprese: state.dimensioneImpresa.imprese.map((i) => (i.id === id ? { ...i, ...patch } : i)),
+          },
+        })),
+
+      removeImpresaLegata: (id) =>
+        set((state) => ({
+          dimensioneImpresa: {
+            ...state.dimensioneImpresa,
+            imprese: state.dimensioneImpresa.imprese.filter((i) => i.id !== id),
+          },
+        })),
+
       updateRevenueAssumptions: (patch) =>
         set((state) => ({ revenueAssumptions: { ...state.revenueAssumptions, ...patch } })),
 
@@ -484,6 +540,7 @@ export const useAppStore = create<AppStore>()(
           ruoli: snapshot.ruoli ?? [],
           governance: withGovernanceDefaults(snapshot.governance),
           supplyChain: withSupplyChainDefaults(snapshot.supplyChain),
+          dimensioneImpresa: withDimensioneDefaults(snapshot.dimensioneImpresa),
           schemaVersion: SCHEMA_VERSION,
         });
       },
@@ -502,6 +559,7 @@ export const useAppStore = create<AppStore>()(
           ruoli: [],
           governance: defaultGovernance(),
           supplyChain: defaultSupplyChain(),
+          dimensioneImpresa: defaultDimensioneImpresa(),
           schemaVersion: SCHEMA_VERSION,
         }),
     }),
@@ -522,6 +580,7 @@ export const useAppStore = create<AppStore>()(
           ruoli: state.ruoli ?? [],
           governance: withGovernanceDefaults(state.governance),
           supplyChain: withSupplyChainDefaults(state.supplyChain),
+          dimensioneImpresa: withDimensioneDefaults(state.dimensioneImpresa),
         };
       },
     },

@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { ArrowDownUp, FileJson, FileSpreadsheet, FileUp, Table2 } from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
+import { ArrowDownUp, FileJson, FileSpreadsheet, FileUp, FolderGit2, Table2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -20,9 +20,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import ImportView from '@/components/import/ImportView';
 import { exportStateSnapshot, type StateSnapshot } from '@/lib/export/exportSnapshot';
 import { exportWorkbook } from '@/lib/export/exportWorkbook';
 import { readRegiaFile } from '@/lib/import/readRegiaFile';
+import { listRepoSnapshots } from '@/lib/import/repoImports';
 import { useAppStore } from '@/lib/storage/store';
 import type { AppState } from '@/types/domain';
 
@@ -56,19 +59,16 @@ function riepilogo(s: StateSnapshot): string {
 
 /**
  * One place for moving the whole Regia in and out: export to Excel (readable, and re-importable
- * thanks to its hidden data sheet) or JSON, restore from either, plus a shortcut to the
- * movimenti import wizard that lives under Gestione economica.
+ * thanks to its hidden data sheet) or JSON; restore from a file or from a snapshot committed in
+ * csv-imports/; and the movimenti (CSV/Excel) import wizard, opened in a dialog.
  */
-export default function ImportExportMenu({
-  state,
-  onImportaMovimenti,
-}: {
-  state: AppState;
-  onImportaMovimenti: () => void;
-}) {
+export default function ImportExportMenu({ state }: { state: AppState }) {
   const loadSnapshot = useAppStore((s) => s.loadSnapshot);
   const fileRef = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<{ nome: string; snapshot: StateSnapshot } | null>(null);
+  const [movimentiAperto, setMovimentiAperto] = useState(false);
+  // Snapshots committed in csv-imports/ (read at build time, so this never changes at runtime).
+  const salvatiNelRepo = useMemo(() => listRepoSnapshots(), []);
 
   async function onFile(file: File | undefined) {
     if (!file) return;
@@ -135,7 +135,20 @@ export default function ImportExportMenu({
               dettaglio="Un .xlsx o .json esportato da qui: sostituisce tutti i dati di questo dispositivo."
             />
           </DropdownMenuItem>
-          <DropdownMenuItem className="items-start" onSelect={onImportaMovimenti}>
+          {salvatiNelRepo.map(({ name, snapshot }) => (
+            <DropdownMenuItem
+              key={name}
+              className="items-start"
+              onSelect={() => setPending({ nome: `csv-imports/${name}`, snapshot })}
+            >
+              <FolderGit2 className="mt-0.5" />
+              <MenuVoce
+                titolo={`Ripristina ${name}`}
+                dettaglio={`Salvato nella cartella csv-imports/ il ${quandoSalvato(snapshot.savedAt)}.`}
+              />
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuItem className="items-start" onSelect={() => setMovimentiAperto(true)}>
             <Table2 className="mt-0.5" />
             <MenuVoce
               titolo="Importa movimenti da CSV/Excel"
@@ -156,6 +169,20 @@ export default function ImportExportMenu({
           e.target.value = '';
         }}
       />
+
+      <Dialog open={movimentiAperto} onOpenChange={setMovimentiAperto}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Importa movimenti</DialogTitle>
+            <DialogDescription>
+              Costi ed entrate da un CSV o Excel (estratti conto e simili): finiscono in Gestione economica.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="-mx-1 min-h-0 overflow-y-auto px-1">
+            <ImportView bare />
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={pending !== null} onOpenChange={(open) => !open && setPending(null)}>
         <AlertDialogContent>

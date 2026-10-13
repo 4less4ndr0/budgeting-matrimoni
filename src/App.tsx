@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import AssumptionsView from '@/components/assumptions/AssumptionsView';
 import BudgetView from '@/components/budget/BudgetView';
@@ -6,12 +5,11 @@ import ChangelogButton from '@/components/changelog/ChangelogButton';
 import FundsTable from '@/components/costs/FundsTable';
 import LineItemsTable from '@/components/costs/LineItemsTable';
 import DashboardView from '@/components/dashboard/DashboardView';
+import DimensioneImpresaView from '@/components/dimensione/DimensioneImpresaView';
 import ImportExportMenu from '@/components/export/ImportExportMenu';
 import GovernanceView from '@/components/governance/GovernanceView';
 import DipendentiView from '@/components/hr/DipendentiView';
 import OrganigrammaView from '@/components/hr/OrganigrammaView';
-import ImportView from '@/components/import/ImportView';
-import SnapshotRestoreCard from '@/components/import/SnapshotRestoreCard';
 import SupplyChainView from '@/components/supplyChain/SupplyChainView';
 import ThemeToggle, { useTheme } from '@/components/theme/ThemeToggle';
 import { Toaster } from '@/components/ui/sonner';
@@ -29,18 +27,6 @@ const AREA_TRIGGER =
 
 export default function App() {
   const { theme, toggleTheme } = useTheme();
-  // Controlled (not defaultValue) so the header menu can jump straight to
-  // Gestione economica › BEP › Importa.
-  const [area, setArea] = useState('economica');
-  const [economica, setEconomica] = useState('bep');
-  const [bep, setBep] = useState('dashboard');
-
-  function vaiAImportaMovimenti() {
-    setArea('economica');
-    setEconomica('bep');
-    setBep('importa');
-    window.scrollTo({ top: 0 });
-  }
   const state = useAppStore(
     useShallow((s) => ({
       lineItems: s.lineItems,
@@ -55,6 +41,7 @@ export default function App() {
       ruoli: s.ruoli,
       governance: s.governance,
       supplyChain: s.supplyChain,
+      dimensioneImpresa: s.dimensioneImpresa,
       schemaVersion: s.schemaVersion,
     })),
   );
@@ -62,7 +49,7 @@ export default function App() {
   return (
     // Un solo provider per tutti i tooltip dell'app (richiesto da Radix).
     <TooltipProvider delayDuration={200}>
-      <Tabs value={area} onValueChange={setArea}>
+      <Tabs defaultValue="economica">
         {/* Title + top-level tabs pinned to the top of the viewport: they no longer scroll
             away with the page, so there's nothing left to look like it's "moving" while
             scrolling. */}
@@ -76,7 +63,7 @@ export default function App() {
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2 self-start">
-                <ImportExportMenu state={state} onImportaMovimenti={vaiAImportaMovimenti} />
+                <ImportExportMenu state={state} />
                 <ChangelogButton />
                 <ThemeToggle theme={theme} onToggle={toggleTheme} />
               </div>
@@ -101,20 +88,20 @@ export default function App() {
 
         <div className="mx-auto max-w-6xl px-safe pb-safe pt-1">
           <TabsContent value="economica">
-            <Tabs value={economica} onValueChange={setEconomica}>
+            <Tabs defaultValue="bep">
               <TabsList>
                 <TabsTrigger value="bep">BEP</TabsTrigger>
                 <TabsTrigger value="budget">Budget</TabsTrigger>
+                <TabsTrigger value="dimensione">Dimensione d&apos;impresa</TabsTrigger>
               </TabsList>
 
               <TabsContent value="bep">
                 {/* Own sub-navigation, only visible while BEP is the active tab. */}
-                <Tabs value={bep} onValueChange={setBep}>
+                <Tabs defaultValue="dashboard">
                   <TabsList>
                     <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                     <TabsTrigger value="costi">Costi & Fondi</TabsTrigger>
                     <TabsTrigger value="assunzioni">Assunzioni ricavi</TabsTrigger>
-                    <TabsTrigger value="importa">Importa</TabsTrigger>
                   </TabsList>
 
                   <div className="pt-4">
@@ -128,10 +115,6 @@ export default function App() {
                     <TabsContent value="assunzioni">
                       <AssumptionsView />
                     </TabsContent>
-                    <TabsContent value="importa" className="space-y-4">
-                      <SnapshotRestoreCard />
-                      <ImportView />
-                    </TabsContent>
                   </div>
                 </Tabs>
               </TabsContent>
@@ -139,6 +122,10 @@ export default function App() {
               {/* Budget stands on its own: no sub-tabs, nothing from BEP shows through. */}
               <TabsContent value="budget">
                 <BudgetView />
+              </TabsContent>
+
+              <TabsContent value="dimensione">
+                <DimensioneImpresaView />
               </TabsContent>
             </Tabs>
           </TabsContent>

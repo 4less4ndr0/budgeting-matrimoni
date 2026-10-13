@@ -212,6 +212,30 @@ export interface SupplyChain {
   attori: AttoreFiliera[];
 }
 
+/**
+ * Un'impresa che detiene quote della nostra o in cui la nostra detiene quote: ai fini della
+ * dimensione d'impresa (Raccomandazione 2003/361/CE) i suoi dati si sommano pro quota
+ * (associata) o al 100% (collegata).
+ */
+export interface ImpresaLegata {
+  id: string;
+  nome: string;
+  quota: number; // % di partecipazione (capitale o diritti di voto), la più alta tra le due direzioni
+  controlloCda: boolean; // diritto di nominare/revocare la maggioranza del CdA → collegata anche sotto il 50%
+  investitoreEsente: boolean; // venture capital, università, investitori istituzionali… → resta autonoma fino al 50%
+  ula: number | null;
+  fatturato: number | null;
+  totaleBilancio: number | null;
+}
+
+export interface DimensioneImpresa {
+  esercizio: string; // es. "2025": ultimo esercizio contabile chiuso
+  ulaManuale: number | null; // null = numero di dipendenti dell'anagrafica HR
+  fatturato: number | null; // voce A.1 del Conto Economico
+  totaleBilancio: number | null; // totale attivo dello Stato Patrimoniale
+  imprese: ImpresaLegata[];
+}
+
 export interface AppState {
   lineItems: LineItem[];
   fundEntries: FundEntry[];
@@ -228,5 +252,6 @@ export interface AppState {
   ruoli: Ruolo[];
   governance: Governance;
   supplyChain: SupplyChain;
+  dimensioneImpresa: DimensioneImpresa;
   schemaVersion: number;
 }

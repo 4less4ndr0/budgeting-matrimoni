@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import type { AppState, MonthlyProjection } from '../../types/domain';
 import { buildProjection } from '../calculations/projection';
 import { buildSnapshot, type StateSnapshot } from './exportSnapshot';
+import { NOME_CLASSE, classifica, relazione, totaliConLegate } from '../dimensione/dimensione';
 import { attivitaDef, nomeAttore, tipoLabel } from '../supplyChain/porter';
 import { ORGANI, modelloDef, nomeMembro, organiDelModello } from '../governance/modelli';
 
@@ -174,6 +175,20 @@ export function buildWorkbook(state: AppState, savedAt: string = new Date().toIS
       })),
     );
   }
+
+  const dim = state.dimensioneImpresa;
+  const propri = { ula: dim.ulaManuale ?? state.dipendenti.length, fatturato: dim.fatturato, totaleBilancio: dim.totaleBilancio };
+  const totali = totaliConLegate(propri, dim.imprese);
+  const classe = classifica(totali).classe;
+  add('Dimensione impresa', [
+    { impresa: 'La mia impresa', relazione: '', quota: '', peso: '100%', ula: propri.ula, fatturato: propri.fatturato ?? '', totale_bilancio: propri.totaleBilancio ?? '' },
+    ...dim.imprese.map((i) => {
+      const r = relazione(i);
+      return { impresa: i.nome, relazione: r.tipo, quota: `${i.quota}%`, peso: `${Math.round(r.peso * 10000) / 100}%`, ula: i.ula ?? '', fatturato: i.fatturato ?? '', totale_bilancio: i.totaleBilancio ?? '' };
+    }),
+    { impresa: 'TOTALE', relazione: '', quota: '', peso: '', ula: totali.ula ?? '', fatturato: totali.fatturato ?? '', totale_bilancio: totali.totaleBilancio ?? '' },
+    { impresa: 'Dimensione', relazione: classe ? NOME_CLASSE[classe] : '(dati insufficienti)', quota: '', peso: '', ula: '', fatturato: '', totale_bilancio: '' },
+  ]);
 
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(snapshotToRows(snapshot)), DATA_SHEET);
   // Hidden (1), not "very hidden" (2): still recoverable from Excel's "Scopri foglio".
