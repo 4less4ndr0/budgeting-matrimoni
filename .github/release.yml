@@ -21,6 +21,8 @@ changelog:
       labels: [hr]
     - title: Supply Chain
       labels: [supply-chain]
+    - title: Finanza agevolata
+      labels: [finanza-agevolata]
     - title: Fix tecnici
       labels: [fix-tecnici]
     - title: Documentazione & processo

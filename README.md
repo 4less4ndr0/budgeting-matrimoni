@@ -44,7 +44,15 @@ nella dashboard.
     `csv-imports/` come `stato-sito.json` il sito la propone da ricaricare in un click;
   - *Ripristina da file Regia* (.xlsx o .json): mostra cosa contiene, chiede conferma e
     offre di scaricare prima un backup dello stato attuale;
-  - *Importa movimenti da CSV/Excel*: porta al wizard di import dei costi/entrate.
+  - *Ripristina stato-sito.json*: compare se in `csv-imports/` c'è uno snapshot;
+  - *Importa movimenti da CSV/Excel*: apre il wizard di import dei costi/entrate (non c'è
+    più una tab "Importa" nel BEP).
+- **Dimensione d'impresa** (in Gestione economica, accanto a BEP e Budget): calcolatore
+  micro / piccola / media / grande secondo la Raccomandazione 2003/361/CE (DM 18/04/2005).
+  ULA dall'anagrafica HR (correggibili a mano), fatturato (voce A.1 del CE) e totale di
+  bilancio (totale attivo SP) inseriti a mano — in futuro letti dal bilancio in PDF — più le
+  imprese associate (25–50%, pro quota) e collegate (> 50% o controllo del CdA, al 100%),
+  con formula, totali e verifica soglia per soglia.
 - **HR** (area separata da "Gestione economica", che raccoglie BEP e Budget):
   - *Dipendenti*: anagrafica con nome, cognome, ruolo, data di nascita, data di assunzione,
     email, telefono e note, più il riquadro dei **compleanni dei prossimi 30 giorni**;

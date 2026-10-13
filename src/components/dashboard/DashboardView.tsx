@@ -124,6 +124,7 @@ export default function DashboardView() {
       ruoli: s.ruoli,
       governance: s.governance,
       supplyChain: s.supplyChain,
+      dimensioneImpresa: s.dimensioneImpresa,
       schemaVersion: s.schemaVersion,
     })),
   );

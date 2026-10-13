@@ -56,6 +56,24 @@ describe('loadSnapshot', () => {
           { id: 'a1', prodottoId: 'p1', attivita: 'operations', tipo: 'interno', dipendenteId: 'd1', nome: '', note: '' },
         ],
       },
+      dimensioneImpresa: {
+        esercizio: '2025',
+        ulaManuale: null,
+        fatturato: 1_232_712,
+        totaleBilancio: 1_915_055,
+        imprese: [
+          {
+            id: 'i1',
+            nome: 'B',
+            quota: 25,
+            controlloCda: false,
+            investitoreEsente: false,
+            ula: 12,
+            fatturato: 220_683,
+            totaleBilancio: 2_380_918,
+          },
+        ],
+      },
       schemaVersion: 1,
       savedAt: '2026-09-02T12:00:00.000Z',
     };
@@ -73,6 +91,7 @@ describe('loadSnapshot', () => {
     expect(state.ruoli).toEqual(snapshot.ruoli);
     expect(state.governance).toEqual(snapshot.governance);
     expect(state.supplyChain).toEqual(snapshot.supplyChain);
+    expect(state.dimensioneImpresa).toEqual(snapshot.dimensioneImpresa);
     // The whole point: an override deliberately left at 0 must survive as 0, not be
     // dropped/coerced to null ("automatico") by the round-trip.
     expect(state.revenueAssumptions.costRunRateOverride).toBe(0);
@@ -104,6 +123,7 @@ describe('loadSnapshot', () => {
     expect(useAppStore.getState().ruoli).toEqual([]);
     expect(useAppStore.getState().governance).toEqual({ modello: null, membri: [] });
     expect(useAppStore.getState().supplyChain).toEqual({ prodotti: [], attori: [] });
+    expect(useAppStore.getState().dimensioneImpresa).toMatchObject({ ulaManuale: null, fatturato: null, imprese: [] });
   });
 
   it('backfills bloccato:false on voci saved before the lock feature existed', () => {

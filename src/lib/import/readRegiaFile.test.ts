@@ -36,6 +36,7 @@ function stato(): AppState {
         note: 'x'.repeat(100),
       })),
     },
+    dimensioneImpresa: { esercizio: '2025', ulaManuale: 3.5, fatturato: 120000, totaleBilancio: null, imprese: [] },
     schemaVersion: 6,
   };
 }

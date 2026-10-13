@@ -55,6 +55,7 @@ describe('buildProjection', () => {
       ruoli: [],
       governance: { modello: null, membri: [] },
       supplyChain: { prodotti: [], attori: [] },
+      dimensioneImpresa: { esercizio: '', ulaManuale: null, fatturato: null, totaleBilancio: null, imprese: [] },
       schemaVersion: 1,
     };
 
@@ -83,6 +84,7 @@ describe('buildProjection', () => {
       ruoli: [],
       governance: { modello: null, membri: [] },
       supplyChain: { prodotti: [], attori: [] },
+      dimensioneImpresa: { esercizio: '', ulaManuale: null, fatturato: null, totaleBilancio: null, imprese: [] },
       schemaVersion: 1,
     };
 
@@ -112,6 +114,7 @@ describe('buildProjection', () => {
       ruoli: [],
       governance: { modello: null, membri: [] },
       supplyChain: { prodotti: [], attori: [] },
+      dimensioneImpresa: { esercizio: '', ulaManuale: null, fatturato: null, totaleBilancio: null, imprese: [] },
       schemaVersion: 1,
     };
 
@@ -150,6 +153,7 @@ describe('buildProjection', () => {
       ruoli: [],
       governance: { modello: null, membri: [] },
       supplyChain: { prodotti: [], attori: [] },
+      dimensioneImpresa: { esercizio: '', ulaManuale: null, fatturato: null, totaleBilancio: null, imprese: [] },
       schemaVersion: 1,
     };
 
@@ -184,6 +188,7 @@ describe('buildProjection', () => {
       ruoli: [],
       governance: { modello: null, membri: [] },
       supplyChain: { prodotti: [], attori: [] },
+      dimensioneImpresa: { esercizio: '', ulaManuale: null, fatturato: null, totaleBilancio: null, imprese: [] },
       schemaVersion: 1,
     };
 
@@ -209,6 +214,7 @@ describe('buildProjection', () => {
       ruoli: [],
       governance: { modello: null, membri: [] },
       supplyChain: { prodotti: [], attori: [] },
+      dimensioneImpresa: { esercizio: '', ulaManuale: null, fatturato: null, totaleBilancio: null, imprese: [] },
       schemaVersion: 1,
     };
 

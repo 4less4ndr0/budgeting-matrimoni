@@ -16,6 +16,7 @@ export interface StateSnapshot {
   ruoli: AppState['ruoli'];
   governance: AppState['governance'];
   supplyChain: AppState['supplyChain'];
+  dimensioneImpresa: AppState['dimensioneImpresa'];
   schemaVersion: number;
   savedAt: string;
 }
@@ -35,6 +36,7 @@ export function buildSnapshot(state: AppState, savedAt: string = new Date().toIS
     ruoli: state.ruoli,
     governance: state.governance,
     supplyChain: state.supplyChain,
+    dimensioneImpresa: state.dimensioneImpresa,
     schemaVersion: state.schemaVersion,
     savedAt,
   };
