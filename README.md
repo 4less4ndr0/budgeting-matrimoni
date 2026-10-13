@@ -35,11 +35,16 @@ nella dashboard.
   netto mensile e cumulato** (conto economico puro, senza contare i fondi), stato rispetto
   al target di break-even (in anticipo / in linea / in ritardo / a rischio), grafici e
   tabella mensile
-- **Export** in due formati dal menu "Esporta": Excel (dati + proiezioni, riaggiornabile e
-  riapribile su Google Sheets) oppure **snapshot completo in JSON** (costi, fondi,
-  assunzioni ricavi, override inclusi) per portare l'identica situazione su un altro
-  dispositivo — la tab "Importa" lo rileva e lo ricarica con un click se lo metti in
-  `csv-imports/` come `stato-sito.json`
+- **Importa / Esporta** (menu in alto, vale per tutta la Regia):
+  - *Esporta in Excel* (consigliato): un foglio per area, leggibile in Excel/Google Sheets,
+    più un foglio nascosto `_regia` con i dati completi — lo stesso `.xlsx` si può
+    **reimportare** con "Ripristina da file" e torna identico (le modifiche fatte a mano
+    negli altri fogli non vengono lette);
+  - *Esporta in JSON*: la stessa copia completa in formato tecnico; messa in
+    `csv-imports/` come `stato-sito.json` il sito la propone da ricaricare in un click;
+  - *Ripristina da file Regia* (.xlsx o .json): mostra cosa contiene, chiede conferma e
+    offre di scaricare prima un backup dello stato attuale;
+  - *Importa movimenti da CSV/Excel*: porta al wizard di import dei costi/entrate.
 - **HR** (area separata da "Gestione economica", che raccoglie BEP e Budget):
   - *Dipendenti*: anagrafica con nome, cognome, ruolo, data di nascita, data di assunzione,
     email, telefono e note, più il riquadro dei **compleanni dei prossimi 30 giorni**;

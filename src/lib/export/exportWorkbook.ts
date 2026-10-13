@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
 import type { AppState, MonthlyProjection } from '../../types/domain';
 import { buildProjection } from '../calculations/projection';
+import { buildSnapshot, type StateSnapshot } from './exportSnapshot';
 import { attivitaDef, nomeAttore, tipoLabel } from '../supplyChain/porter';
 import { ORGANI, modelloDef, nomeMembro, organiDelModello } from '../governance/modelli';
 
@@ -47,113 +48,140 @@ function flattenAssumptions(state: AppState) {
   ];
 }
 
-export function exportWorkbook(state: AppState): void {
+/**
+ * Hidden sheet holding the exact snapshot as JSON, so the same .xlsx can be re-imported into
+ * Regia with nothing lost (ids, links between dipendenti/ruoli/organi, override…). The visible
+ * sheets are only a readable view: edits made there are not read back.
+ */
+export const DATA_SHEET = '_regia';
+// Excel caps a cell at 32,767 characters: the JSON is split across rows of column A.
+const CHUNK = 30_000;
+
+function snapshotToRows(snapshot: StateSnapshot): string[][] {
+  const json = JSON.stringify(snapshot);
+  const rows: string[][] = [];
+  for (let i = 0; i < json.length; i += CHUNK) rows.push([json.slice(i, i + CHUNK)]);
+  return rows;
+}
+
+/** Reads the snapshot back from a workbook exported by Regia; null if it isn't one. */
+export function snapshotJsonFromWorkbook(wb: XLSX.WorkBook): string | null {
+  const sheet = wb.Sheets[DATA_SHEET];
+  if (!sheet) return null;
+  const rows = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1, raw: true, defval: '' });
+  return rows.map((r) => String(r[0] ?? '')).join('');
+}
+
+export function buildWorkbook(state: AppState, savedAt: string = new Date().toISOString()): XLSX.WorkBook {
   const projections: MonthlyProjection[] = buildProjection(state);
-
+  const snapshot = buildSnapshot(state, savedAt);
   const wb = XLSX.utils.book_new();
-
-  XLSX.utils.book_append_sheet(
-    wb,
-    XLSX.utils.json_to_sheet(
-      state.lineItems.map(({ date, category, description, amount, type, recurring }) => ({
-        date,
-        category,
-        description,
-        amount,
-        type,
-        recurring,
-      })),
-    ),
-    'Line Items',
-  );
-
-  XLSX.utils.book_append_sheet(
-    wb,
-    XLSX.utils.json_to_sheet(
-      state.fundEntries.map(({ date, category, amount, description }) => ({ date, category, amount, description })),
-    ),
-    'Fund Entries',
-  );
-
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(flattenAssumptions(state)), 'Assumptions');
-
-  XLSX.utils.book_append_sheet(
-    wb,
-    XLSX.utils.json_to_sheet([
-      { voce: 'Budget totale previsto', importo: state.budgetTotale, bloccato: '' },
-      ...state.budgetItems.map(({ nome, importo, bloccato }) => ({ voce: nome, importo, bloccato: bloccato ? 'sì' : '' })),
-    ]),
-    'Budget',
-  );
-
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(projections), 'Monthly Projections');
+  const add = (name: string, rows: object[]) => XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), name);
 
   const ruoloById = new Map(state.ruoli.map((r) => [r.id, r]));
-  XLSX.utils.book_append_sheet(
-    wb,
-    XLSX.utils.json_to_sheet(
-      state.dipendenti.map((d) => ({
-        nome: d.nome,
-        cognome: d.cognome,
-        ruolo: (d.ruoloId && ruoloById.get(d.ruoloId)?.nome) || '',
-        data_nascita: d.dataNascita,
-        data_assunzione: d.dataAssunzione,
-        email: d.email,
-        telefono: d.telefono,
-        note: d.note,
-      })),
-    ),
-    'Dipendenti',
-  );
-
-  XLSX.utils.book_append_sheet(
-    wb,
-    XLSX.utils.json_to_sheet(
-      state.ruoli.map((r) => ({
-        ruolo: r.nome,
-        riporta_a: (r.superioreId && ruoloById.get(r.superioreId)?.nome) || '',
-      })),
-    ),
-    'Ruoli',
-  );
-
+  const prodottoById = new Map(state.supplyChain.prodotti.map((p) => [p.id, p.nome]));
   const { modello, membri } = state.governance;
+
+  add('Leggimi', [
+    { voce: 'Esportato da', valore: 'Regia — sistema unico di controllo d’impresa' },
+    { voce: 'Data esportazione', valore: format(new Date(savedAt), 'dd/MM/yyyy HH:mm') },
+    { voce: 'Movimenti (costi/entrate)', valore: state.lineItems.length },
+    { voce: 'Fondi', valore: state.fundEntries.length },
+    { voce: 'Voci di budget', valore: state.budgetItems.length },
+    { voce: 'Dipendenti', valore: state.dipendenti.length },
+    { voce: 'Ruoli', valore: state.ruoli.length },
+    { voce: 'Modello di governance', valore: modello ? modelloDef(modello).nome : '(non scelto)' },
+    { voce: 'Prodotti in Supply Chain', valore: state.supplyChain.prodotti.length },
+    { voce: '', valore: '' },
+    {
+      voce: 'Reimportare',
+      valore:
+        'In Regia: Importa / Esporta → Ripristina da file. Vengono ripristinati i dati com’erano al momento ' +
+        `dell’esportazione (dal foglio nascosto "${DATA_SHEET}", da non modificare né cancellare): le modifiche ` +
+        'fatte a mano negli altri fogli non vengono lette.',
+    },
+  ]);
+
+  add(
+    'Costi e entrate',
+    state.lineItems.map(({ date, category, description, amount, type, recurring }) => ({
+      data: date,
+      categoria: category,
+      descrizione: description,
+      importo: amount,
+      tipo: type === 'cost' ? 'costo' : 'entrata',
+      ricorrente: recurring ? 'sì' : '',
+    })),
+  );
+  add(
+    'Fondi',
+    state.fundEntries.map(({ date, category, amount, description }) => ({
+      data: date,
+      categoria: category,
+      importo: amount,
+      descrizione: description,
+    })),
+  );
+  add('Assunzioni', flattenAssumptions(state));
+  add('Budget', [
+    { voce: 'Budget totale previsto', importo: state.budgetTotale, bloccato: '' },
+    ...state.budgetItems.map(({ nome, importo, bloccato }) => ({ voce: nome, importo, bloccato: bloccato ? 'sì' : '' })),
+  ]);
+  add('Proiezioni mensili', projections);
+
+  add(
+    'Dipendenti',
+    state.dipendenti.map((d) => ({
+      nome: d.nome,
+      cognome: d.cognome,
+      ruolo: (d.ruoloId && ruoloById.get(d.ruoloId)?.nome) || '',
+      data_nascita: d.dataNascita,
+      data_assunzione: d.dataAssunzione,
+      email: d.email,
+      telefono: d.telefono,
+      note: d.note,
+    })),
+  );
+  add(
+    'Ruoli',
+    state.ruoli.map((r) => ({
+      ruolo: r.nome,
+      riporta_a: (r.superioreId && ruoloById.get(r.superioreId)?.nome) || '',
+    })),
+  );
+
   if (modello) {
     const organi = organiDelModello(modello);
-    XLSX.utils.book_append_sheet(
-      wb,
-      XLSX.utils.json_to_sheet([
-        { organo: 'Modello', persona: modelloDef(modello).nome, carica: '' },
-        ...membri
-          .filter((m) => organi.includes(m.organo))
-          .sort((a, b) => organi.indexOf(a.organo) - organi.indexOf(b.organo))
-          .map((m) => ({
-            organo: ORGANI[m.organo].nome,
-            persona: nomeMembro(m, state.dipendenti),
-            carica: m.carica,
-          })),
-      ]),
-      'Governance',
-    );
+    add('Governance', [
+      { organo: 'Modello', persona: modelloDef(modello).nome, carica: '' },
+      ...membri
+        .filter((m) => organi.includes(m.organo))
+        .sort((a, b) => organi.indexOf(a.organo) - organi.indexOf(b.organo))
+        .map((m) => ({ organo: ORGANI[m.organo].nome, persona: nomeMembro(m, state.dipendenti), carica: m.carica })),
+    ]);
   }
 
-  const prodottoById = new Map(state.supplyChain.prodotti.map((p) => [p.id, p.nome]));
   if (state.supplyChain.prodotti.length > 0) {
-    XLSX.utils.book_append_sheet(
-      wb,
-      XLSX.utils.json_to_sheet(
-        state.supplyChain.attori.map((a) => ({
-          prodotto: prodottoById.get(a.prodottoId) ?? '',
-          area: attivitaDef(a.attivita).area,
-          attivita: attivitaDef(a.attivita).nome,
-          attore: nomeAttore(a, state.dipendenti),
-          tipo: tipoLabel(a.tipo),
-          note: a.note,
-        })),
-      ),
+    add(
       'Supply chain',
+      state.supplyChain.attori.map((a) => ({
+        prodotto: prodottoById.get(a.prodottoId) ?? '',
+        area: attivitaDef(a.attivita).area,
+        attivita: attivitaDef(a.attivita).nome,
+        attore: nomeAttore(a, state.dipendenti),
+        tipo: tipoLabel(a.tipo),
+        note: a.note,
+      })),
     );
   }
 
-  XLSX.writeFile(wb, `regia-export-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(snapshotToRows(snapshot)), DATA_SHEET);
+  // Hidden (1), not "very hidden" (2): still recoverable from Excel's "Scopri foglio".
+  wb.Workbook = { Sheets: wb.SheetNames.map((name) => ({ name, Hidden: name === DATA_SHEET ? 1 : 0 })) };
+
+  return wb;
+}
+
+export function exportWorkbook(state: AppState): void {
+  XLSX.writeFile(buildWorkbook(state), `regia-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
 }

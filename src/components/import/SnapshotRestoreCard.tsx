@@ -37,9 +37,9 @@ export default function SnapshotRestoreCard() {
           <InfoTooltip
             content={
               <>
-                Rilevato in <code>csv-imports/</code>: sostituisce costi, fondi e assunzioni ricavi con quelli
-                salvati in quel momento (override compresi). Utile per riportare un altro dispositivo alla stessa
-                identica situazione.
+                Rilevato in <code>csv-imports/</code>: sostituisce tutta la Regia (Gestione economica, HR,
+                Governance, Supply Chain) con quella salvata in quel momento. Utile per riportare un altro
+                dispositivo alla stessa identica situazione.
               </>
             }
           />
@@ -68,8 +68,7 @@ export default function SnapshotRestoreCard() {
               {pendingName === name && (
                 <Alert className="mt-3">
                   <AlertDescription>
-                    Sovrascrive i dati attuali di questo dispositivo (costi, fondi, assunzioni ricavi) con
-                    quelli salvati. Confermi?
+                    Sovrascrive tutti i dati attuali di questo dispositivo con quelli salvati. Confermi?
                     <div className="mt-2 flex gap-2">
                       <Button
                         size="sm"
@@ -77,7 +76,7 @@ export default function SnapshotRestoreCard() {
                           loadSnapshot(snapshot);
                           setPendingName(null);
                           toast.success('Stato ripristinato', {
-                            description: 'Costi, fondi e assunzioni sono quelli dello snapshot.',
+                            description: 'Tutti i dati sono quelli dello snapshot.',
                           });
                         }}
                       >
