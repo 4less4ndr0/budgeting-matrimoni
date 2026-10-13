@@ -8,14 +8,17 @@ import type {
   BudgetItem,
   Dipendente,
   FundEntry,
+  Governance,
   LineItem,
+  MembroOrgano,
+  ModelloGovernance,
   RevenueAssumptions,
   Ruolo,
   RunwayAssumptions,
 } from '../../types/domain';
-import { wouldCreateCycle } from '../hr/hr';
+import { fullName, wouldCreateCycle } from '../hr/hr';
 
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 /**
  * Backfills fields added after data may already have been saved (persisted localStorage,
@@ -39,6 +42,15 @@ function withRunwayDefaults(assumptions: RunwayAssumptions): RunwayAssumptions {
     ...assumptions,
     detailedBurn: { ...defaults.detailedBurn, ...assumptions.detailedBurn },
   };
+}
+
+function defaultGovernance(): Governance {
+  return { modello: null, membri: [] };
+}
+
+/** Backfills the governance section on data saved before it existed (or saved partially). */
+function withGovernanceDefaults(governance: Partial<Governance> | undefined): Governance {
+  return { ...defaultGovernance(), ...governance };
 }
 
 /** Backfills `bloccato` on voci saved before the lock feature existed. */
@@ -128,6 +140,11 @@ export interface AppStore extends AppState {
    */
   removeRuolo: (id: string) => void;
 
+  setModelloGovernance: (modello: ModelloGovernance | null) => void;
+  addMembroOrgano: (membro: Omit<MembroOrgano, 'id'>) => void;
+  updateMembroOrgano: (id: string, patch: Partial<Omit<MembroOrgano, 'id'>>) => void;
+  removeMembroOrgano: (id: string) => void;
+
   updateRevenueAssumptions: (patch: Partial<RevenueAssumptions>) => void;
   updateRunwayAssumptions: (patch: Partial<RunwayAssumptions>) => void;
   loadSnapshot: (
@@ -141,6 +158,7 @@ export interface AppStore extends AppState {
       // Optional: snapshots saved before the HR section existed don't have them.
       dipendenti?: AppState['dipendenti'];
       ruoli?: AppState['ruoli'];
+      governance?: Partial<AppState['governance']>;
     },
   ) => void;
   resetAll: () => void;
@@ -159,6 +177,7 @@ export const useAppStore = create<AppStore>()(
       runwayAssumptions: defaultRunwayAssumptions(),
       dipendenti: [],
       ruoli: [],
+      governance: defaultGovernance(),
       schemaVersion: SCHEMA_VERSION,
 
       addLineItem: (item) =>
@@ -300,8 +319,23 @@ export const useAppStore = create<AppStore>()(
           dipendenti: state.dipendenti.map((d) => (d.id === id ? { ...d, ...patch } : d)),
         })),
 
+      // Leaving the company doesn't mean leaving the cap table or the board: their seats in
+      // the organi sociali stay, turned into an external person with the same name.
       removeDipendente: (id) =>
-        set((state) => ({ dipendenti: state.dipendenti.filter((d) => d.id !== id) })),
+        set((state) => {
+          const removed = state.dipendenti.find((d) => d.id === id);
+          return {
+            dipendenti: state.dipendenti.filter((d) => d.id !== id),
+            governance: {
+              ...state.governance,
+              membri: state.governance.membri.map((m) =>
+                m.dipendenteId === id
+                  ? { ...m, dipendenteId: null, nomeEsterno: removed ? fullName(removed) : m.nomeEsterno }
+                  : m,
+              ),
+            },
+          };
+        }),
 
       addRuolo: (nome, superioreId = null) => {
         const id = nanoid();
@@ -329,6 +363,27 @@ export const useAppStore = create<AppStore>()(
           };
         }),
 
+      setModelloGovernance: (modello) =>
+        set((state) => ({ governance: { ...state.governance, modello } })),
+
+      addMembroOrgano: (membro) =>
+        set((state) => ({
+          governance: { ...state.governance, membri: [...state.governance.membri, { ...membro, id: nanoid() }] },
+        })),
+
+      updateMembroOrgano: (id, patch) =>
+        set((state) => ({
+          governance: {
+            ...state.governance,
+            membri: state.governance.membri.map((m) => (m.id === id ? { ...m, ...patch } : m)),
+          },
+        })),
+
+      removeMembroOrgano: (id) =>
+        set((state) => ({
+          governance: { ...state.governance, membri: state.governance.membri.filter((m) => m.id !== id) },
+        })),
+
       updateRevenueAssumptions: (patch) =>
         set((state) => ({ revenueAssumptions: { ...state.revenueAssumptions, ...patch } })),
 
@@ -351,6 +406,7 @@ export const useAppStore = create<AppStore>()(
             : defaultRunwayAssumptions(),
           dipendenti: snapshot.dipendenti ?? [],
           ruoli: snapshot.ruoli ?? [],
+          governance: withGovernanceDefaults(snapshot.governance),
           schemaVersion: SCHEMA_VERSION,
         });
       },
@@ -367,6 +423,7 @@ export const useAppStore = create<AppStore>()(
           runwayAssumptions: defaultRunwayAssumptions(),
           dipendenti: [],
           ruoli: [],
+          governance: defaultGovernance(),
           schemaVersion: SCHEMA_VERSION,
         }),
     }),
@@ -385,6 +442,7 @@ export const useAppStore = create<AppStore>()(
           fundCategories: withCategoryListDefaults(state.fundCategories, fundEntries),
           dipendenti: state.dipendenti ?? [],
           ruoli: state.ruoli ?? [],
+          governance: withGovernanceDefaults(state.governance),
         };
       },
     },

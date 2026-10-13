@@ -46,6 +46,10 @@ describe('loadSnapshot', () => {
         },
       ],
       ruoli: [{ id: 'r1', nome: 'CEO', superioreId: null }],
+      governance: {
+        modello: 'monistico',
+        membri: [{ id: 'm1', organo: 'cda', dipendenteId: 'd1', nomeEsterno: '', carica: 'Presidente' }],
+      },
       schemaVersion: 1,
       savedAt: '2026-09-02T12:00:00.000Z',
     };
@@ -61,6 +65,7 @@ describe('loadSnapshot', () => {
     expect(state.fundCategories).toEqual(['Capitale']);
     expect(state.dipendenti).toEqual(snapshot.dipendenti);
     expect(state.ruoli).toEqual(snapshot.ruoli);
+    expect(state.governance).toEqual(snapshot.governance);
     // The whole point: an override deliberately left at 0 must survive as 0, not be
     // dropped/coerced to null ("automatico") by the round-trip.
     expect(state.revenueAssumptions.costRunRateOverride).toBe(0);
@@ -90,6 +95,7 @@ describe('loadSnapshot', () => {
 
     expect(useAppStore.getState().dipendenti).toEqual([]);
     expect(useAppStore.getState().ruoli).toEqual([]);
+    expect(useAppStore.getState().governance).toEqual({ modello: null, membri: [] });
   });
 
   it('backfills bloccato:false on voci saved before the lock feature existed', () => {
@@ -505,5 +511,19 @@ describe('HR: ruoli e dipendenti', () => {
     expect(state.ruoli.map((r) => r.id)).toEqual([ceo, dev]);
     expect(state.ruoli.find((r) => r.id === dev)?.superioreId).toBe(ceo);
     expect(state.dipendenti.find((d) => d.id === anna)?.ruoloId).toBeNull();
+  });
+
+  it('removing a dipendente keeps their seats in the organi sociali, as an external person', () => {
+    const { addDipendente, addMembroOrgano, removeDipendente } = useAppStore.getState();
+    const anna = addDipendente(nuovoDipendente(null));
+    addMembroOrgano({ organo: 'assemblea', dipendenteId: anna, nomeEsterno: '', carica: 'Socio' });
+
+    removeDipendente(anna);
+
+    expect(useAppStore.getState().governance.membri[0]).toMatchObject({
+      dipendenteId: null,
+      nomeEsterno: 'Anna Rossi',
+      carica: 'Socio',
+    });
   });
 });

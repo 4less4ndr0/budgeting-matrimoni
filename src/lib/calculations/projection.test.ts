@@ -53,6 +53,7 @@ describe('buildProjection', () => {
       fundCategories: [],
       dipendenti: [],
       ruoli: [],
+      governance: { modello: null, membri: [] },
       schemaVersion: 1,
     };
 
@@ -79,6 +80,7 @@ describe('buildProjection', () => {
       fundCategories: [],
       dipendenti: [],
       ruoli: [],
+      governance: { modello: null, membri: [] },
       schemaVersion: 1,
     };
 
@@ -106,6 +108,7 @@ describe('buildProjection', () => {
       fundCategories: [],
       dipendenti: [],
       ruoli: [],
+      governance: { modello: null, membri: [] },
       schemaVersion: 1,
     };
 
@@ -142,6 +145,7 @@ describe('buildProjection', () => {
       fundCategories: [],
       dipendenti: [],
       ruoli: [],
+      governance: { modello: null, membri: [] },
       schemaVersion: 1,
     };
 
@@ -174,6 +178,7 @@ describe('buildProjection', () => {
       fundCategories: [],
       dipendenti: [],
       ruoli: [],
+      governance: { modello: null, membri: [] },
       schemaVersion: 1,
     };
 
@@ -197,6 +202,7 @@ describe('buildProjection', () => {
       fundCategories: [],
       dipendenti: [],
       ruoli: [],
+      governance: { modello: null, membri: [] },
       schemaVersion: 1,
     };
 

@@ -14,6 +14,7 @@ export interface StateSnapshot {
   runwayAssumptions: AppState['runwayAssumptions'];
   dipendenti: AppState['dipendenti'];
   ruoli: AppState['ruoli'];
+  governance: AppState['governance'];
   schemaVersion: number;
   savedAt: string;
 }
@@ -36,6 +37,7 @@ export function exportStateSnapshot(state: AppState): void {
     runwayAssumptions: state.runwayAssumptions,
     dipendenti: state.dipendenti,
     ruoli: state.ruoli,
+    governance: state.governance,
     schemaVersion: state.schemaVersion,
     savedAt: new Date().toISOString(),
   };
