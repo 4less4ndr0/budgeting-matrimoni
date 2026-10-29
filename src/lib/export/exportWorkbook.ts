@@ -3,7 +3,8 @@ import { format } from 'date-fns';
 import type { AppState, MonthlyProjection } from '../../types/domain';
 import { buildProjection } from '../calculations/projection';
 import { buildSnapshot, type StateSnapshot } from './exportSnapshot';
-import { NOME_CLASSE, classifica, relazione, totaliConLegate } from '../dimensione/dimensione';
+import { fogliProgetti } from './progettiSheets';
+import { NOME_CLASSE, classeNostraImpresa, relazione, totaliConLegate } from '../dimensione/dimensione';
 import { attivitaDef, nomeAttore, tipoLabel } from '../supplyChain/porter';
 import { ORGANI, modelloDef, nomeMembro, organiDelModello } from '../governance/modelli';
 
@@ -93,6 +94,7 @@ export function buildWorkbook(state: AppState, savedAt: string = new Date().toIS
     { voce: 'Ruoli', valore: state.ruoli.length },
     { voce: 'Modello di governance', valore: modello ? modelloDef(modello).nome : '(non scelto)' },
     { voce: 'Prodotti in Supply Chain', valore: state.supplyChain.prodotti.length },
+    { voce: 'Progetti', valore: state.progetti.progetti.length },
     { voce: '', valore: '' },
     {
       voce: 'Reimportare',
@@ -179,7 +181,7 @@ export function buildWorkbook(state: AppState, savedAt: string = new Date().toIS
   const dim = state.dimensioneImpresa;
   const propri = { ula: dim.ulaManuale ?? state.dipendenti.length, fatturato: dim.fatturato, totaleBilancio: dim.totaleBilancio };
   const totali = totaliConLegate(propri, dim.imprese);
-  const classe = classifica(totali).classe;
+  const classe = classeNostraImpresa(dim, state.dipendenti.length);
   add('Dimensione impresa', [
     { impresa: 'La mia impresa', relazione: '', quota: '', peso: '100%', ula: propri.ula, fatturato: propri.fatturato ?? '', totale_bilancio: propri.totaleBilancio ?? '' },
     ...dim.imprese.map((i) => {
@@ -189,6 +191,9 @@ export function buildWorkbook(state: AppState, savedAt: string = new Date().toIS
     { impresa: 'TOTALE', relazione: '', quota: '', peso: '', ula: totali.ula ?? '', fatturato: totali.fatturato ?? '', totale_bilancio: totali.totaleBilancio ?? '' },
     { impresa: 'Dimensione', relazione: classe ? NOME_CLASSE[classe] : '(dati insufficienti)', quota: '', peso: '', ula: '', fatturato: '', totale_bilancio: '' },
   ]);
+
+  // Progetti: one sheet per tab, prefixed so they don't clash with other areas' sheet names.
+  for (const { nome, righe } of fogliProgetti(state)) add(`Progetti - ${nome}`, righe);
 
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(snapshotToRows(snapshot)), DATA_SHEET);
   // Hidden (1), not "very hidden" (2): still recoverable from Excel's "Scopri foglio".

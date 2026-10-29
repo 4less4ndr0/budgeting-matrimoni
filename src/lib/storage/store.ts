@@ -16,14 +16,18 @@ import type {
   MembroOrgano,
   ModelloGovernance,
   Prodotto,
+  Progetti,
+  Progetto,
+  CriterioValutazione,
   RevenueAssumptions,
   Ruolo,
   RunwayAssumptions,
   SupplyChain,
 } from '../../types/domain';
 import { fullName, wouldCreateCycle } from '../hr/hr';
+import { nuovoProgetto, progettiVuoti, sganciaDipendente, withProgettiDefaults } from '../progetti/defaults';
 
-const SCHEMA_VERSION = 7;
+const SCHEMA_VERSION = 8;
 
 /**
  * Backfills fields added after data may already have been saved (persisted localStorage,
@@ -180,6 +184,14 @@ export interface AppStore extends AppState {
   updateImpresaLegata: (id: string, patch: Partial<Omit<ImpresaLegata, 'id'>>) => void;
   removeImpresaLegata: (id: string) => void;
 
+  /** Creates a project, makes it the active one and returns its id. */
+  addProgetto: (titolo: string) => string;
+  /** A patch, or a function from the current project to the new one (for nested edits). */
+  updateProgetto: (id: string, change: Partial<Progetto> | ((p: Progetto) => Progetto)) => void;
+  removeProgetto: (id: string) => void;
+  setProgettoAttivo: (id: string | null) => void;
+  setCriteri: (criteri: CriterioValutazione[]) => void;
+
   updateRevenueAssumptions: (patch: Partial<RevenueAssumptions>) => void;
   updateRunwayAssumptions: (patch: Partial<RunwayAssumptions>) => void;
   loadSnapshot: (
@@ -196,6 +208,7 @@ export interface AppStore extends AppState {
       governance?: Partial<AppState['governance']>;
       supplyChain?: Partial<AppState['supplyChain']>;
       dimensioneImpresa?: Partial<AppState['dimensioneImpresa']>;
+      progetti?: Partial<Progetti>;
     },
   ) => void;
   resetAll: () => void;
@@ -217,6 +230,7 @@ export const useAppStore = create<AppStore>()(
       governance: defaultGovernance(),
       supplyChain: defaultSupplyChain(),
       dimensioneImpresa: defaultDimensioneImpresa(),
+      progetti: progettiVuoti(),
       schemaVersion: SCHEMA_VERSION,
 
       addLineItem: (item) =>
@@ -382,6 +396,7 @@ export const useAppStore = create<AppStore>()(
                   : a,
               ),
             },
+            progetti: removed ? sganciaDipendente(state.progetti, id, fullName(removed)) : state.progetti,
           };
         }),
 
@@ -516,6 +531,35 @@ export const useAppStore = create<AppStore>()(
           },
         })),
 
+      addProgetto: (titolo) => {
+        const p = nuovoProgetto(titolo.trim());
+        set((state) => ({
+          progetti: { ...state.progetti, progetti: [...state.progetti.progetti, p], progettoAttivoId: p.id },
+        }));
+        return p.id;
+      },
+
+      updateProgetto: (id, change) =>
+        set((state) => ({
+          progetti: {
+            ...state.progetti,
+            progetti: state.progetti.progetti.map((p) =>
+              p.id === id ? (typeof change === 'function' ? change(p) : { ...p, ...change }) : p,
+            ),
+          },
+        })),
+
+      removeProgetto: (id) =>
+        set((state) => {
+          const progetti = state.progetti.progetti.filter((p) => p.id !== id);
+          const attivo = state.progetti.progettoAttivoId === id ? (progetti[0]?.id ?? null) : state.progetti.progettoAttivoId;
+          return { progetti: { ...state.progetti, progetti, progettoAttivoId: attivo } };
+        }),
+
+      setProgettoAttivo: (id) => set((state) => ({ progetti: { ...state.progetti, progettoAttivoId: id } })),
+
+      setCriteri: (criteri) => set((state) => ({ progetti: { ...state.progetti, criteri } })),
+
       updateRevenueAssumptions: (patch) =>
         set((state) => ({ revenueAssumptions: { ...state.revenueAssumptions, ...patch } })),
 
@@ -541,6 +585,7 @@ export const useAppStore = create<AppStore>()(
           governance: withGovernanceDefaults(snapshot.governance),
           supplyChain: withSupplyChainDefaults(snapshot.supplyChain),
           dimensioneImpresa: withDimensioneDefaults(snapshot.dimensioneImpresa),
+          progetti: withProgettiDefaults(snapshot.progetti),
           schemaVersion: SCHEMA_VERSION,
         });
       },
@@ -560,6 +605,7 @@ export const useAppStore = create<AppStore>()(
           governance: defaultGovernance(),
           supplyChain: defaultSupplyChain(),
           dimensioneImpresa: defaultDimensioneImpresa(),
+          progetti: progettiVuoti(),
           schemaVersion: SCHEMA_VERSION,
         }),
     }),
@@ -581,6 +627,7 @@ export const useAppStore = create<AppStore>()(
           governance: withGovernanceDefaults(state.governance),
           supplyChain: withSupplyChainDefaults(state.supplyChain),
           dimensioneImpresa: withDimensioneDefaults(state.dimensioneImpresa),
+          progetti: withProgettiDefaults(state.progetti),
         };
       },
     },

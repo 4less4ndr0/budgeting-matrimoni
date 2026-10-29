@@ -125,6 +125,7 @@ export default function DashboardView() {
       governance: s.governance,
       supplyChain: s.supplyChain,
       dimensioneImpresa: s.dimensioneImpresa,
+      progetti: s.progetti,
       schemaVersion: s.schemaVersion,
     })),
   );

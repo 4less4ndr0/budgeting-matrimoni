@@ -56,6 +56,7 @@ describe('buildProjection', () => {
       governance: { modello: null, membri: [] },
       supplyChain: { prodotti: [], attori: [] },
       dimensioneImpresa: { esercizio: '', ulaManuale: null, fatturato: null, totaleBilancio: null, imprese: [] },
+      progetti: { criteri: [], progetti: [], progettoAttivoId: null },
       schemaVersion: 1,
     };
 
@@ -85,6 +86,7 @@ describe('buildProjection', () => {
       governance: { modello: null, membri: [] },
       supplyChain: { prodotti: [], attori: [] },
       dimensioneImpresa: { esercizio: '', ulaManuale: null, fatturato: null, totaleBilancio: null, imprese: [] },
+      progetti: { criteri: [], progetti: [], progettoAttivoId: null },
       schemaVersion: 1,
     };
 
@@ -115,6 +117,7 @@ describe('buildProjection', () => {
       governance: { modello: null, membri: [] },
       supplyChain: { prodotti: [], attori: [] },
       dimensioneImpresa: { esercizio: '', ulaManuale: null, fatturato: null, totaleBilancio: null, imprese: [] },
+      progetti: { criteri: [], progetti: [], progettoAttivoId: null },
       schemaVersion: 1,
     };
 
@@ -154,6 +157,7 @@ describe('buildProjection', () => {
       governance: { modello: null, membri: [] },
       supplyChain: { prodotti: [], attori: [] },
       dimensioneImpresa: { esercizio: '', ulaManuale: null, fatturato: null, totaleBilancio: null, imprese: [] },
+      progetti: { criteri: [], progetti: [], progettoAttivoId: null },
       schemaVersion: 1,
     };
 
@@ -189,6 +193,7 @@ describe('buildProjection', () => {
       governance: { modello: null, membri: [] },
       supplyChain: { prodotti: [], attori: [] },
       dimensioneImpresa: { esercizio: '', ulaManuale: null, fatturato: null, totaleBilancio: null, imprese: [] },
+      progetti: { criteri: [], progetti: [], progettoAttivoId: null },
       schemaVersion: 1,
     };
 
@@ -215,6 +220,7 @@ describe('buildProjection', () => {
       governance: { modello: null, membri: [] },
       supplyChain: { prodotti: [], attori: [] },
       dimensioneImpresa: { esercizio: '', ulaManuale: null, fatturato: null, totaleBilancio: null, imprese: [] },
+      progetti: { criteri: [], progetti: [], progettoAttivoId: null },
       schemaVersion: 1,
     };
 

@@ -17,6 +17,7 @@ export interface StateSnapshot {
   governance: AppState['governance'];
   supplyChain: AppState['supplyChain'];
   dimensioneImpresa: AppState['dimensioneImpresa'];
+  progetti: AppState['progetti'];
   schemaVersion: number;
   savedAt: string;
 }
@@ -37,6 +38,7 @@ export function buildSnapshot(state: AppState, savedAt: string = new Date().toIS
     governance: state.governance,
     supplyChain: state.supplyChain,
     dimensioneImpresa: state.dimensioneImpresa,
+    progetti: state.progetti,
     schemaVersion: state.schemaVersion,
     savedAt,
   };

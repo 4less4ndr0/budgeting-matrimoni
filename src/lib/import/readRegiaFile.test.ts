@@ -4,7 +4,9 @@ import { parseRegiaBuffer } from './readRegiaFile';
 import { buildWorkbook, DATA_SHEET } from '../export/exportWorkbook';
 import { buildSnapshot } from '../export/exportSnapshot';
 import { defaultRevenueAssumptions, defaultRunwayAssumptions } from '../defaults';
-import type { AppState } from '../../types/domain';
+import type { AppState, Progetto } from '../../types/domain';
+import { nuovoProgetto } from '../progetti/defaults';
+import { aggiungiOr, aggiungiTask } from '../progetti/modifiche';
 
 function stato(): AppState {
   return {
@@ -37,6 +39,7 @@ function stato(): AppState {
       })),
     },
     dimensioneImpresa: { esercizio: '2025', ulaManuale: 3.5, fatturato: 120000, totaleBilancio: null, imprese: [] },
+      progetti: { criteri: [], progetti: [], progettoAttivoId: null },
     schemaVersion: 6,
   };
 }
@@ -68,5 +71,19 @@ describe('file Regia', () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['data', 'importo']]), 'Foglio1');
     expect(() => parseRegiaBuffer('estratto-conto.xlsx', toBuffer(wb))).toThrow(/foglio nascosto/);
+  });
+
+  it('adds one sheet per Progetti tab, with the Gantt marked month by month', () => {
+    let p: Progetto = { ...nuovoProgetto('Prototipo'), dataInizio: '2026-01-01', durataMesi: 4 };
+    p = aggiungiOr(p);
+    p = { ...p, or: p.or.map((o) => ({ ...o, tipologia: 'RI' as const })) };
+    p = aggiungiTask(p, p.or[0].id);
+    const s = { ...stato(), progetti: { criteri: [], progetti: [p], progettoAttivoId: p.id } };
+    const wb = buildWorkbook(s, '2026-10-13T09:30:00.000Z');
+    expect(wb.SheetNames).toEqual(
+      expect.arrayContaining(['Progetti - Portafoglio', 'Progetti - WBS', 'Progetti - Gantt', 'Progetti - SAL']),
+    );
+    const gantt = XLSX.utils.sheet_to_json<Record<string, string>>(wb.Sheets['Progetti - Gantt']);
+    expect([gantt[1].M1, gantt[1].M3, gantt[1].M4]).toEqual(['■', '■', '']);
   });
 });

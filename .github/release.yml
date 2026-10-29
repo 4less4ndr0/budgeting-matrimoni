@@ -23,6 +23,8 @@ changelog:
       labels: [supply-chain]
     - title: Finanza agevolata
       labels: [finanza-agevolata]
+    - title: Progetti
+      labels: [progetti]
     - title: Fix tecnici
       labels: [fix-tecnici]
     - title: Documentazione & processo

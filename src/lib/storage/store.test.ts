@@ -3,6 +3,7 @@ import { useAppStore } from './store';
 import { defaultRevenueAssumptions, defaultRunwayAssumptions } from '../defaults';
 import type { StateSnapshot } from '../export/exportSnapshot';
 import type { AppState } from '../../types/domain';
+import { nuovoProgetto } from '../progetti/defaults';
 
 describe('loadSnapshot', () => {
   beforeEach(() => {
@@ -74,6 +75,11 @@ describe('loadSnapshot', () => {
           },
         ],
       },
+      progetti: {
+        criteri: [{ id: 'c1', nome: 'Costo', peso: 2, nota: '' }],
+        progetti: [{ ...nuovoProgetto('Prototipo'), id: 'p1', or: [] }],
+        progettoAttivoId: 'p1',
+      },
       schemaVersion: 1,
       savedAt: '2026-09-02T12:00:00.000Z',
     };
@@ -92,6 +98,7 @@ describe('loadSnapshot', () => {
     expect(state.governance).toEqual(snapshot.governance);
     expect(state.supplyChain).toEqual(snapshot.supplyChain);
     expect(state.dimensioneImpresa).toEqual(snapshot.dimensioneImpresa);
+    expect(state.progetti).toEqual(snapshot.progetti);
     // The whole point: an override deliberately left at 0 must survive as 0, not be
     // dropped/coerced to null ("automatico") by the round-trip.
     expect(state.revenueAssumptions.costRunRateOverride).toBe(0);
@@ -124,6 +131,8 @@ describe('loadSnapshot', () => {
     expect(useAppStore.getState().governance).toEqual({ modello: null, membri: [] });
     expect(useAppStore.getState().supplyChain).toEqual({ prodotti: [], attori: [] });
     expect(useAppStore.getState().dimensioneImpresa).toMatchObject({ ulaManuale: null, fatturato: null, imprese: [] });
+    expect(useAppStore.getState().progetti.progetti).toEqual([]);
+    expect(useAppStore.getState().progetti.criteri).toHaveLength(5);
   });
 
   it('backfills bloccato:false on voci saved before the lock feature existed', () => {
@@ -594,5 +603,44 @@ describe('supply chain', () => {
     removeDipendente(anna);
 
     expect(useAppStore.getState().supplyChain.attori[0]).toMatchObject({ dipendenteId: null, nome: 'Anna Rossi' });
+  });
+});
+
+describe('progetti', () => {
+  beforeEach(() => {
+    useAppStore.getState().resetAll();
+  });
+
+  it('a new project becomes the active one; removing it falls back to another', () => {
+    const { addProgetto, removeProgetto } = useAppStore.getState();
+    const a = addProgetto('A');
+    const b = addProgetto('B');
+    expect(useAppStore.getState().progetti.progettoAttivoId).toBe(b);
+    removeProgetto(b);
+    expect(useAppStore.getState().progetti.progettoAttivoId).toBe(a);
+  });
+
+  it('removing a dipendente keeps their project seats as an external person', () => {
+    const { addDipendente, addProgetto, updateProgetto, removeDipendente } = useAppStore.getState();
+    const anna = addDipendente({
+      nome: 'Anna',
+      cognome: 'Rossi',
+      dataNascita: '',
+      ruoloId: null,
+      email: '',
+      telefono: '',
+      dataAssunzione: '',
+      note: '',
+    });
+    const id = addProgetto('A');
+    updateProgetto(id, (p) => ({
+      ...p,
+      organizzazione: [{ id: 'm', ruolo: 'pm', orId: null, dipendenteId: anna, nomeEsterno: '' }],
+    }));
+
+    removeDipendente(anna);
+
+    const p = useAppStore.getState().progetti.progetti[0];
+    expect(p.organizzazione[0]).toMatchObject({ dipendenteId: null, nomeEsterno: 'Anna Rossi' });
   });
 });
