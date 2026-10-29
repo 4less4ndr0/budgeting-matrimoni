@@ -24,7 +24,7 @@ import { STATI_VALUTABILI, classificaPortafoglio, fineProgetto, periodoMese } fr
 import { useAppStore } from '@/lib/storage/store';
 import { cn } from '@/lib/utils';
 import type { Progetto, StatoProgetto } from '@/types/domain';
-import { AvvisiBox, dataBreve } from './comuni';
+import { AvvisiBox, Info, dataBreve } from './comuni';
 
 export const STATI: Array<{ id: StatoProgetto; label: string }> = [
   { id: 'idea', label: 'Idea' },
@@ -93,8 +93,16 @@ export default function PortafoglioTab() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Progetto</TableHead>
-                    <TableHead>Stato</TableHead>
-                    <TableHead className="text-right">Punteggio</TableHead>
+                    <TableHead>
+                      <span className="flex items-center gap-1">
+                        Stato <Info k="statoProgetto" />
+                      </span>
+                    </TableHead>
+                    <TableHead>
+                      <span className="flex items-center justify-end gap-1">
+                        Punteggio <Info k="punteggio" />
+                      </span>
+                    </TableHead>
                     <TableHead>Bando</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead />
@@ -192,11 +200,18 @@ export default function PortafoglioTab() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="min-w-[14rem]">Criterio</TableHead>
-                  <TableHead className="w-20">Peso</TableHead>
-                  {valutabili.map((p) => (
+                  <TableHead className="w-20">
+                    <span className="flex items-center gap-1">
+                      Peso <Info k="pesoCriterio" />
+                    </span>
+                  </TableHead>
+                  {valutabili.map((p, i) => (
                     <TableHead key={p.id} className="min-w-[7rem] text-center">
-                      <span className={cn(classifica.prioritariIds.includes(p.id) && 'font-semibold text-foreground')}>
-                        {titolo(p)}
+                      <span className="inline-flex items-center gap-1">
+                        <span className={cn(classifica.prioritariIds.includes(p.id) && 'font-semibold text-foreground')}>
+                          {titolo(p)}
+                        </span>
+                        {i === 0 && <Info k="votoCriterio" />}
                       </span>
                     </TableHead>
                   ))}

@@ -118,13 +118,14 @@ function ImpresaLegataEditor({ impresa }: { impresa: ImpresaLegata }) {
           <Checkbox checked={impresa.controlloCda} onCheckedChange={(c) => set({ controlloCda: c === true })} />
           Nomina la maggioranza del CdA (o la nostra nomina il suo)
         </label>
-        <label className="flex items-center gap-2">
-          <Checkbox checked={impresa.investitoreEsente} onCheckedChange={(c) => set({ investitoreEsente: c === true })} />
-          <span className="flex items-center gap-1">
+        {/* The "i" stays outside the <label>: clicking it must not tick the box. */}
+        <div className="flex items-center gap-1">
+          <label className="flex items-center gap-2">
+            <Checkbox checked={impresa.investitoreEsente} onCheckedChange={(c) => set({ investitoreEsente: c === true })} />
             Investitore esente
-            <InfoTooltip content="Società pubbliche di partecipazione, venture capital, università o centri di ricerca senza scopo di lucro, investitori istituzionali (anche fondi di sviluppo regionali), enti locali con bilancio < 10 mln € e < 5.000 abitanti: con una quota tra 25% e 50% l'impresa resta autonoma." />
-          </span>
-        </label>
+          </label>
+          <InfoTooltip content="Società pubbliche di partecipazione, venture capital, università o centri di ricerca senza scopo di lucro, investitori istituzionali (anche fondi di sviluppo regionali), enti locali con bilancio < 10 mln € e < 5.000 abitanti: con una quota tra 25% e 50% l'impresa resta autonoma." />
+        </div>
       </div>
     </div>
   );

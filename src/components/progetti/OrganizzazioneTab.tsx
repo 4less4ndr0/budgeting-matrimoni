@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { avvisiOrganizzazione, chiavePersona, codiceOr, generaRiunioni, orOrdinati } from '@/lib/progetti/calcoli';
 import { cn } from '@/lib/utils';
 import type { MembroCommessa, Persona, Progetto, RuoloCommessa, TipoRiunione } from '@/types/domain';
-import { AvvisiBox, PERSONA_VUOTA, PersonaSelect } from './comuni';
+import { AvvisiBox, Info, PERSONA_VUOTA, PersonaSelect } from './comuni';
 
 type Aggiorna = (c: Partial<Progetto> | ((p: Progetto) => Progetto)) => void;
 
@@ -223,6 +223,18 @@ export default function OrganizzazioneTab({ p, aggiorna }: { p: Progetto; aggior
         <CardContent className="space-y-2">
           {(!p.dataInizio || !p.durataMesi) && (
             <p className="text-sm text-muted-foreground">Imposta data di inizio e durata nella Scheda progetto.</p>
+          )}
+          {riunioni.length > 0 && (
+            <div className="hidden grid-cols-[1rem_8rem_12rem_1fr_2.5rem] gap-2 px-2 text-xs text-muted-foreground sm:grid">
+              <Info k="riunioneFatta" />
+              <span>Data</span>
+              <span className="flex items-center gap-1">
+                Tipo <Info k="tipiRiunione" />
+              </span>
+              <span className="flex items-center gap-1">
+                Nota <Info k="riunioneNota" />
+              </span>
+            </div>
           )}
           {riunioni.map((r) => (
             <div

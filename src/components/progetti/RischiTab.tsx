@@ -57,7 +57,7 @@ function RischioCard({ p, r, aggiorna }: { p: Progetto; r: Rischio; aggiorna: Ag
         </Button>
       </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        <Campo label="Tipo">
+        <Campo label="Tipo" info="tipoRischio">
           <Select value={r.tipo} onValueChange={(v) => set({ tipo: v as TipoRischio })}>
             <SelectTrigger>
               <SelectValue />
@@ -71,7 +71,7 @@ function RischioCard({ p, r, aggiorna }: { p: Progetto; r: Rischio; aggiorna: Ag
             </SelectContent>
           </Select>
         </Campo>
-        <Campo label="OR collegato">
+        <Campo label="OR collegato" info="orRischio">
           <Select value={r.orId ?? PROGETTO} onValueChange={(v) => set({ orId: v === PROGETTO ? null : v })}>
             <SelectTrigger>
               <SelectValue />
@@ -86,7 +86,7 @@ function RischioCard({ p, r, aggiorna }: { p: Progetto; r: Rischio; aggiorna: Ag
             </SelectContent>
           </Select>
         </Campo>
-        <Campo label="Probabilità (1–5)">
+        <Campo label="Probabilità (1–5)" info="probabilita">
           <Select value={String(r.probabilita)} onValueChange={(v) => set({ probabilita: Number(v) })}>
             <SelectTrigger>
               <SelectValue />
@@ -100,7 +100,7 @@ function RischioCard({ p, r, aggiorna }: { p: Progetto; r: Rischio; aggiorna: Ag
             </SelectContent>
           </Select>
         </Campo>
-        <Campo label="Impatto (1–5)">
+        <Campo label="Impatto (1–5)" info="impatto">
           <Select value={String(r.impatto)} onValueChange={(v) => set({ impatto: Number(v) })}>
             <SelectTrigger>
               <SelectValue />
@@ -114,7 +114,7 @@ function RischioCard({ p, r, aggiorna }: { p: Progetto; r: Rischio; aggiorna: Ag
             </SelectContent>
           </Select>
         </Campo>
-        <Campo label="Stato" className="col-span-2 md:col-span-1">
+        <Campo label="Stato" className="col-span-2 md:col-span-1" info="statoRischio">
           <Select value={r.stato} onValueChange={(v) => set({ stato: v as StatoRischio })}>
             <SelectTrigger>
               <SelectValue />
@@ -130,28 +130,17 @@ function RischioCard({ p, r, aggiorna }: { p: Progetto; r: Rischio; aggiorna: Ag
         </Campo>
       </div>
       <div className="mt-3 grid gap-3 md:grid-cols-3">
-        <Campo label="Segnale da monitorare">
+        <Campo label="Segnale da monitorare" info="segnale">
           <Input placeholder="Cosa ti dice che sta succedendo" value={r.segnale} onChange={(e) => set({ segnale: e.target.value })} />
         </Campo>
-        <Campo
-          label={
-            economico ? (
-              <span className="flex items-center gap-1">
-                Prevenzione
-                <InfoTooltip content="Sui rischi economici, una volta che succedono, nessuna azione correttiva è possibile: conta prevenirli." />
-              </span>
-            ) : (
-              'Azione'
-            )
-          }
-        >
+        <Campo label={economico ? 'Prevenzione' : 'Azione'} info={economico ? 'prevenzione' : 'azione'}>
           <Input
             placeholder={economico ? 'Come eviti che succeda' : 'Cosa fai se succede'}
             value={r.azione}
             onChange={(e) => set({ azione: e.target.value })}
           />
         </Campo>
-        <Campo label="Responsabile">
+        <Campo label="Responsabile" info="responsabileRischio">
           <PersonaSelect value={r.responsabile} onChange={(responsabile) => set({ responsabile })} />
         </Campo>
       </div>

@@ -2,10 +2,12 @@ import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { AlertTriangle } from 'lucide-react';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { fullName } from '@/lib/hr/hr';
+import { GLOSSARIO, type ChiaveGlossario } from '@/lib/progetti/glossario';
 import { useAppStore } from '@/lib/storage/store';
 import { cn } from '@/lib/utils';
 import type { Persona, Progetto } from '@/types/domain';
@@ -50,12 +52,48 @@ export function AvvisiBox({ avvisi }: { avvisi: string[] }) {
   );
 }
 
-export function Campo({ label, children, className, htmlFor }: { label: ReactNode; children: ReactNode; className?: string; htmlFor?: string }) {
+/** The "i" next to a field: the explanation from the glossary, with the lesson/slide it comes from. */
+export function Info({ k }: { k: ChiaveGlossario }) {
+  const voce = GLOSSARIO[k];
+  return (
+    <InfoTooltip
+      content={
+        <>
+          {voce.testo}
+          {'fonte' in voce && voce.fonte && <span className="mt-1 block text-[11px] opacity-70">📎 {voce.fonte}</span>}
+        </>
+      }
+    />
+  );
+}
+
+export function Campo({
+  label,
+  children,
+  className,
+  htmlFor,
+  info,
+  infoTesto,
+}: {
+  label: ReactNode;
+  children: ReactNode;
+  className?: string;
+  htmlFor?: string;
+  /** Explanation from the glossary… */
+  info?: ChiaveGlossario;
+  /** …or a free text, for labels that aren't in it (e.g. cost categories). */
+  infoTesto?: string;
+}) {
   return (
     <div className={cn('flex min-w-0 flex-col gap-1.5', className)}>
-      <Label htmlFor={htmlFor} className="font-normal text-muted-foreground">
-        {label}
-      </Label>
+      {/* The tooltip button sits next to the label, not inside it: clicking it mustn't focus the field. */}
+      <div className="flex items-center gap-1">
+        <Label htmlFor={htmlFor} className="font-normal text-muted-foreground">
+          {label}
+        </Label>
+        {info && <Info k={info} />}
+        {!info && infoTesto && <InfoTooltip content={infoTesto} />}
+      </div>
       {children}
     </div>
   );
