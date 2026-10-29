@@ -3,8 +3,8 @@
 **Live: https://4less4ndr0.github.io/budgeting-matrimoni/**
 
 L'app si chiama **Regia**: il sistema unico di controllo d'impresa (nato come dashboard
-finanziaria per matrimoni.top). In alto quattro aree: **Gestione economica**, **HR**,
-**Governance** e **Supply Chain**.
+finanziaria per matrimoni.top). In alto cinque aree: **Gestione economica**, **HR**,
+**Governance**, **Supply Chain** e **Progetti**.
 
 Lo storico delle modifiche sono le
 [Release](https://github.com/4less4ndr0/budgeting-matrimoni/releases) della repo (stessa
@@ -71,7 +71,17 @@ nella dashboard.
   (anche collegati all'anagrafica HR), fornitori, partner, distributori, consulenti — più
   la mappa degli attori con tutte le attività che ciascuno copre.
 
-  ⚠️ Lo snapshot JSON include anche i dati di dipendenti, organi sociali e filiera: la
+- **Progetti** (project management di progetti di R&S co-finanziati, dal Laboratorio di
+  finanza agevolata L4–L5): un portafoglio con la check list di valutazione pesata, e per il
+  progetto attivo sette tab lungo il ciclo di vita — *Scheda progetto* e *scheda di sintesi
+  del bando* (con preset "Accordi per l'innovazione"), *WBS* (OR RI/SS → task → deliverable,
+  milestone), *Gantt* calcolato (avanzamento, milestone, SAL e finestre di rendicontazione,
+  "oggi"), *Organizzazione* (Steering Committee, PM, RA, OR Leader, gruppi di lavoro e
+  calendario riunioni), *Rischi* (probabilità × impatto) e *SAL e rendicontazione* (costi
+  pianificati vs rendicontati divisi RI/SS, contributo atteso, documenti per OR). Persone
+  dall'anagrafica HR, intensità di aiuto dalla dimensione d'impresa; avvisi che non bloccano.
+
+  ⚠️ Lo snapshot JSON include anche i dati di dipendenti, organi sociali, filiera e progetti: la
   repo è pubblica, quindi committare `stato-sito.json` li rende leggibili a chiunque.
 
 ## Stack UI

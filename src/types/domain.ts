@@ -236,6 +236,193 @@ export interface DimensioneImpresa {
   imprese: ImpresaLegata[];
 }
 
+// ---------------------------------------------------------------------------------------------
+// Progetti (project management di progetti di R&S co-finanziati) — vedi project-management-spec
+// ---------------------------------------------------------------------------------------------
+
+export type StatoProgetto = 'idea' | 'pronto' | 'candidato' | 'in-corso' | 'chiuso' | 'revocato';
+export type TipologiaRS = 'RI' | 'SS'; // ricerca industriale / sviluppo sperimentale
+export type TipoSoggetto = 'micro' | 'piccola' | 'media' | 'grande' | 'organismo-ricerca';
+
+/** Un posto nel progetto: un dipendente dell'anagrafica oppure una persona esterna. */
+export interface Persona {
+  dipendenteId: string | null;
+  nomeEsterno: string;
+}
+
+export interface Partner {
+  id: string;
+  nome: string;
+  tipo: TipoSoggetto;
+  numeroAssociato: number; // 1 = capofila
+  isNostraImpresa: boolean; // true → tipo letto da Dimensione d'impresa
+}
+
+export interface CriterioValutazione {
+  id: string;
+  nome: string;
+  peso: number;
+  nota: string;
+}
+
+export interface IntensitaAiuto {
+  tipo: TipoSoggetto;
+  ri: number; // %
+  ss: number; // %
+}
+
+export interface SchedaBando {
+  nome: string;
+  link: string;
+  dataRilevazione: string;
+  scadenza: string;
+  obiettivi: string;
+  ambiti: string[];
+  beneficiari: string;
+  ateco: string[];
+  regime: 'gber' | 'de-minimis' | 'altro' | null;
+  caratteristiche: string;
+  spesaMin: number | null;
+  spesaMax: number | null;
+  durataMaxMesi: number | null;
+  categorieCosto: string[];
+  intensita: IntensitaAiuto[];
+  finanziamentoAgevolatoPct: number | null;
+  maggiorazionePct: number | null; // punti in più con collaborazione effettiva
+  erogazione: string; // anticipo / SAL / saldo
+  giorniPresentazioneSal: number | null;
+  criteriValutazione: string;
+  modulistica: string[];
+  modalitaPresentazione: string;
+  notaBene: string;
+}
+
+export interface ObiettivoRealizzativo {
+  id: string;
+  ordine: number;
+  titolo: string;
+  obiettivo: string;
+  tipologia: TipologiaRS | null;
+  leader: Persona;
+  partnerIds: string[];
+  meseInizio: number | null; // null = derivato dai task
+  meseFine: number | null;
+}
+
+export interface Task {
+  id: string;
+  orId: string;
+  ordine: number;
+  titolo: string;
+  meseInizio: number;
+  meseFine: number;
+  partnerIds: string[];
+  predecessoriIds: string[];
+  costiStimati: Record<string, number>; // categoria → €
+  avanzamentoPct: number;
+}
+
+export type StatoDeliverable = 'da-fare' | 'in-revisione' | 'approvato';
+
+export interface Deliverable {
+  id: string;
+  taskId: string;
+  codice: string;
+  titolo: string;
+  mese: number;
+  stato: StatoDeliverable;
+}
+
+export interface Milestone {
+  id: string;
+  codice: string;
+  titolo: string;
+  mese: number;
+  deliverableIds: string[];
+  raggiunta: boolean;
+}
+
+export type RuoloCommessa = 'steering-committee' | 'pm' | 'ra' | 'referente-istruttori' | 'gruppo-lavoro';
+
+export interface MembroCommessa extends Persona {
+  id: string;
+  ruolo: RuoloCommessa;
+  orId: string | null; // solo per gruppo-lavoro
+}
+
+export type TipoRiunione = 'kick-off' | 'steering-committee' | 'pre-sal' | 'chiusura';
+
+export interface Riunione {
+  id: string;
+  tipo: TipoRiunione;
+  data: string;
+  fatta: boolean;
+  nota: string;
+}
+
+export type TipoRischio = 'tecnico' | 'gestionale' | 'economico';
+export type StatoRischio = 'aperto' | 'sotto-controllo' | 'chiuso';
+
+export interface Rischio {
+  id: string;
+  tipo: TipoRischio;
+  descrizione: string;
+  orId: string | null; // null = progetto nel suo complesso
+  probabilita: number; // 1–5
+  impatto: number; // 1–5
+  segnale: string;
+  azione: string; // "prevenzione" per i rischi economici
+  responsabile: Persona;
+  stato: StatoRischio;
+}
+
+export type StatoSal = 'aperto' | 'in-preparazione' | 'presentato' | 'approvato' | 'erogato';
+
+export interface Sal {
+  id: string;
+  numero: number;
+  stato: StatoSal;
+  costiRendicontati: Record<TipologiaRS, Record<string, number>>; // RI/SS → categoria → €
+  documenti: Record<string, Record<string, boolean>>; // orId → documento → raccolto
+}
+
+export interface Progetto {
+  id: string;
+  stato: StatoProgetto;
+  titolo: string;
+  sintesi: string;
+  capofila: string;
+  infoPartenariato: string;
+  ambito: string;
+  attivitaPrevalente: TipologiaRS | null;
+  dataInizio: string;
+  durataMesi: number | null;
+  budgetTotale: number | null;
+  cofinanziamento: number | null;
+  // Aggiunto alla bozza della spec: la maggiorazione del bando si applica al contributo
+  // atteso solo se c'è davvero collaborazione effettiva tra i partner.
+  collaborazioneEffettiva: boolean;
+  partner: Partner[];
+  bando: SchedaBando;
+  voti: Record<string, number>; // criterioId → 1–5
+  or: ObiettivoRealizzativo[];
+  task: Task[];
+  deliverable: Deliverable[];
+  milestone: Milestone[];
+  organizzazione: MembroCommessa[];
+  riunioni: Riunione[];
+  rischi: Rischio[];
+  salMesi: number; // periodicità, default 6
+  targetInternoGiorni: number; // default 45
+  sal: Sal[];
+}
+
+export interface Progetti {
+  criteri: CriterioValutazione[];
+  progetti: Progetto[];
+  progettoAttivoId: string | null;
+}
+
 export interface AppState {
   lineItems: LineItem[];
   fundEntries: FundEntry[];
@@ -253,5 +440,6 @@ export interface AppState {
   governance: Governance;
   supplyChain: SupplyChain;
   dimensioneImpresa: DimensioneImpresa;
+  progetti: Progetti;
   schemaVersion: number;
 }

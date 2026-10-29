@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { InfoTooltip } from '@/components/ui/info-tooltip';
+import { NumeroInput } from '@/components/common/NumeroInput';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -31,33 +32,6 @@ function mln(n: number): string {
 
 function ula(n: number | null): string {
   return n === null ? '—' : n.toLocaleString('it-IT', { maximumFractionDigits: 2 });
-}
-
-/** Empty field ↔ null, so "not entered" never turns into a misleading 0. */
-function NumeroInput({
-  value,
-  onChange,
-  placeholder,
-  step = '0.01',
-  id,
-}: {
-  value: number | null;
-  onChange: (v: number | null) => void;
-  placeholder?: string;
-  step?: string;
-  id?: string;
-}) {
-  return (
-    <Input
-      id={id}
-      type="number"
-      step={step}
-      min="0"
-      placeholder={placeholder}
-      value={value ?? ''}
-      onChange={(e) => onChange(e.target.value === '' ? null : Number(e.target.value))}
-    />
-  );
 }
 
 const COLORE_CLASSE: Record<ClasseImpresa, string> = {
@@ -103,7 +77,7 @@ function ImpresaLegataEditor({ impresa }: { impresa: ImpresaLegata }) {
       {/* Phone: name on its own row, relation badge + delete below it. */}
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <Input
-          className="min-w-0 flex-1 basis-full sm:basis-auto"
+          className="min-w-0 flex-1 basis-full sm:w-auto sm:basis-auto"
           placeholder="Nome dell'impresa"
           value={impresa.nome}
           onChange={(e) => set({ nome: e.target.value })}

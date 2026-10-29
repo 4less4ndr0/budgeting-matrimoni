@@ -7,6 +7,7 @@ import LineItemsTable from '@/components/costs/LineItemsTable';
 import DashboardView from '@/components/dashboard/DashboardView';
 import DimensioneImpresaView from '@/components/dimensione/DimensioneImpresaView';
 import ImportExportMenu from '@/components/export/ImportExportMenu';
+import ProgettiView from '@/components/progetti/ProgettiView';
 import GovernanceView from '@/components/governance/GovernanceView';
 import DipendentiView from '@/components/hr/DipendentiView';
 import OrganigrammaView from '@/components/hr/OrganigrammaView';
@@ -18,8 +19,8 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { useAppStore } from '@/lib/storage/store';
 
 // Primo livello (aree dell'azienda) come controllo segmentato, così si distingue a colpo
-// d'occhio dai livelli sotto, che restano tab sottolineate. Su telefono le quattro aree non
-// stanno in una riga: griglia 2×2, così restano tutte visibili senza scorrere. Niente
+// d'occhio dai livelli sotto, che restano tab sottolineate. Su telefono le cinque aree non
+// stanno in una riga: griglia a due colonne, così restano tutte visibili senza scorrere. Niente
 // sfumatura di scorrimento (scroll-fade-x): coprirebbe lo sfondo.
 const AREA_LIST = 'grid h-auto w-full grid-cols-2 gap-1 rounded-lg border-b-0 bg-muted !bg-none p-1 sm:flex sm:w-fit';
 const AREA_TRIGGER =
@@ -42,6 +43,7 @@ export default function App() {
       governance: s.governance,
       supplyChain: s.supplyChain,
       dimensioneImpresa: s.dimensioneImpresa,
+      progetti: s.progetti,
       schemaVersion: s.schemaVersion,
     })),
   );
@@ -59,7 +61,7 @@ export default function App() {
               <div>
                 <h1 className="text-xl font-bold tracking-tight">Regia</h1>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Il sistema unico di controllo d&apos;impresa: conti, persone, governance e filiera
+                  Il sistema unico di controllo d&apos;impresa: conti, persone, governance, filiera e progetti
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2 self-start">
@@ -81,6 +83,9 @@ export default function App() {
               </TabsTrigger>
               <TabsTrigger value="supply-chain" className={AREA_TRIGGER}>
                 Supply Chain
+              </TabsTrigger>
+              <TabsTrigger value="progetti" className={AREA_TRIGGER}>
+                Progetti
               </TabsTrigger>
             </TabsList>
           </div>
@@ -151,6 +156,10 @@ export default function App() {
 
           <TabsContent value="supply-chain">
             <SupplyChainView />
+          </TabsContent>
+
+          <TabsContent value="progetti">
+            <ProgettiView />
           </TabsContent>
         </div>
       </Tabs>

@@ -133,3 +133,16 @@ export function formula(nomeProprio: string, imprese: ImpresaLegata[]): string {
   }
   return parti.join(' + ');
 }
+
+/**
+ * Our own company's class as the Dimensione d'impresa page computes it: ULA from the HR
+ * headcount unless overridden, plus the linked companies. Shared so Progetti can pick the right
+ * aid intensity without re-deriving it.
+ */
+export function classeNostraImpresa(
+  dim: { ulaManuale: number | null; fatturato: number | null; totaleBilancio: number | null; imprese: ImpresaLegata[] },
+  numeroDipendenti: number,
+): ClasseImpresa | null {
+  const propri = { ula: dim.ulaManuale ?? numeroDipendenti, fatturato: dim.fatturato, totaleBilancio: dim.totaleBilancio };
+  return classifica(totaliConLegate(propri, dim.imprese)).classe;
+}
