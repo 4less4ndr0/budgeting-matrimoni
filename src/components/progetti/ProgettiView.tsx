@@ -1,7 +1,7 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppStore } from '@/lib/storage/store';
-import { useProgettoAttivo } from './comuni';
+import { Info, useProgettoAttivo } from './comuni';
 import GanttTab from './GanttTab';
 import OrganizzazioneTab from './OrganizzazioneTab';
 import PortafoglioTab, { STATI } from './PortafoglioTab';
@@ -26,7 +26,9 @@ export default function ProgettiView() {
     <div className="space-y-3">
       {progetti.length > 0 && (
         <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
-          <span className="text-sm text-muted-foreground">Progetto attivo</span>
+          <span className="flex items-center gap-1 text-sm text-muted-foreground">
+            Progetto attivo <Info k="progettoAttivo" />
+          </span>
           <div className="sm:w-96">
             <Select value={progetto?.id ?? ''} onValueChange={(v) => setProgettoAttivo(v)}>
               <SelectTrigger>

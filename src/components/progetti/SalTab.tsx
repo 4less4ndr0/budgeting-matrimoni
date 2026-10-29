@@ -22,10 +22,11 @@ import {
   type PeriodoSal,
 } from '@/lib/progetti/calcoli';
 import { DOCUMENTI_SAL, TIPI_SOGGETTO } from '@/lib/progetti/defaults';
+import { INFO_CATEGORIE, INFO_DOCUMENTI } from '@/lib/progetti/glossario';
 import { useAppStore } from '@/lib/storage/store';
 import { cn } from '@/lib/utils';
 import type { Progetto, Sal, StatoSal, TipologiaRS } from '@/types/domain';
-import { AvvisiBox, Campo, dataBreve, eur, pulisci } from './comuni';
+import { AvvisiBox, Campo, Info, dataBreve, eur, pulisci } from './comuni';
 
 type Aggiorna = (c: Partial<Progetto> | ((p: Progetto) => Progetto)) => void;
 
@@ -86,7 +87,7 @@ function SalCard({
 
       <div className="space-y-4 border-t p-3">
         <div className="grid gap-3 sm:grid-cols-4">
-          <Campo label="Stato">
+          <Campo label="Stato" info="statoSal">
             <Select value={sal.stato} onValueChange={(v) => aggiornaSal((s) => ({ ...s, stato: v as StatoSal }))}>
               <SelectTrigger>
                 <SelectValue />
@@ -101,17 +102,23 @@ function SalCard({
             </Select>
           </Campo>
           <div className="rounded-lg bg-secondary/60 p-2.5 text-sm">
-            <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Target interno</div>
+            <div className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Target interno <Info k="targetInterno" />
+            </div>
             <div className="font-semibold">{dataBreve(per.target)}</div>
             <div className="text-xs text-muted-foreground">{giorniA(per.target)}</div>
           </div>
           <div className="rounded-lg bg-secondary/60 p-2.5 text-sm">
-            <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Scadenza del bando</div>
+            <div className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Scadenza del bando <Info k="scadenzaSal" />
+            </div>
             <div className="font-semibold">{per.scadenza ? dataBreve(per.scadenza) : '—'}</div>
             <div className="text-xs text-muted-foreground">{per.scadenza ? giorniA(per.scadenza) : 'manca nella scheda bando'}</div>
           </div>
           <div className="rounded-lg bg-secondary/60 p-2.5 text-sm">
-            <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Documenti</div>
+            <div className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Documenti <Info k="documentiSal" />
+            </div>
             <div className="font-semibold">
               {totDoc - mancanti}/{totDoc}
             </div>
@@ -122,7 +129,7 @@ function SalCard({
         <div>
           <div className="mb-2 flex items-center gap-1.5 text-sm font-medium">
             Costi pianificati e rendicontati
-            <InfoTooltip content="Contabilità separata: RI e SS restano sempre divisi, perché il bando li finanzia con intensità diverse. I pianificati vengono dai task attivi nel periodo." />
+            <Info k="costiRendicontati" />
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[34rem] text-sm">
@@ -139,7 +146,12 @@ function SalCard({
               <tbody>
                 {categorie.map((c) => (
                   <tr key={c} className="border-t">
-                    <td className="py-1.5 pr-2">{c}</td>
+                    <td className="py-1.5 pr-2">
+                      <span className="flex items-center gap-1">
+                        {c}
+                        {INFO_CATEGORIE[c] && <InfoTooltip content={INFO_CATEGORIE[c]} />}
+                      </span>
+                    </td>
                     {TIPI.map((t) => {
                       const pian = pianificati[t][c] ?? 0;
                       const rend = rendicontati[t][c];
@@ -187,7 +199,7 @@ function SalCard({
         <div>
           <div className="mb-2 flex items-center gap-1.5 text-sm font-medium">
             Documenti da raccogliere
-            <InfoTooltip content="Per ogni OR, a ogni SAL. Li raccoglie l'OR Leader." />
+            <Info k="documentiSal" />
           </div>
           {p.or.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nessun OR nella WBS.</p>
@@ -199,20 +211,24 @@ function SalCard({
                     {codiceOr(p, or.id)} {or.titolo}
                   </div>
                   <div className="space-y-1">
+                    {/* The "i" stays outside the <label>: clicking it must not tick the box. */}
                     {DOCUMENTI_SAL.map((doc) => (
-                      <label key={doc} className="flex items-start gap-2 text-sm">
-                        <Checkbox
-                          className="mt-0.5"
-                          checked={!!sal.documenti[or.id]?.[doc]}
-                          onCheckedChange={(c) =>
-                            aggiornaSal((s) => ({
-                              ...s,
-                              documenti: { ...s.documenti, [or.id]: { ...(s.documenti[or.id] ?? {}), [doc]: c === true } },
-                            }))
-                          }
-                        />
-                        {doc}
-                      </label>
+                      <div key={doc} className="flex items-start gap-1 text-sm">
+                        <label className="flex items-start gap-2">
+                          <Checkbox
+                            className="mt-0.5"
+                            checked={!!sal.documenti[or.id]?.[doc]}
+                            onCheckedChange={(c) =>
+                              aggiornaSal((s) => ({
+                                ...s,
+                                documenti: { ...s.documenti, [or.id]: { ...(s.documenti[or.id] ?? {}), [doc]: c === true } },
+                              }))
+                            }
+                          />
+                          {doc}
+                        </label>
+                        <InfoTooltip content={INFO_DOCUMENTI[doc]} />
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -254,14 +270,16 @@ export default function SalTab({ p, aggiorna }: { p: Progetto; aggiorna: Aggiorn
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-4">
-            <Campo label="Periodicità SAL (mesi)">
+            <Campo label="Periodicità SAL (mesi)" info="periodicitaSal">
               <NumeroInput step="1" min="1" value={p.salMesi} onChange={(v) => aggiorna({ salMesi: Math.max(v ?? 6, 1) })} />
             </Campo>
-            <Campo label="Target interno (giorni dalla chiusura)">
+            <Campo label="Target interno (giorni dalla chiusura)" info="targetInterno">
               <NumeroInput step="1" value={p.targetInternoGiorni} onChange={(v) => aggiorna({ targetInternoGiorni: v ?? 45 })} />
             </Campo>
             <div className="rounded-lg bg-secondary/60 p-2.5 text-sm">
-              <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Intensità di aiuto (noi)</div>
+              <div className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Intensità di aiuto (noi) <Info k="intensitaNoi" />
+            </div>
               <div className="font-semibold">
                 RI {intensita.ri}% · SS {intensita.ss}%
               </div>
@@ -271,7 +289,9 @@ export default function SalTab({ p, aggiorna }: { p: Progetto; aggiorna: Aggiorn
               </div>
             </div>
             <div className="rounded-lg bg-secondary/60 p-2.5 text-sm">
-              <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Contributo atteso totale</div>
+              <div className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Contributo atteso totale <Info k="contributoAtteso" />
+            </div>
               <div className="font-semibold">{eur(totaleContributo)}</div>
               <div className="text-xs text-muted-foreground">sui costi rendicontati</div>
             </div>

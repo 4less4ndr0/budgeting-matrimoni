@@ -14,7 +14,7 @@ import { avvisiScheda, costoStimatoTotale, fineProgetto, intensitaNostra } from 
 import { TIPI_SOGGETTO, presetAccordiInnovazione } from '@/lib/progetti/defaults';
 import { useAppStore } from '@/lib/storage/store';
 import type { Partner, Progetto, SchedaBando, TipoSoggetto, TipologiaRS } from '@/types/domain';
-import { AreaTesto, AvvisiBox, Campo, ListaRighe, dataBreve, eur } from './comuni';
+import { AreaTesto, AvvisiBox, Campo, Info, ListaRighe, dataBreve, eur } from './comuni';
 
 const NESSUNA = '__nessuna__';
 
@@ -123,17 +123,17 @@ function SchedaProgettoCard({ p, aggiorna }: { p: Progetto; aggiorna: (c: Partia
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <Campo label="Titolo" htmlFor="sp-titolo">
+        <Campo label="Titolo" htmlFor="sp-titolo" info="titolo">
           <Input id="sp-titolo" value={p.titolo} onChange={(e) => aggiorna({ titolo: e.target.value })} />
         </Campo>
-        <Campo label="Sintesi" htmlFor="sp-sintesi">
+        <Campo label="Sintesi" htmlFor="sp-sintesi" info="sintesi">
           <AreaTesto id="sp-sintesi" value={p.sintesi} onChange={(v) => aggiorna({ sintesi: v })} />
         </Campo>
         <div className="grid gap-3 sm:grid-cols-2">
-          <Campo label="Capofila" htmlFor="sp-capofila">
+          <Campo label="Capofila" htmlFor="sp-capofila" info="capofila">
             <Input id="sp-capofila" value={p.capofila} onChange={(e) => aggiorna({ capofila: e.target.value })} />
           </Campo>
-          <Campo label="Ambito di intervento" htmlFor="sp-ambito">
+          <Campo label="Ambito di intervento" htmlFor="sp-ambito" info="ambito">
             <Input
               id="sp-ambito"
               placeholder="Area/traiettoria del bando"
@@ -141,24 +141,25 @@ function SchedaProgettoCard({ p, aggiorna }: { p: Progetto; aggiorna: (c: Partia
               onChange={(e) => aggiorna({ ambito: e.target.value })}
             />
           </Campo>
-          <Campo label="Tipo di attività prevalente">
+          <Campo label="Tipo di attività prevalente" info="attivitaPrevalente">
             <TipologiaSelect value={p.attivitaPrevalente} onChange={(v) => aggiorna({ attivitaPrevalente: v })} />
           </Campo>
-          <Campo label="Data di inizio" htmlFor="sp-inizio">
+          <Campo label="Data di inizio" htmlFor="sp-inizio" info="dataInizio">
             <Input id="sp-inizio" type="date" value={p.dataInizio} onChange={(e) => aggiorna({ dataInizio: e.target.value })} />
           </Campo>
-          <Campo label="Durata (mesi)" htmlFor="sp-durata">
+          <Campo label="Durata (mesi)" htmlFor="sp-durata" info="durata">
             <NumeroInput id="sp-durata" step="1" min="1" value={p.durataMesi} onChange={(v) => aggiorna({ durataMesi: v })} />
           </Campo>
-          <Campo label="Fine (calcolata)">
+          <Campo label="Fine (calcolata)" info="fine">
             <div className="flex h-11 items-center text-sm sm:h-9">{dataBreve(fine)}</div>
           </Campo>
-          <Campo label="Budget totale (€)" htmlFor="sp-budget">
+          <Campo label="Budget totale (€)" htmlFor="sp-budget" info="budget">
             <NumeroInput id="sp-budget" value={p.budgetTotale} onChange={(v) => aggiorna({ budgetTotale: v })} />
           </Campo>
           <Campo
             label={`Cofinanziamento del partenariato (€)${quotaCofin !== null ? ` · ${quotaCofin.toLocaleString('it-IT', { maximumFractionDigits: 1 })}% del budget` : ''}`}
             htmlFor="sp-cofin"
+            info="cofinanziamento"
           >
             <NumeroInput id="sp-cofin" value={p.cofinanziamento} onChange={(v) => aggiorna({ cofinanziamento: v })} />
           </Campo>
@@ -167,7 +168,17 @@ function SchedaProgettoCard({ p, aggiorna }: { p: Progetto; aggiorna: (c: Partia
         <div className="space-y-2 border-t pt-3">
           <div className="flex items-center gap-1.5 text-sm font-medium">
             Partner
-            <InfoTooltip content="Il numero associato 1 è il capofila. La nostra impresa prende la dimensione dal calcolatore della Gestione economica." />
+            <Info k="partner" />
+          </div>
+          {/* Column hints for the partner rows, which have no labels of their own. */}
+          <div className="hidden grid-cols-[3.5rem_1fr_13rem_2.5rem] gap-2 px-2 text-xs text-muted-foreground sm:grid">
+            <span className="flex items-center gap-1">
+              N° <Info k="numeroAssociato" />
+            </span>
+            <span>Nome</span>
+            <span className="flex items-center gap-1">
+              Tipo di soggetto <Info k="tipoSoggetto" />
+            </span>
           </div>
           {partner.map((q) => (
             <PartnerRiga
@@ -200,17 +211,19 @@ function SchedaProgettoCard({ p, aggiorna }: { p: Progetto; aggiorna: (c: Partia
             <Plus />
             Aggiungi partner
           </Button>
-          <label className="flex items-center gap-2 pt-1 text-sm">
-            <Checkbox
-              checked={p.collaborazioneEffettiva}
-              onCheckedChange={(c) => aggiorna({ collaborazioneEffettiva: c === true })}
-            />
-            Collaborazione effettiva tra i partner
-            <InfoTooltip content="Se il bando prevede una maggiorazione per la collaborazione effettiva, viene aggiunta all'intensità di aiuto nel contributo atteso dei SAL (tetto dell'80%)." />
-          </label>
+          <div className="flex items-center gap-1 pt-1 text-sm">
+            <label className="flex items-center gap-2">
+              <Checkbox
+                checked={p.collaborazioneEffettiva}
+                onCheckedChange={(c) => aggiorna({ collaborazioneEffettiva: c === true })}
+              />
+              Collaborazione effettiva tra i partner
+            </label>
+            <Info k="collaborazioneEffettiva" />
+          </div>
         </div>
 
-        <Campo label="Info utili per completare il partenariato" htmlFor="sp-partenariato">
+        <Campo label="Info utili per completare il partenariato" htmlFor="sp-partenariato" info="infoPartenariato">
           <AreaTesto
             id="sp-partenariato"
             placeholder="Competenze mancanti → partner search"
@@ -250,11 +263,12 @@ function SchedaBandoCard({ p, aggiorna }: { p: Progetto; aggiorna: (c: Partial<P
             <Wand2 />
             Preset Accordi per l&apos;innovazione
           </Button>
+          <Info k="presetAccordi" />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="grid gap-3 sm:grid-cols-2">
-          <Campo label="Nome / oggetto del bando" htmlFor="sb-nome" className="sm:col-span-2">
+          <Campo label="Nome / oggetto del bando" htmlFor="sb-nome" className="sm:col-span-2" info="nomeBando">
             <Input id="sb-nome" value={b.nome} onChange={(e) => set({ nome: e.target.value })} />
           </Campo>
           <Campo
@@ -270,30 +284,31 @@ function SchedaBandoCard({ p, aggiorna }: { p: Progetto; aggiorna: (c: Partial<P
             }
             htmlFor="sb-link"
             className="sm:col-span-2"
+            info="linkBando"
           >
             <Input id="sb-link" type="url" inputMode="url" value={b.link} onChange={(e) => set({ link: e.target.value })} />
           </Campo>
-          <Campo label="Data rilevazione" htmlFor="sb-ril">
+          <Campo label="Data rilevazione" htmlFor="sb-ril" info="dataRilevazione">
             <Input id="sb-ril" type="date" value={b.dataRilevazione} onChange={(e) => set({ dataRilevazione: e.target.value })} />
           </Campo>
-          <Campo label="Scadenza presentazione" htmlFor="sb-scad">
+          <Campo label="Scadenza presentazione" htmlFor="sb-scad" info="scadenzaBando">
             <Input id="sb-scad" type="date" value={b.scadenza} onChange={(e) => set({ scadenza: e.target.value })} />
           </Campo>
         </div>
-        <Campo label="Obiettivi" htmlFor="sb-obiettivi">
+        <Campo label="Obiettivi" htmlFor="sb-obiettivi" info="obiettiviBando">
           <AreaTesto id="sb-obiettivi" value={b.obiettivi} onChange={(v) => set({ obiettivi: v })} />
         </Campo>
         <div className="grid gap-3 sm:grid-cols-2">
-          <Campo label="Ambiti d'intervento (tecnologie) · uno per riga" htmlFor="sb-ambiti">
+          <Campo label="Ambiti d'intervento (tecnologie) · uno per riga" htmlFor="sb-ambiti" info="ambitiBando">
             <ListaRighe id="sb-ambiti" value={b.ambiti} onChange={(v) => set({ ambiti: v })} />
           </Campo>
-          <Campo label="Codici Ateco ammessi · uno per riga" htmlFor="sb-ateco">
+          <Campo label="Codici Ateco ammessi · uno per riga" htmlFor="sb-ateco" info="ateco">
             <ListaRighe id="sb-ateco" value={b.ateco} onChange={(v) => set({ ateco: v })} placeholder="Es. 62.01" />
           </Campo>
-          <Campo label="Soggetti beneficiari" htmlFor="sb-benef">
+          <Campo label="Soggetti beneficiari" htmlFor="sb-benef" info="beneficiari">
             <Input id="sb-benef" value={b.beneficiari} onChange={(e) => set({ beneficiari: e.target.value })} />
           </Campo>
-          <Campo label="Regime di aiuto">
+          <Campo label="Regime di aiuto" info="regime">
             <Select value={b.regime ?? NESSUNA} onValueChange={(v) => set({ regime: v === NESSUNA ? null : (v as SchedaBando['regime']) })}>
               <SelectTrigger>
                 <SelectValue />
@@ -309,28 +324,28 @@ function SchedaBandoCard({ p, aggiorna }: { p: Progetto; aggiorna: (c: Partial<P
             </Select>
           </Campo>
         </div>
-        <Campo label="Caratteristiche dei progetti e risorse disponibili" htmlFor="sb-caratt">
+        <Campo label="Caratteristiche dei progetti e risorse disponibili" htmlFor="sb-caratt" info="caratteristicheBando">
           <AreaTesto id="sb-caratt" value={b.caratteristiche} onChange={(v) => set({ caratteristiche: v })} />
         </Campo>
         <div className="grid gap-3 sm:grid-cols-3">
-          <Campo label="Spesa minima (€)" htmlFor="sb-min">
+          <Campo label="Spesa minima (€)" htmlFor="sb-min" info="spesaMinMax">
             <NumeroInput id="sb-min" value={b.spesaMin} onChange={(v) => set({ spesaMin: v })} />
           </Campo>
-          <Campo label="Spesa massima (€)" htmlFor="sb-max">
+          <Campo label="Spesa massima (€)" htmlFor="sb-max" info="spesaMinMax">
             <NumeroInput id="sb-max" value={b.spesaMax} onChange={(v) => set({ spesaMax: v })} />
           </Campo>
-          <Campo label="Durata massima (mesi)" htmlFor="sb-durata">
+          <Campo label="Durata massima (mesi)" htmlFor="sb-durata" info="durataMax">
             <NumeroInput id="sb-durata" step="1" value={b.durataMaxMesi} onChange={(v) => set({ durataMaxMesi: v })} />
           </Campo>
         </div>
-        <Campo label="Costi ammissibili (categorie) · una per riga" htmlFor="sb-categorie">
+        <Campo label="Costi ammissibili (categorie) · una per riga" htmlFor="sb-categorie" info="categorieCosto">
           <ListaRighe id="sb-categorie" rows={5} value={b.categorieCosto} onChange={(v) => set({ categorieCosto: v })} />
         </Campo>
 
         <div className="space-y-2 border-t pt-3">
           <div className="flex items-center gap-1.5 text-sm font-medium">
             Intensità di aiuto (%)
-            <InfoTooltip content="Per tipo di soggetto e per RI/SS. La riga della nostra impresa la sceglie la dimensione calcolata in Gestione economica." />
+            <Info k="intensita" />
           </div>
           <div className="grid grid-cols-[1fr_5rem_5rem] items-center gap-2 text-sm">
             <span className="text-xs text-muted-foreground">Soggetto</span>
@@ -357,17 +372,17 @@ function SchedaBandoCard({ p, aggiorna }: { p: Progetto; aggiorna: (c: Partial<P
             ))}
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <Campo label="Finanziamento agevolato (fino al %)" htmlFor="sb-fin">
+            <Campo label="Finanziamento agevolato (fino al %)" htmlFor="sb-fin" info="finanziamentoAgevolato">
               <NumeroInput id="sb-fin" step="1" value={b.finanziamentoAgevolatoPct} onChange={(v) => set({ finanziamentoAgevolatoPct: v })} />
             </Campo>
-            <Campo label="Maggiorazione per collaborazione effettiva (punti %)" htmlFor="sb-magg">
+            <Campo label="Maggiorazione per collaborazione effettiva (punti %)" htmlFor="sb-magg" info="maggiorazione">
               <NumeroInput id="sb-magg" step="1" value={b.maggiorazionePct} onChange={(v) => set({ maggiorazionePct: v })} />
             </Campo>
           </div>
         </div>
 
         <div className="grid gap-3 border-t pt-3 sm:grid-cols-2">
-          <Campo label="Modalità di erogazione" htmlFor="sb-erog">
+          <Campo label="Modalità di erogazione" htmlFor="sb-erog" info="erogazione">
             <Input
               id="sb-erog"
               placeholder="Anticipo / SAL / saldo"
@@ -375,10 +390,10 @@ function SchedaBandoCard({ p, aggiorna }: { p: Progetto; aggiorna: (c: Partial<P
               onChange={(e) => set({ erogazione: e.target.value })}
             />
           </Campo>
-          <Campo label="Scadenza per presentare ogni SAL (giorni dalla chiusura)" htmlFor="sb-gsal">
+          <Campo label="Scadenza per presentare ogni SAL (giorni dalla chiusura)" htmlFor="sb-gsal" info="giorniSal">
             <NumeroInput id="sb-gsal" step="1" value={b.giorniPresentazioneSal} onChange={(v) => set({ giorniPresentazioneSal: v })} />
           </Campo>
-          <Campo label="Modalità di presentazione" htmlFor="sb-pres">
+          <Campo label="Modalità di presentazione" htmlFor="sb-pres" info="modalitaPresentazione">
             <Input
               id="sb-pres"
               placeholder="PEC / piattaforma / altro"
@@ -386,14 +401,14 @@ function SchedaBandoCard({ p, aggiorna }: { p: Progetto; aggiorna: (c: Partial<P
               onChange={(e) => set({ modalitaPresentazione: e.target.value })}
             />
           </Campo>
-          <Campo label="Modulistica (link) · uno per riga" htmlFor="sb-modul">
+          <Campo label="Modulistica (link) · uno per riga" htmlFor="sb-modul" info="modulistica">
             <ListaRighe id="sb-modul" value={b.modulistica} onChange={(v) => set({ modulistica: v })} />
           </Campo>
         </div>
-        <Campo label="Criteri di valutazione" htmlFor="sb-criteri">
+        <Campo label="Criteri di valutazione" htmlFor="sb-criteri" info="criteriValutazione">
           <AreaTesto id="sb-criteri" value={b.criteriValutazione} onChange={(v) => set({ criteriValutazione: v })} />
         </Campo>
-        <Campo label="Nota bene" htmlFor="sb-nb">
+        <Campo label="Nota bene" htmlFor="sb-nb" info="notaBene">
           <AreaTesto id="sb-nb" value={b.notaBene} onChange={(v) => set({ notaBene: v })} />
         </Campo>
       </CardContent>

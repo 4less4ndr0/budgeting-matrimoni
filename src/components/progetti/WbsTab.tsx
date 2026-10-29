@@ -26,10 +26,11 @@ import {
   orOrdinati,
   taskDiOr,
 } from '@/lib/progetti/calcoli';
+import { INFO_CATEGORIE } from '@/lib/progetti/glossario';
 import { aggiungiDeliverable, aggiungiMilestone, aggiungiOr, aggiungiTask, rimuoviOr, rimuoviTask, spostaOr } from '@/lib/progetti/modifiche';
 import { cn } from '@/lib/utils';
 import type { Deliverable, Milestone, ObiettivoRealizzativo, Progetto, StatoDeliverable, Task, TipologiaRS } from '@/types/domain';
-import { AreaTesto, AvvisiBox, Campo, PersonaSelect, eur, pulisci } from './comuni';
+import { AreaTesto, AvvisiBox, Campo, Info, PersonaSelect, eur, pulisci } from './comuni';
 
 type Aggiorna = (c: Partial<Progetto> | ((p: Progetto) => Progetto)) => void;
 
@@ -122,10 +123,10 @@ function TaskRiga({ p, t, aggiorna }: { p: Progetto; t: Task; aggiorna: Aggiorna
       {aperto && (
         <div className="mt-3 space-y-3 border-t pt-3">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Campo label="Partner">
+            <Campo label="Partner" info="partnerTask">
               <MultiScelta etichetta="Partner coinvolti" opzioni={opzioniPartner(p)} selezionati={t.partnerIds} onChange={(ids) => set({ partnerIds: ids })} />
             </Campo>
-            <Campo label="Predecessori (facoltativi)">
+            <Campo label="Predecessori (facoltativi)" info="predecessori">
               <MultiScelta
                 etichetta="Questo task parte dopo…"
                 opzioni={altriTask.map((x) => ({ id: x.id, label: `${codiceTask(p, x)} ${x.titolo}`.trim() }))}
@@ -136,10 +137,13 @@ function TaskRiga({ p, t, aggiorna }: { p: Progetto; t: Task; aggiorna: Aggiorna
             </Campo>
           </div>
           <div>
-            <div className="mb-1.5 text-xs text-muted-foreground">Costo stimato per categoria (€) · totale {eur(costoTask(t))}</div>
+            <div className="mb-1.5 flex items-center gap-1 text-xs text-muted-foreground">
+              Costo stimato per categoria (€) · totale {eur(costoTask(t))}
+              <Info k="costiTask" />
+            </div>
             <div className="grid gap-2 sm:grid-cols-3">
               {categorie.map((c) => (
-                <Campo key={c} label={c}>
+                <Campo key={c} label={c} infoTesto={INFO_CATEGORIE[c]}>
                   <NumeroInput
                     value={t.costiStimati[c] ?? null}
                     onChange={(v) => {
@@ -191,10 +195,10 @@ function OrCard({ p, or, aggiorna }: { p: Progetto; or: ObiettivoRealizzativo; a
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Campo label="Obiettivo operativo" className="sm:col-span-2 lg:col-span-4">
+        <Campo label="Obiettivo operativo" className="sm:col-span-2 lg:col-span-4" info="obiettivoOperativo">
           <AreaTesto rows={2} value={or.obiettivo} onChange={(v) => set({ obiettivo: v })} placeholder="Cosa deve ottenere l'OR" />
         </Campo>
-        <Campo label="Tipologia">
+        <Campo label="Tipologia" info="tipologiaOr">
           <ToggleGroup
             type="single"
             variant="outline"
@@ -206,17 +210,17 @@ function OrCard({ p, or, aggiorna }: { p: Progetto; or: ObiettivoRealizzativo; a
             <ToggleGroupItem value="SS">SS</ToggleGroupItem>
           </ToggleGroup>
         </Campo>
-        <Campo label="OR Leader">
+        <Campo label="OR Leader" info="orLeader">
           <PersonaSelect value={or.leader} onChange={(leader) => set({ leader })} />
         </Campo>
-        <Campo label="Partner coinvolti">
+        <Campo label="Partner coinvolti" info="partnerOr">
           <MultiScelta etichetta="Partner dell'OR" opzioni={opzioniPartner(p)} selezionati={or.partnerIds} onChange={(ids) => set({ partnerIds: ids })} />
         </Campo>
         <div className="grid grid-cols-2 gap-2">
-          <Campo label="Mese inizio">
+          <Campo label="Mese inizio" info="mesiOr">
             <NumeroInput step="1" min="1" placeholder={derivati.inizio ? `M${derivati.inizio}` : 'auto'} value={or.meseInizio} onChange={(v) => set({ meseInizio: v })} />
           </Campo>
-          <Campo label="Mese fine">
+          <Campo label="Mese fine" info="mesiOr">
             <NumeroInput step="1" min="1" placeholder={derivati.fine ? `M${derivati.fine}` : 'auto'} value={or.meseFine} onChange={(v) => set({ meseFine: v })} />
           </Campo>
         </div>
@@ -226,8 +230,20 @@ function OrCard({ p, or, aggiorna }: { p: Progetto; or: ObiettivoRealizzativo; a
         <div className="flex items-center gap-1.5 text-sm font-medium">
           Task
           <InfoTooltip content="L'unità più piccola del progetto. Sommati nel tempo danno il Gantt, sommati nei costi danno il budget." />
-          <span className="hidden text-xs font-normal text-muted-foreground sm:inline">· mese inizio, mese fine, % avanzamento</span>
         </div>
+        {tasks.length > 0 && (
+          // Column hints for the task rows (desktop: same grid as TaskRiga).
+          <div className="hidden grid-cols-[2.5rem_1fr_4.5rem_4.5rem_5rem_5.5rem] gap-2 px-2 text-xs text-muted-foreground sm:grid">
+            <span>Cod.</span>
+            <span>Titolo</span>
+            <span className="col-span-2 flex items-center gap-1">
+              Da M · a M <Info k="mesiTask" />
+            </span>
+            <span className="flex items-center gap-1">
+              % <Info k="avanzamento" />
+            </span>
+          </div>
+        )}
         {tasks.map((t) => (
           <TaskRiga key={t.id} p={p} t={t} aggiorna={aggiorna} />
         ))}
@@ -262,6 +278,23 @@ function DeliverableCard({ p, aggiorna }: { p: Progetto; aggiorna: Aggiorna }) {
       </CardHeader>
       <CardContent className="space-y-2">
         {elenco.length === 0 && <p className="text-sm text-muted-foreground">Nessun deliverable: aggiungili dai dettagli di un task.</p>}
+        {elenco.length > 0 && (
+          <div className="hidden grid-cols-[5.5rem_1fr_10rem_4.5rem_9rem_2.5rem] gap-2 text-xs text-muted-foreground sm:grid">
+            <span className="flex items-center gap-1">
+              Codice <Info k="codiceDeliverable" />
+            </span>
+            <span>Titolo</span>
+            <span className="flex items-center gap-1">
+              Task <Info k="taskDeliverable" />
+            </span>
+            <span className="flex items-center gap-1">
+              Mese <Info k="meseDeliverable" />
+            </span>
+            <span className="flex items-center gap-1">
+              Stato <Info k="statoDeliverable" />
+            </span>
+          </div>
+        )}
         {elenco.map((d) => (
           <div key={d.id} className="grid grid-cols-[5.5rem_1fr_auto] items-center gap-2 sm:grid-cols-[5.5rem_1fr_10rem_4.5rem_9rem_auto]">
             <Input aria-label="Codice" value={d.codice} onChange={(e) => set(d.id, { codice: e.target.value })} />
@@ -332,6 +365,23 @@ function MilestoneCard({ p, aggiorna }: { p: Progetto; aggiorna: Aggiorna }) {
       </CardHeader>
       <CardContent className="space-y-2">
         {p.milestone.length === 0 && <p className="text-sm text-muted-foreground">Nessuna milestone.</p>}
+        {p.milestone.length > 0 && (
+          <div className="hidden grid-cols-[4.5rem_1fr_4.5rem_12rem_5.5rem_2.5rem] gap-2 text-xs text-muted-foreground sm:grid">
+            <span className="flex items-center gap-1">
+              Codice <Info k="codiceMilestone" />
+            </span>
+            <span>Titolo</span>
+            <span className="flex items-center gap-1">
+              Mese <Info k="meseMilestone" />
+            </span>
+            <span className="flex items-center gap-1">
+              Deliverable <Info k="deliverableMilestone" />
+            </span>
+            <span className="flex items-center gap-1">
+              Raggiunta <Info k="raggiunta" />
+            </span>
+          </div>
+        )}
         {[...p.milestone]
           .sort((a, b) => a.mese - b.mese)
           .map((m) => (
