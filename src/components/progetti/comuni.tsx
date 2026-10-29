@@ -52,19 +52,9 @@ export function AvvisiBox({ avvisi }: { avvisi: string[] }) {
   );
 }
 
-/** The "i" next to a field: the explanation from the glossary, with the lesson/slide it comes from. */
+/** The "i" next to a field: the explanation from the glossary. */
 export function Info({ k }: { k: ChiaveGlossario }) {
-  const voce = GLOSSARIO[k];
-  return (
-    <InfoTooltip
-      content={
-        <>
-          {voce.testo}
-          {'fonte' in voce && voce.fonte && <span className="mt-1 block text-[11px] opacity-70">📎 {voce.fonte}</span>}
-        </>
-      }
-    />
-  );
+  return <InfoTooltip content={GLOSSARIO[k].testo} />;
 }
 
 export function Campo({
