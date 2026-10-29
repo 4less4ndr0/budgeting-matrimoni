@@ -24,9 +24,11 @@ import {
   suggerisciColonne,
   type Destinazione,
 } from '@/lib/import/destinazioni';
+import { importaTutto } from '@/lib/import/importaTutto';
 import { readSheets, type NamedSheet } from '@/lib/import/parseFile';
 import { useAppStore } from '@/lib/storage/store';
 
+const TUTTO = 'tutto';
 const MOVIMENTI = 'movimenti';
 const NESSUNA = '-1';
 
@@ -39,7 +41,6 @@ function statoCorrente() {
 }
 
 function ImportaGenerico({ d, onFatto }: { d: Destinazione; onFatto: () => void }) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const [fogli, setFogli] = useState<NamedSheet[] | null>(null);
   const [nomeFile, setNomeFile] = useState('');
   const [foglio, setFoglio] = useState('');
@@ -95,25 +96,7 @@ function ImportaGenerico({ d, onFatto }: { d: Destinazione; onFatto: () => void 
   if (!fogli) {
     return (
       <div className="space-y-3">
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="flex w-full flex-col items-center gap-2 rounded-lg border border-dashed p-8 text-sm text-muted-foreground hover:bg-secondary/50"
-        >
-          <UploadCloud className="h-6 w-6" />
-          Scegli un file .csv o .xlsx
-        </button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".csv,.xlsx,.xls"
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) void leggi(f);
-            e.target.value = '';
-          }}
-        />
+        <SceltaFile onFile={(f) => void leggi(f)} testo="Scegli un file .csv o .xlsx" />
         <p className="text-xs text-muted-foreground">
           Va bene anche l&apos;Excel esportato da Regia: scegli il foglio, le colonne si abbinano da sole. Le righe con lo
           stesso nome aggiornano quelle esistenti, le celle vuote non cancellano nulla.
@@ -278,12 +261,157 @@ function ImportaGenerico({ d, onFatto }: { d: Destinazione; onFatto: () => void 
   );
 }
 
+function SceltaFile({ onFile, testo }: { onFile: (f: File) => void; testo: React.ReactNode }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        className="flex w-full flex-col items-center gap-2 rounded-lg border border-dashed p-8 text-sm text-muted-foreground hover:bg-secondary/50"
+      >
+        <UploadCloud className="h-6 w-6" />
+        {testo}
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".csv,.xlsx,.xls"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onFile(f);
+          e.target.value = '';
+        }}
+      />
+    </>
+  );
+}
+
+/** One file, every sheet recognised and imported in one go: nothing to choose or match by hand. */
+function ImportaTutto({ onFatto }: { onFatto: () => void }) {
+  const [fogli, setFogli] = useState<NamedSheet[] | null>(null);
+  const [nomeFile, setNomeFile] = useState('');
+  const [errore, setErrore] = useState('');
+
+  async function leggi(file: File) {
+    setErrore('');
+    try {
+      const elenco = readSheets(await file.arrayBuffer());
+      if (elenco.length === 0) return setErrore('Il file sembra vuoto.');
+      setFogli(elenco);
+      setNomeFile(file.name);
+    } catch {
+      setErrore('Non riesco a leggere il file: serve un CSV o un Excel (.xlsx).');
+    }
+  }
+
+  // Dry run on the current data: exactly what confirming would do.
+  const esito = useMemo(() => (fogli ? importaTutto(statoCorrente(), fogli) : null), [fogli]);
+  const totale = esito?.importati.reduce((n, x) => n + x.esito.nuovi + x.esito.aggiornati, 0) ?? 0;
+
+  function conferma() {
+    if (!fogli) return;
+    // Recomputed on the latest state, in case something changed while the dialog was open.
+    const e = importaTutto(statoCorrente(), fogli);
+    useAppStore.setState(e.patch);
+    const nuovi = e.importati.reduce((n, x) => n + x.esito.nuovi, 0);
+    const aggiornati = e.importati.reduce((n, x) => n + x.esito.aggiornati, 0);
+    toast.success(`${nomeFile}: importati ${e.importati.length} ${e.importati.length === 1 ? 'foglio' : 'fogli'}`, {
+      description: `${nuovi} ${nuovi === 1 ? 'nuovo' : 'nuovi'}, ${aggiornati} ${aggiornati === 1 ? 'aggiornato' : 'aggiornati'}.`,
+    });
+    onFatto();
+  }
+
+  if (!esito) {
+    return (
+      <div className="space-y-3">
+        <SceltaFile onFile={(f) => void leggi(f)} testo="Scegli un file .xlsx o .csv" />
+        <p className="text-xs text-muted-foreground">
+          Carica l&apos;Excel esportato da Regia, anche modificato: ogni foglio va da solo nella sua schermata e le
+          colonne si abbinano da sole. Le righe con lo stesso nome aggiornano quelle esistenti, le celle vuote non
+          cancellano nulla. Per tornare <em>esattamente</em> com&apos;eri al momento dell&apos;export usa invece
+          «Ripristina da file Regia».
+        </p>
+        {errore && (
+          <Alert variant="destructive">
+            <AlertDescription>{errore}</AlertDescription>
+          </Alert>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm">
+        File: <span className="font-medium">{nomeFile}</span>
+      </p>
+      {esito.importati.length > 0 ? (
+        <div className="overflow-x-auto rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Foglio → schermata</TableHead>
+                <TableHead className="text-right">Nuovi</TableHead>
+                <TableHead className="text-right">Aggiorn.</TableHead>
+                <TableHead className="text-right">Scartati</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {esito.importati.map(({ foglio, destinazione, esito: e }) => (
+                <TableRow key={foglio}>
+                  <TableCell>
+                    <div className="font-medium">{foglio}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {destinazione.area} · {destinazione.label}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{e.nuovi}</TableCell>
+                  <TableCell className="text-right tabular-nums">{e.aggiornati}</TableCell>
+                  <TableCell className={`text-right tabular-nums ${e.scartati ? 'text-amber-700 dark:text-amber-300' : ''}`}>
+                    {e.scartati}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      ) : (
+        <Alert variant="destructive">
+          <AlertDescription>Non ho riconosciuto nessun foglio: scegli qui sopra la schermata e abbina le colonne.</AlertDescription>
+        </Alert>
+      )}
+      {esito.ignorati.length > 0 && (
+        <p className="text-xs text-muted-foreground">
+          Saltati: {esito.ignorati.map((x) => `${x.foglio} (${x.motivo})`).join(' · ')}.
+        </p>
+      )}
+      {esito.importati.some((x) => x.esito.note.length > 0) && (
+        <ul className="max-h-40 space-y-0.5 overflow-y-auto rounded-md border p-2 text-xs text-muted-foreground">
+          {esito.importati.flatMap(({ foglio, esito: e }) => e.note.map((n) => <li key={foglio + n}>· {foglio}, {n}</li>))}
+        </ul>
+      )}
+      <p className="text-xs text-muted-foreground">Niente viene cancellato: si aggiungono i nuovi e si aggiornano gli esistenti.</p>
+      <div className="flex gap-2">
+        <Button variant="secondary" onClick={() => setFogli(null)}>
+          <ArrowLeft />
+          Altro file
+        </Button>
+        <Button onClick={conferma} disabled={totale === 0}>
+          Importa tutto
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Import into any screen: pick the destination, then the file. Movimenti keep their dedicated
  * wizard (sign/type handling, replace mode); everything else goes through the generic one.
  */
 export default function ImportaDati({ onFatto }: { onFatto: () => void }) {
-  const [dest, setDest] = useState(MOVIMENTI);
+  const [dest, setDest] = useState(TUTTO);
   const d = trovaDestinazione(dest);
 
   return (
@@ -295,6 +423,10 @@ export default function ImportaDati({ onFatto }: { onFatto: () => void }) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Automatico</SelectLabel>
+              <SelectItem value={TUTTO}>Tutto il file (riconosce i fogli da solo)</SelectItem>
+            </SelectGroup>
             {AREE.map((area) => (
               <SelectGroup key={area}>
                 <SelectLabel>{area}</SelectLabel>
@@ -309,11 +441,21 @@ export default function ImportaDati({ onFatto }: { onFatto: () => void }) {
           </SelectContent>
         </Select>
         <p className="text-xs text-muted-foreground">
-          {d ? d.descrizione : 'Estratti conto e simili: costi ed entrate del conto economico, con data e importo.'}
+          {dest === TUTTO
+            ? 'Un unico file, ogni foglio nella sua schermata: niente da scegliere né da abbinare.'
+            : d
+              ? d.descrizione
+              : 'Estratti conto e simili: costi ed entrate del conto economico, con data e importo.'}
         </p>
       </div>
       {/* Keyed by destination: switching starts the wizard over. */}
-      {d ? <ImportaGenerico key={d.id} d={d} onFatto={onFatto} /> : <ImportView bare />}
+      {dest === TUTTO ? (
+        <ImportaTutto onFatto={onFatto} />
+      ) : d ? (
+        <ImportaGenerico key={d.id} d={d} onFatto={onFatto} />
+      ) : (
+        <ImportView bare />
+      )}
     </div>
   );
 }
