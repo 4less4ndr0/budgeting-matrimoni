@@ -17,6 +17,7 @@ import {
   orOrdinati,
   periodiSal,
   taskDiOr,
+  termini,
   totaleCosti,
 } from '../progetti/calcoli';
 
@@ -119,7 +120,7 @@ export function fogliProgetti(state: AppState): Array<{ nome: string; righe: Rig
     })),
     ...orOrdinati(p).map((or) => ({
       progetto: titolo(p),
-      ruolo: 'OR Leader',
+      ruolo: termini(p).leader,
       or: codiceOr(p, or.id),
       persona: nomePersona(or.leader, dip),
     })),

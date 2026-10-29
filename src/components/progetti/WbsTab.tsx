@@ -25,11 +25,12 @@ import {
   mesiOr,
   orOrdinati,
   taskDiOr,
+  termini,
 } from '@/lib/progetti/calcoli';
 import { INFO_CATEGORIE } from '@/lib/progetti/glossario';
 import { aggiungiDeliverable, aggiungiMilestone, aggiungiOr, aggiungiTask, rimuoviOr, rimuoviTask, spostaOr } from '@/lib/progetti/modifiche';
 import { cn } from '@/lib/utils';
-import type { Deliverable, Milestone, ObiettivoRealizzativo, Progetto, StatoDeliverable, Task, TipologiaRS } from '@/types/domain';
+import type { Deliverable, Milestone, Nomenclatura, ObiettivoRealizzativo, Progetto, StatoDeliverable, Task, TipologiaRS } from '@/types/domain';
 import { AreaTesto, AvvisiBox, Campo, Info, PersonaSelect, eur, pulisci } from './comuni';
 
 type Aggiorna = (c: Partial<Progetto> | ((p: Progetto) => Progetto)) => void;
@@ -168,6 +169,7 @@ function TaskRiga({ p, t, aggiorna }: { p: Progetto; t: Task; aggiorna: Aggiorna
 }
 
 function OrCard({ p, or, aggiorna }: { p: Progetto; or: ObiettivoRealizzativo; aggiorna: Aggiorna }) {
+  const t = termini(p);
   const set = (patch: Partial<ObiettivoRealizzativo>) => aggiorna((x) => ({ ...x, or: x.or.map((o) => (o.id === or.id ? { ...o, ...patch } : o)) }));
   const derivati = mesiOr(p, { ...or, meseInizio: null, meseFine: null });
   const tasks = taskDiOr(p, or.id);
@@ -180,7 +182,7 @@ function OrCard({ p, or, aggiorna }: { p: Progetto; or: ObiettivoRealizzativo; a
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <span className="font-mono text-sm font-semibold">{codiceOr(p, or.id)}</span>
         {or.tipologia && <Badge className={cn('border-transparent font-normal', COLORE_RS[or.tipologia])}>{or.tipologia}</Badge>}
-        <Input className="min-w-0 flex-1 basis-full sm:w-auto sm:basis-auto" placeholder="Titolo dell'OR" value={or.titolo} onChange={(e) => set({ titolo: e.target.value })} />
+        <Input className="min-w-0 flex-1 basis-full sm:w-auto sm:basis-auto" placeholder={`Titolo ${t.del}`} value={or.titolo} onChange={(e) => set({ titolo: e.target.value })} />
         <div className="ml-auto flex sm:ml-0">
           <Button variant="ghost" size="icon" disabled={primo} onClick={() => aggiorna((x) => spostaOr(x, or.id, -1))} title="Sposta su">
             <ArrowUp />
@@ -188,7 +190,7 @@ function OrCard({ p, or, aggiorna }: { p: Progetto; or: ObiettivoRealizzativo; a
           <Button variant="ghost" size="icon" disabled={ultimo} onClick={() => aggiorna((x) => spostaOr(x, or.id, 1))} title="Sposta giù">
             <ArrowDown />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => aggiorna((x) => rimuoviOr(x, or.id))} title="Elimina OR con i suoi task">
+          <Button variant="ghost" size="icon" onClick={() => aggiorna((x) => rimuoviOr(x, or.id))} title={`Elimina ${t.il} con i suoi task`}>
             <Trash2 className="text-muted-foreground hover:text-destructive" />
           </Button>
         </div>
@@ -196,7 +198,7 @@ function OrCard({ p, or, aggiorna }: { p: Progetto; or: ObiettivoRealizzativo; a
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Campo label="Obiettivo operativo" className="sm:col-span-2 lg:col-span-4" info="obiettivoOperativo">
-          <AreaTesto rows={2} value={or.obiettivo} onChange={(v) => set({ obiettivo: v })} placeholder="Cosa deve ottenere l'OR" />
+          <AreaTesto rows={2} value={or.obiettivo} onChange={(v) => set({ obiettivo: v })} placeholder={`Cosa deve ottenere ${t.il}`} />
         </Campo>
         <Campo label="Tipologia" info="tipologiaOr">
           <ToggleGroup
@@ -210,11 +212,11 @@ function OrCard({ p, or, aggiorna }: { p: Progetto; or: ObiettivoRealizzativo; a
             <ToggleGroupItem value="SS">SS</ToggleGroupItem>
           </ToggleGroup>
         </Campo>
-        <Campo label="OR Leader" info="orLeader">
+        <Campo label={t.leader} info="orLeader">
           <PersonaSelect value={or.leader} onChange={(leader) => set({ leader })} />
         </Campo>
         <Campo label="Partner coinvolti" info="partnerOr">
-          <MultiScelta etichetta="Partner dell'OR" opzioni={opzioniPartner(p)} selezionati={or.partnerIds} onChange={(ids) => set({ partnerIds: ids })} />
+          <MultiScelta etichetta={`Partner ${t.del}`} opzioni={opzioniPartner(p)} selezionati={or.partnerIds} onChange={(ids) => set({ partnerIds: ids })} />
         </Campo>
         <div className="grid grid-cols-2 gap-2">
           <Campo label="Mese inizio" info="mesiOr">
@@ -424,6 +426,7 @@ function MilestoneCard({ p, aggiorna }: { p: Progetto; aggiorna: Aggiorna }) {
 
 export default function WbsTab({ p, aggiorna }: { p: Progetto; aggiorna: Aggiorna }) {
   const ors = orOrdinati(p);
+  const t = termini(p);
   return (
     <div className="space-y-4">
       <AvvisiBox avvisi={avvisiWbs(p)} />
@@ -431,15 +434,32 @@ export default function WbsTab({ p, aggiorna }: { p: Progetto; aggiorna: Aggiorn
         <CardHeader>
           <CardTitle className="flex flex-wrap items-center gap-1.5">
             Work Breakdown Structure
-            <InfoTooltip content="Scomponi il progetto in obiettivi realizzativi (OR) e poi in task, fino a pezzi che puoi stimare e assegnare. Ogni pezzo produce un deliverable." />
+            <InfoTooltip
+              content={`Scomponi il progetto in ${t.plurale.toLowerCase()} (${t.sigla}) e poi in task, fino a pezzi che puoi stimare e assegnare. Ogni pezzo produce un deliverable.`}
+            />
             <span className="text-sm font-normal text-muted-foreground">
-              · {ors.length} OR · {p.task.length} task · costo stimato {eur(costoStimatoTotale(p))}
+              · {ors.length} {t.sigla} · {p.task.length} task · costo stimato {eur(costoStimatoTotale(p))}
             </span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="flex items-center gap-1 text-muted-foreground">
+              Chiamali <Info k="nomenclatura" />
+            </span>
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              size="sm"
+              value={p.nomenclatura ?? 'OR'}
+              onValueChange={(v) => v && aggiorna({ nomenclatura: v as Nomenclatura })}
+            >
+              <ToggleGroupItem value="OR">Obiettivi realizzativi (OR)</ToggleGroupItem>
+              <ToggleGroupItem value="WP">Work Package (WP)</ToggleGroupItem>
+            </ToggleGroup>
+          </div>
           <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            Obiettivi realizzativi
+            {t.plurale}
             <InfoTooltip content="Un sotto-progetto con un obiettivo chiaro, date di inizio e fine e dei deliverable. Tienilo tutto ricerca industriale o tutto sviluppo sperimentale." />
           </div>
           {ors.map((or) => (
@@ -447,7 +467,7 @@ export default function WbsTab({ p, aggiorna }: { p: Progetto; aggiorna: Aggiorn
           ))}
           <Button variant="secondary" onClick={() => aggiorna(aggiungiOr)}>
             <Plus />
-            Aggiungi OR
+            Aggiungi {t.sigla}
           </Button>
         </CardContent>
       </Card>

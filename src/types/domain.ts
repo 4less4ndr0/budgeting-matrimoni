@@ -242,6 +242,11 @@ export interface DimensioneImpresa {
 
 export type StatoProgetto = 'idea' | 'pronto' | 'candidato' | 'in-corso' | 'chiuso' | 'revocato';
 export type TipologiaRS = 'RI' | 'SS'; // ricerca industriale / sviluppo sperimentale
+/**
+ * Come si chiamano le parti della WBS: obiettivi realizzativi (bandi nazionali) o Work Package
+ * (bandi europei). Per il corso sono la stessa cosa: cambia solo il nome mostrato.
+ */
+export type Nomenclatura = 'OR' | 'WP';
 export type TipoSoggetto = 'micro' | 'piccola' | 'media' | 'grande' | 'organismo-ricerca';
 
 /** Un posto nel progetto: un dipendente dell'anagrafica oppure una persona esterna. */
@@ -402,6 +407,7 @@ export interface Progetto {
   // Aggiunto alla bozza della spec: la maggiorazione del bando si applica al contributo
   // atteso solo se c'è davvero collaborazione effettiva tra i partner.
   collaborazioneEffettiva: boolean;
+  nomenclatura: Nomenclatura;
   partner: Partner[];
   bando: SchedaBando;
   voti: Record<string, number>; // criterioId → 1–5

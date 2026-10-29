@@ -134,6 +134,7 @@ export function nuovoProgetto(titolo: string): Progetto {
     budgetTotale: null,
     cofinanziamento: null,
     collaborazioneEffettiva: false,
+    nomenclatura: 'OR',
     partner: [{ id: nanoid(), nome: '', tipo: 'piccola', numeroAssociato: 1, isNostraImpresa: true }],
     bando: bandoVuoto(),
     voti: {},

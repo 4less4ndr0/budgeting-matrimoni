@@ -6,6 +6,7 @@ import {
   avvisiScheda,
   avvisiWbs,
   classificaPortafoglio,
+  codiceOr,
   codiceTask,
   contributoAtteso,
   costiPianificati,
@@ -255,6 +256,19 @@ describe('withProgettiDefaults', () => {
     expect(p.bando.nome).toBe('Bando');
     expect(p.bando.categorieCosto.length).toBeGreaterThan(0);
     expect(p.salMesi).toBe(6);
+    expect(p.nomenclatura).toBe('OR'); // projects saved before the OR/WP choice
     expect(p.task).toEqual([]);
+  });
+});
+
+describe('nomenclatura OR / WP', () => {
+  it('a WP project uses WP in codes, leader and warnings; OR stays the default', () => {
+    const base = progetto({ or: [or('a', 1, { leader: { dipendenteId: null, nomeEsterno: '' } })] });
+    expect(codiceOr(base, 'a')).toBe('OR 1');
+    const wp = { ...base, nomenclatura: 'WP' as const };
+    expect(codiceOr(wp, 'a')).toBe('WP 1');
+    const a = avvisiWbs(wp);
+    expect(a).toContain('Il progetto ha 1 WP: la buona pratica è tra 5 e 10.');
+    expect(a).toContain('WP 1 non ha un WP Leader.');
   });
 });

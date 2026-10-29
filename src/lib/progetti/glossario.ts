@@ -136,23 +136,27 @@ export const GLOSSARIO = {
   notaBene: { testo: 'Tutto ciò che conta e non sta negli altri campi: vincoli particolari, cumulabilità, verifiche da fare subito.' },
 
   // --- WBS ----------------------------------------------------------------------------------------
+  nomenclatura: {
+    testo:
+      'Obiettivi realizzativi (OR) e Work Package (WP) sono la stessa cosa: un sotto-progetto con un obiettivo operativo, dei deliverable, un inizio e una fine. I bandi nazionali (es. MIMIT, MUR) parlano di OR, quelli europei (es. Horizon Europe) di WP. Cambia solo il nome mostrato: codici, leader, Gantt ed Excel si adeguano.',
+  },
   obiettivoOperativo: {
-    testo: 'Cosa deve ottenere l’OR: un risultato chiaro, che produce deliverable e contribuisce agli obiettivi del progetto.',
+    testo: 'Cosa deve ottenere l’OR/WP: un risultato chiaro, che produce deliverable e contribuisce agli obiettivi del progetto.',
   },
   tipologiaOr: {
-    testo: 'RI o SS, mai tutte e due: niente OR misti. Il suggerimento è un OR di RI e uno di SS per partner, più un OR a partecipazione mista per system integration e test. La tipologia vale per tutti i task dell’OR.',
+    testo: 'RI o SS, mai tutte e due: niente OR/WP misti. Il suggerimento è un OR/WP di RI e uno di SS per partner, più un OR/WP a partecipazione mista per system integration e test. La tipologia vale per tutti i task dell’OR/WP.',
   },
   orLeader: {
-    testo: 'Il responsabile tecnico e amministrativo dell’OR, dei suoi task e del gruppo di lavoro. È l’unico riferimento per PM, Grant Office e auditor; raccoglie time sheet e ordini di servizio e prepara le DSAN sui requisiti del personale.',
+    testo: 'Il responsabile tecnico e amministrativo dell’OR/WP, dei suoi task e del gruppo di lavoro. È l’unico riferimento per PM, Grant Office e auditor; raccoglie time sheet e ordini di servizio e prepara le DSAN sui requisiti del personale.',
   },
   partnerOr: {
-    testo: 'Chi lavora sull’OR. Meglio un solo partner per OR: più partner insieme vanno bene per system integration, test e sperimentazione.',
+    testo: 'Chi lavora sull’OR/WP. Meglio un solo partner per OR/WP: più partner insieme vanno bene per system integration, test e sperimentazione.',
   },
   mesiOr: {
     testo: 'Mese di inizio e di fine (M1, M2…), a livello di mese perché è una previsione. Se li lasci vuoti si calcolano dai task; se li scrivi, i task che escono vengono segnalati.',
   },
   mesiTask: { testo: 'Mese di inizio e di fine del task (M1 = primo mese del progetto). Aggregati nel tempo danno il Gantt.' },
-  avanzamento: { testo: 'Quanto del task è fatto, in %. Lo aggiorna l’OR Leader; nel Gantt è il tratto più intenso della barra.' },
+  avanzamento: { testo: 'Quanto del task è fatto, in %. Lo aggiorna l’OR/WP Leader; nel Gantt è il tratto più intenso della barra.' },
   partnerTask: { testo: 'I partner del partenariato che svolgono il task.' },
   predecessori: {
     testo: 'I task che devono finire prima che questo parta (vincoli input/output). Facoltativi: servono per avvisarti se uno sviluppo sperimentale parte prima che finisca la ricerca da cui dipende.',
@@ -182,7 +186,7 @@ export const GLOSSARIO = {
   tipoRischio: {
     testo: 'Tecnico: scostamento tra risultati attesi e ottenuti. Gestionale: tra competenze pianificate e capacità reale del gruppo, oppure imprevisti e binari morti che ritardano il Gantt. Economico: tra costi pianificati e spesi.',
   },
-  orRischio: { testo: 'L’OR su cui pesa il rischio, oppure «Progetto» se riguarda tutto il progetto.' },
+  orRischio: { testo: 'L’OR/WP su cui pesa il rischio, oppure «Progetto» se riguarda tutto il progetto.' },
   probabilita: { testo: 'Quanto è probabile che succeda: 1 = quasi impossibile, 5 = quasi certo.' },
   impatto: { testo: 'Quanto danneggia tempi, costi o qualità se succede: 1 = trascurabile, 5 = compromette il progetto.' },
   segnale: { testo: 'L’indizio da tenere d’occhio che ti dice che il rischio si sta avverando: es. una milestone che slitta, ore rendicontate sopra il previsto.' },
@@ -209,7 +213,7 @@ export const GLOSSARIO = {
   costiRendicontati: {
     testo: 'Le spese effettivamente sostenute e documentate nel periodo, per categoria. RI e SS restano sempre separati (contabilità separata), perché il bando li finanzia con intensità diverse.',
   },
-  documentiSal: { testo: 'Per ogni OR, a ogni SAL. Li raccoglie l’OR Leader e li gestisce il Responsabile Amministrativo con il Grant Office.' },
+  documentiSal: { testo: 'Per ogni OR/WP, a ogni SAL. Li raccoglie l’OR/WP Leader e li gestisce il Responsabile Amministrativo con il Grant Office.' },
 } satisfies Record<string, VoceGlossario>;
 
 export type ChiaveGlossario = keyof typeof GLOSSARIO;

@@ -6,7 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { codiceOr, livelloRischio, orOrdinati, type LivelloRischio } from '@/lib/progetti/calcoli';
+import {
+  codiceOr,
+  livelloRischio,
+  orOrdinati,
+  type LivelloRischio,
+  termini,
+} from '@/lib/progetti/calcoli';
 import { cn } from '@/lib/utils';
 import type { Progetto, Rischio, StatoRischio, TipoRischio } from '@/types/domain';
 import { Campo, PERSONA_VUOTA, PersonaSelect } from './comuni';
@@ -71,7 +77,7 @@ function RischioCard({ p, r, aggiorna }: { p: Progetto; r: Rischio; aggiorna: Ag
             </SelectContent>
           </Select>
         </Campo>
-        <Campo label="OR collegato" info="orRischio">
+        <Campo label={`${termini(p).sigla} collegato`} info="orRischio">
           <Select value={r.orId ?? PROGETTO} onValueChange={(v) => set({ orId: v === PROGETTO ? null : v })}>
             <SelectTrigger>
               <SelectValue />

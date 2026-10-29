@@ -20,6 +20,7 @@ import {
   totaleCosti,
   type CostiRS,
   type PeriodoSal,
+  termini,
 } from '@/lib/progetti/calcoli';
 import { DOCUMENTI_SAL, TIPI_SOGGETTO } from '@/lib/progetti/defaults';
 import { INFO_CATEGORIE, INFO_DOCUMENTI } from '@/lib/progetti/glossario';
@@ -122,7 +123,7 @@ function SalCard({
             <div className="font-semibold">
               {totDoc - mancanti}/{totDoc}
             </div>
-            <div className="text-xs text-muted-foreground">{mancanti ? `${mancanti} da raccogliere` : totDoc ? 'completi' : 'nessun OR'}</div>
+            <div className="text-xs text-muted-foreground">{mancanti ? `${mancanti} da raccogliere` : totDoc ? 'completi' : `nessun ${termini(p).sigla}`}</div>
           </div>
         </div>
 
@@ -202,7 +203,7 @@ function SalCard({
             <Info k="documentiSal" />
           </div>
           {p.or.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nessun OR nella WBS.</p>
+            <p className="text-sm text-muted-foreground">Nessun {termini(p).sigla} nella WBS.</p>
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
               {orOrdinati(p).map((or) => (

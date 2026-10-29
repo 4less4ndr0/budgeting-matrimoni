@@ -14,6 +14,7 @@ import {
   periodoMese,
   posizioneOggi,
   taskDiOr,
+  termini,
 } from '@/lib/progetti/calcoli';
 import { cn } from '@/lib/utils';
 import type { Progetto, TipologiaRS } from '@/types/domain';
@@ -181,7 +182,7 @@ export default function GanttTab({ p }: { p: Progetto }) {
               </div>
 
               {ors.length === 0 && (
-                <Riga etichetta={<span className="text-muted-foreground">Nessun OR nella WBS</span>} mesi={mesi} oggi={oggi} />
+                <Riga etichetta={<span className="text-muted-foreground">Nessun {termini(p).sigla} nella WBS</span>} mesi={mesi} oggi={oggi} />
               )}
 
               {ors.map((or) => {
