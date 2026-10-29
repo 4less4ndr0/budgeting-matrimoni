@@ -43,9 +43,24 @@ export function taskDiOr(p: Progetto, orId: string): Task[] {
   return p.task.filter((t) => t.orId === orId).sort((a, b) => a.ordine - b.ordine);
 }
 
-/** OR codes follow their position, not the stored `ordine`, so they never have gaps. */
+/** The words for the WBS parts of this project: OR (bandi nazionali) or WP (bandi europei). */
+export function termini(p: Pick<Progetto, 'nomenclatura'>) {
+  const wp = p.nomenclatura === 'WP';
+  return {
+    sigla: wp ? 'WP' : 'OR',
+    singolare: wp ? 'Work Package' : 'Obiettivo realizzativo',
+    plurale: wp ? 'Work Package' : 'Obiettivi realizzativi',
+    leader: wp ? 'WP Leader' : 'OR Leader',
+    /** "l'OR" / "il WP" */
+    il: wp ? 'il WP' : "l'OR",
+    /** "dell'OR" / "del WP" */
+    del: wp ? 'del WP' : "dell'OR",
+  };
+}
+
+/** OR/WP codes follow their position, not the stored `ordine`, so they never have gaps. */
 export function codiceOr(p: Progetto, orId: string): string {
-  return `OR ${orOrdinati(p).findIndex((o) => o.id === orId) + 1}`;
+  return `${termini(p).sigla} ${orOrdinati(p).findIndex((o) => o.id === orId) + 1}`;
 }
 
 export function codiceTask(p: Progetto, task: Task): string {
@@ -326,7 +341,7 @@ export function avvisiWbs(p: Progetto): string[] {
   const out: string[] = [];
   const ors = orOrdinati(p);
   if (ors.length > 0 && (ors.length < 5 || ors.length > 10)) {
-    out.push(`Il progetto ha ${ors.length} OR: la buona pratica è tra 5 e 10.`);
+    out.push(`Il progetto ha ${ors.length} ${termini(p).sigla}: la buona pratica è tra 5 e 10.`);
   }
   for (const or of ors) {
     const cod = codiceOr(p, or.id);
@@ -334,7 +349,7 @@ export function avvisiWbs(p: Progetto): string[] {
     if (or.partnerIds.length > 1) {
       out.push(`${cod} è a partecipazione mista: va bene per system integration e test, altrimenti valuta di dividerlo.`);
     }
-    if (!chiavePersona(or.leader)) out.push(`${cod} non ha un OR Leader.`);
+    if (!chiavePersona(or.leader)) out.push(`${cod} non ha un ${termini(p).leader}.`);
     const testo = `${or.titolo} ${or.obiettivo}`.toLowerCase();
     if (or.tipologia === 'RI' && testo.includes("stato dell'arte") && !/\btrl\b/.test(testo)) {
       out.push(`${cod}: se parli di stato dell'arte, esplicita che parti da TRL 3/4.`);
@@ -342,7 +357,7 @@ export function avvisiWbs(p: Progetto): string[] {
     for (const t of taskDiOr(p, or.id)) {
       const ct = codiceTask(p, t);
       if ((or.meseInizio !== null && t.meseInizio < or.meseInizio) || (or.meseFine !== null && t.meseFine > or.meseFine)) {
-        out.push(`Il task ${ct} esce dai mesi dell'OR.`);
+        out.push(`Il task ${ct} esce dai mesi ${termini(p).del}.`);
       }
       if (!p.deliverable.some((d) => d.taskId === t.id)) out.push(`Il task ${ct} non produce nessun deliverable.`);
       if (or.tipologia === 'SS') {

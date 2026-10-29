@@ -102,6 +102,14 @@ describe('import per schermata dal foglio Excel di Regia', () => {
     });
   }
 
+  it('a WP project re-imports its own WBS sheet (codes «WP n») without duplicates', () => {
+    const conWp = { ...state, progetti: { ...state.progetti, progetti: state.progetti.progetti.map((p) => ({ ...p, nomenclatura: 'WP' as const })) } };
+    const sheet = fogliEsportati(conWp).get('Progetti - WBS')!;
+    expect(sheet.rows.some((r) => r.includes('WP 1'))).toBe(true);
+    const e = importaFoglio(DESTINAZIONI.find((x) => x.id === 'task')!, conWp, sheet);
+    expect([e.nuovi, e.scartati]).toEqual([0, 0]);
+  });
+
   it('rebuilds each area into an empty Regia', () => {
     let s = vuoto();
     // Order matters only where one sheet refers to another: ruoli/dipendenti before governance,

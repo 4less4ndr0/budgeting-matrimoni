@@ -9,22 +9,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { Input } from '@/components/ui/input';
-import { avvisiOrganizzazione, chiavePersona, codiceOr, generaRiunioni, orOrdinati } from '@/lib/progetti/calcoli';
+import { avvisiOrganizzazione, chiavePersona, codiceOr, generaRiunioni, orOrdinati, termini } from '@/lib/progetti/calcoli';
 import { cn } from '@/lib/utils';
 import type { MembroCommessa, Persona, Progetto, RuoloCommessa, TipoRiunione } from '@/types/domain';
 import { AvvisiBox, Info, PERSONA_VUOTA, PersonaSelect } from './comuni';
 
 type Aggiorna = (c: Partial<Progetto> | ((p: Progetto) => Progetto)) => void;
 
-const COMPITI: Record<Exclude<RuoloCommessa, 'gruppo-lavoro'> | 'or-leader' | 'gruppo-lavoro', string> = {
-  'steering-committee':
-    'Decide strategia e cambiamenti, approva deliverable e relazioni semestrali, monitora milestone e SAL. 3–5 membri, il PM è chair.',
-  pm: "Responsabilità totale su tempi, costi e qualità; tiene i rapporti tecnici con l'ente finanziatore.",
-  ra: 'Coordina PM, OR Leader, consulenti e Grant Office; monitora scadenze e costi rendicontati per SAL.',
-  'referente-istruttori': "Interfaccia con l'ente finanziatore.",
-  'or-leader': 'Coordina il proprio OR, raccoglie time sheet, ordini di servizio, DSAN.',
-  'gruppo-lavoro': 'Svolge le attività giornaliere.',
-};
+/** Role descriptions; they name the OR/WP Leader the way this project calls it. */
+function compiti(t: ReturnType<typeof termini>): Record<Exclude<RuoloCommessa, 'gruppo-lavoro'> | 'or-leader' | 'gruppo-lavoro', string> {
+  return {
+    'steering-committee':
+      'Decide strategia e cambiamenti, approva deliverable e relazioni semestrali, monitora milestone e SAL. 3–5 membri, il PM è chair.',
+    pm: "Responsabilità totale su tempi, costi e qualità; tiene i rapporti tecnici con l'ente finanziatore.",
+    ra: `Coordina PM, ${t.leader}, consulenti e Grant Office; monitora scadenze e costi rendicontati per SAL.`,
+    'referente-istruttori': "Interfaccia con l'ente finanziatore.",
+    'or-leader': `Coordina il proprio ${t.sigla}, raccoglie time sheet, ordini di servizio, DSAN.`,
+    'gruppo-lavoro': 'Svolge le attività giornaliere.',
+  };
+}
 
 const ETICHETTA_RIUNIONE: Record<TipoRiunione, string> = {
   'kick-off': 'Kick-off',
@@ -116,6 +119,8 @@ export default function OrganizzazioneTab({ p, aggiorna }: { p: Progetto; aggior
   const pm = posto('pm');
   const chiavePm = pm ? chiavePersona(pm) : null;
   const ors = orOrdinati(p);
+  const t = termini(p);
+  const COMPITI = compiti(t);
   const riunioni = [...p.riunioni].sort((a, b) => a.data.localeCompare(b.data));
   const setRiunione = (id: string, patch: Partial<(typeof riunioni)[number]>) =>
     aggiorna((x) => ({ ...x, riunioni: x.riunioni.map((r) => (r.id === id ? { ...r, ...patch } : r)) }));
@@ -127,7 +132,7 @@ export default function OrganizzazioneTab({ p, aggiorna }: { p: Progetto; aggior
         <CardHeader>
           <CardTitle className="flex items-center gap-1.5">
             Organizzazione di commessa
-            <InfoTooltip content="Chi decide (Steering Committee), chi guida (PM e Responsabile Amministrativo) e chi esegue (OR Leader e gruppi di lavoro)." />
+            <InfoTooltip content={`Chi decide (Steering Committee), chi guida (PM e Responsabile Amministrativo) e chi esegue (${t.leader} e gruppi di lavoro).`} />
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -161,7 +166,7 @@ export default function OrganizzazioneTab({ p, aggiorna }: { p: Progetto; aggior
           </Livello>
 
           <Livello titolo="Livello operativo">
-            {ors.length === 0 && <p className="text-sm text-muted-foreground">Aggiungi gli OR nella WBS per assegnare OR Leader e gruppi di lavoro.</p>}
+            {ors.length === 0 && <p className="text-sm text-muted-foreground">Aggiungi gli {t.sigla} nella WBS per assegnare {t.leader} e gruppi di lavoro.</p>}
             <div className="grid gap-3 md:grid-cols-2">
               {ors.map((or) => (
                 <div key={or.id} className="rounded-lg border p-3">
@@ -171,7 +176,7 @@ export default function OrganizzazioneTab({ p, aggiorna }: { p: Progetto; aggior
                   <div className="space-y-3">
                     <div>
                       <div className="mb-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-                        OR Leader
+                        {t.leader}
                         <InfoTooltip content={COMPITI['or-leader']} />
                       </div>
                       <PersonaSelect

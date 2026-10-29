@@ -27,7 +27,7 @@ import type {
 import { fullName, wouldCreateCycle } from '../hr/hr';
 import { nuovoProgetto, progettiVuoti, sganciaDipendente, withProgettiDefaults } from '../progetti/defaults';
 
-const SCHEMA_VERSION = 8;
+const SCHEMA_VERSION = 9;
 
 /**
  * Backfills fields added after data may already have been saved (persisted localStorage,
