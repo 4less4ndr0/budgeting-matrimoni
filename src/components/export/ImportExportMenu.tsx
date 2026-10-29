@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import ImportView from '@/components/import/ImportView';
+import ImportaDati from '@/components/import/ImportaDati';
 import { exportStateSnapshot, type StateSnapshot } from '@/lib/export/exportSnapshot';
 import { exportWorkbook } from '@/lib/export/exportWorkbook';
 import { readRegiaFile } from '@/lib/import/readRegiaFile';
@@ -66,7 +66,7 @@ export default function ImportExportMenu({ state }: { state: AppState }) {
   const loadSnapshot = useAppStore((s) => s.loadSnapshot);
   const fileRef = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<{ nome: string; snapshot: StateSnapshot } | null>(null);
-  const [movimentiAperto, setMovimentiAperto] = useState(false);
+  const [importaAperto, setImportaAperto] = useState(false);
   // Snapshots committed in csv-imports/ (read at build time, so this never changes at runtime).
   const salvatiNelRepo = useMemo(() => listRepoSnapshots(), []);
 
@@ -148,11 +148,11 @@ export default function ImportExportMenu({ state }: { state: AppState }) {
               />
             </DropdownMenuItem>
           ))}
-          <DropdownMenuItem className="items-start" onSelect={() => setMovimentiAperto(true)}>
+          <DropdownMenuItem className="items-start" onSelect={() => setImportaAperto(true)}>
             <Table2 className="mt-0.5" />
             <MenuVoce
-              titolo="Importa movimenti da CSV/Excel"
-              dettaglio="Estratti conto e simili: aggiunge costi ed entrate in Gestione economica."
+              titolo="Importa dati da CSV/Excel…"
+              dettaglio="In qualsiasi schermata: movimenti, fondi, dipendenti, ruoli, organi, filiera, progetti, WBS, rischi."
             />
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -170,16 +170,16 @@ export default function ImportExportMenu({ state }: { state: AppState }) {
         }}
       />
 
-      <Dialog open={movimentiAperto} onOpenChange={setMovimentiAperto}>
+      <Dialog open={importaAperto} onOpenChange={setImportaAperto}>
         <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Importa movimenti</DialogTitle>
+            <DialogTitle>Importa dati</DialogTitle>
             <DialogDescription>
-              Costi ed entrate da un CSV o Excel (estratti conto e simili): finiscono in Gestione economica.
+              Scegli dove importare, poi il file: un CSV o un Excel, anche quello esportato da Regia.
             </DialogDescription>
           </DialogHeader>
           <div className="-mx-1 min-h-0 overflow-y-auto px-1">
-            <ImportView bare />
+            <ImportaDati onFatto={() => setImportaAperto(false)} />
           </div>
         </DialogContent>
       </Dialog>

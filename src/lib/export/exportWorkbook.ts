@@ -97,11 +97,16 @@ export function buildWorkbook(state: AppState, savedAt: string = new Date().toIS
     { voce: 'Progetti', valore: state.progetti.progetti.length },
     { voce: '', valore: '' },
     {
-      voce: 'Reimportare',
+      voce: 'Ripristinare tutto',
       valore:
-        'In Regia: Importa / Esporta → Ripristina da file. Vengono ripristinati i dati com’erano al momento ' +
-        `dell’esportazione (dal foglio nascosto "${DATA_SHEET}", da non modificare né cancellare): le modifiche ` +
-        'fatte a mano negli altri fogli non vengono lette.',
+        'In Regia: Importa / Esporta → Ripristina da file. Torna tutto com’era al momento dell’esportazione ' +
+        `(dal foglio nascosto "${DATA_SHEET}", da non modificare né cancellare).`,
+    },
+    {
+      voce: 'Reimportare un foglio modificato',
+      valore:
+        'In Regia: Importa / Esporta → Importa dati, scegli cosa importare e questo file, poi il foglio. Le righe ' +
+        'con lo stesso nome aggiornano quelle esistenti, le celle vuote non cancellano nulla.',
     },
   ]);
 

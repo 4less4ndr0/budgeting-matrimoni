@@ -38,15 +38,19 @@ nella dashboard.
 - **Importa / Esporta** (menu in alto, vale per tutta la Regia):
   - *Esporta in Excel* (consigliato): un foglio per area, leggibile in Excel/Google Sheets,
     più un foglio nascosto `_regia` con i dati completi — lo stesso `.xlsx` si può
-    **reimportare** con "Ripristina da file" e torna identico (le modifiche fatte a mano
-    negli altri fogli non vengono lette);
+    **reimportare** con "Ripristina da file" e torna identico; un singolo foglio modificato a
+    mano si reimporta invece con "Importa dati";
   - *Esporta in JSON*: la stessa copia completa in formato tecnico; messa in
     `csv-imports/` come `stato-sito.json` il sito la propone da ricaricare in un click;
   - *Ripristina da file Regia* (.xlsx o .json): mostra cosa contiene, chiede conferma e
     offre di scaricare prima un backup dello stato attuale;
   - *Ripristina stato-sito.json*: compare se in `csv-imports/` c'è uno snapshot;
-  - *Importa movimenti da CSV/Excel*: apre il wizard di import dei costi/entrate (non c'è
-    più una tab "Importa" nel BEP).
+  - *Importa dati da CSV/Excel*, per **ogni schermata**: scegli dove importare (movimenti,
+    fondi, voci di budget, imprese collegate, dipendenti, ruoli, membri degli organi, attori
+    della filiera, progetti, OR e task della WBS, rischi), poi file, foglio e colonne (che si
+    abbinano da sole con l'Excel esportato da Regia), anteprima e conferma. Le righe con lo
+    stesso nome aggiornano quelle esistenti, le celle vuote non cancellano nulla e niente
+    viene eliminato. I movimenti mantengono il loro wizard (segno dell'importo, sostituisci).
 - **Dimensione d'impresa** (in Gestione economica, accanto a BEP e Budget): calcolatore
   micro / piccola / media / grande secondo la Raccomandazione 2003/361/CE (DM 18/04/2005).
   ULA dall'anagrafica HR (correggibili a mano), fatturato (voce A.1 del CE) e totale di
