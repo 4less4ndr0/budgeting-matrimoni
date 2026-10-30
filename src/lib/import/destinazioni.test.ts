@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import * as XLSX from 'xlsx';
 import { DESTINAZIONI, mappaturaIncompleta, organoDa, righeDaFoglio, suggerisciColonne, type Destinazione } from './destinazioni';
 import { readSheets, type RawSheet } from './parseFile';
+import { importaTutto, riconosciFoglio } from './importaTutto';
 import { buildWorkbook } from '../export/exportWorkbook';
 import { defaultRevenueAssumptions, defaultRunwayAssumptions } from '../defaults';
 import { criteriPredefiniti, nuovoProgetto } from '../progetti/defaults';
@@ -36,6 +37,11 @@ function ricco(): AppState {
   p = { ...p, task: p.task.map((t, i) => ({ ...t, titolo: ['Analisi', 'Sviluppo'][i], meseInizio: i ? 7 : 1, meseFine: i ? 18 : 6, avanzamentoPct: i ? 0 : 50 })) };
   return {
     ...vuoto(),
+    lineItems: [
+      { id: 'l1', date: '2026-02-01', category: 'Hosting', description: 'Vercel', amount: 20, type: 'cost', source: 'manual', recurring: true },
+      { id: 'l2', date: '2026-02-15', category: 'Vendite', description: 'Primo cliente', amount: 900, type: 'income', source: 'manual', recurring: false },
+    ],
+    lineItemCategories: ['Hosting', 'Vendite'],
     fundEntries: [{ id: 'f', date: '2026-01-10', amount: 50_000, description: 'Capitale iniziale', category: 'Soci' }],
     fundCategories: ['Soci'],
     budgetItems: [{ id: 'b', nome: 'Marketing', importo: 12_000, bloccato: true }],
@@ -195,5 +201,41 @@ describe('import da file qualsiasi', () => {
     const [q] = e.patch.progetti!.progetti;
     expect(q.or).toMatchObject([{ titolo: 'Analisi requisiti', tipologia: 'RI' }]);
     expect(q.task).toMatchObject([{ titolo: 'Interviste', meseInizio: 1, meseFine: 3 }]);
+  });
+});
+
+describe('import di tutto il file in un colpo', () => {
+  const state = ricco();
+  const buffer = XLSX.write(buildWorkbook(state), { type: 'array', bookType: 'xlsx' }) as ArrayBuffer;
+  const fogli = readSheets(buffer);
+
+  it('rebuilds a whole Regia from its own Excel, with no choices to make', () => {
+    const { importati, ignorati, patch } = importaTutto(vuoto(), fogli);
+    expect(importati.map((x) => x.destinazione.id).sort()).toEqual(
+      ['budget', 'dipendenti', 'filiera', 'fondi', 'imprese-legate', 'movimenti', 'organi', 'progetti', 'rischi', 'ruoli', 'task'].sort(),
+    );
+    expect(importati.every((x) => x.esito.scartati === 0)).toBe(true);
+    expect(ignorati.map((x) => x.foglio)).toEqual(expect.arrayContaining(['Leggimi', 'Assunzioni', 'Proiezioni mensili']));
+    const s = { ...vuoto(), ...patch };
+    expect(s.lineItems).toMatchObject([
+      { date: '2026-02-01', description: 'Vercel', amount: 20, type: 'cost', recurring: true },
+      { date: '2026-02-15', description: 'Primo cliente', amount: 900, type: 'income' },
+    ]);
+    expect(s.lineItemCategories).toEqual(['Hosting', 'Vendite']);
+    expect(s.dipendenti).toHaveLength(2);
+    expect(s.governance.membri).toHaveLength(2);
+    expect(s.progetti.progetti[0].task).toHaveLength(2);
+  });
+
+  it('re-importing the same file over itself adds nothing', () => {
+    const { importati } = importaTutto(state, fogli);
+    expect(importati.reduce((n, x) => n + x.esito.nuovi + x.esito.scartati, 0)).toBe(0);
+  });
+
+  it('recognises a sheet with another name from its columns, and gives up when unsure', () => {
+    const sheet = (headers: string[]) => ({ name: 'Foglio1', sheet: { headers, rows: [['x']] } });
+    expect(riconosciFoglio(sheet(['Nome', 'Cognome', 'Data di nascita', 'Ruolo']))?.id).toBe('dipendenti');
+    expect(riconosciFoglio(sheet(['Data', 'Importo', 'Descrizione', 'Tipo']))?.id).toBe('movimenti');
+    expect(riconosciFoglio(sheet(['Colore', 'Taglia']))).toBeNull();
   });
 });

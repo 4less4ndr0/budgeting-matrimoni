@@ -152,7 +152,7 @@ export default function ImportExportMenu({ state }: { state: AppState }) {
             <Table2 className="mt-0.5" />
             <MenuVoce
               titolo="Importa dati da CSV/Excel…"
-              dettaglio="In qualsiasi schermata: movimenti, fondi, dipendenti, ruoli, organi, filiera, progetti, WBS, rischi."
+              dettaglio="Tutto un file in un colpo (ogni foglio va nella sua schermata), oppure una schermata alla volta."
             />
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -175,7 +175,7 @@ export default function ImportExportMenu({ state }: { state: AppState }) {
           <DialogHeader>
             <DialogTitle>Importa dati</DialogTitle>
             <DialogDescription>
-              Scegli dove importare, poi il file: un CSV o un Excel, anche quello esportato da Regia.
+              Carica un file e Regia lo smista da sola, oppure scegli una schermata e abbina le colonne.
             </DialogDescription>
           </DialogHeader>
           <div className="-mx-1 min-h-0 overflow-y-auto px-1">

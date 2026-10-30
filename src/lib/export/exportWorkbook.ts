@@ -103,10 +103,11 @@ export function buildWorkbook(state: AppState, savedAt: string = new Date().toIS
         `(dal foglio nascosto "${DATA_SHEET}", da non modificare né cancellare).`,
     },
     {
-      voce: 'Reimportare un foglio modificato',
+      voce: 'Reimportare il file modificato',
       valore:
-        'In Regia: Importa / Esporta → Importa dati, scegli cosa importare e questo file, poi il foglio. Le righe ' +
-        'con lo stesso nome aggiornano quelle esistenti, le celle vuote non cancellano nulla.',
+        'In Regia: Importa / Esporta → Importa dati → «Tutto il file», e carica questo file: ogni foglio torna da ' +
+        'solo nella sua schermata. Le righe con lo stesso nome aggiornano quelle esistenti, le celle vuote non ' +
+        'cancellano nulla.',
     },
   ]);
 

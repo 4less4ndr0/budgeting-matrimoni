@@ -175,6 +175,71 @@ function aggiungiCategoria(lista: string[], nome: string): string[] {
 
 // --- Gestione economica ----------------------------------------------------------------------
 
+/**
+ * Costi ed entrate as Regia exports them. Not in the selector (the dedicated movimenti wizard
+ * handles bank statements, with sign and replace options): it's here for the whole-file import.
+ */
+export const movimenti: Destinazione = {
+  id: 'movimenti',
+  area: 'Gestione economica',
+  label: 'Movimenti (costi ed entrate)',
+  descrizione: 'Costi ed entrate del conto economico, con data e importo.',
+  fogli: ['Costi e entrate'],
+  campi: [
+    { key: 'data', label: 'Data', obbligatorio: true, sinonimi: ['data', 'date', 'giorno'] },
+    { key: 'importo', label: 'Importo', obbligatorio: true, sinonimi: ['importo', 'amount', 'valore', 'euro'] },
+    { key: 'descrizione', label: 'Descrizione', sinonimi: ['descrizione', 'description', 'causale'] },
+    { key: 'categoria', label: 'Categoria', sinonimi: ['categoria', 'category'] },
+    { key: 'tipo', label: 'Tipo (costo/entrata)', obbligatorio: true, sinonimi: ['tipo', 'type'] },
+    { key: 'ricorrente', label: 'Ricorrente (sì/no)', sinonimi: ['ricorrente', 'recurring'] },
+  ],
+  importa(state, righe) {
+    const e = esito();
+    const lineItems = [...state.lineItems];
+    let lineItemCategories = state.lineItemCategories;
+    righe.forEach((r, i) => {
+      const date = parseDateToISO(r.data);
+      const valore = numero(r.importo);
+      const t = norm(r.tipo);
+      const type = ['costo', 'cost', 'uscita', 'spesa'].includes(t)
+        ? ('cost' as const)
+        : ['entrata', 'income', 'ricavo', 'incasso'].includes(t)
+          ? ('income' as const)
+          : null;
+      if (!date || valore === null) return scarta(e, i, 'data o importo non leggibili');
+      if (!type) return scarta(e, i, `tipo «${r.tipo}» non riconosciuto (costo o entrata)`);
+      const amount = Math.abs(valore);
+      const ricorrente = siNo(r.ricorrente);
+      // Same date, description, amount and type = the same movimento: re-importing doesn't duplicate it.
+      const chiave = `${date}|${norm(r.descrizione)}|${amount}|${type}`;
+      const idx = lineItems.findIndex((l) => `${l.date}|${norm(l.description)}|${l.amount}|${l.type}` === chiave);
+      if (idx > -1) {
+        lineItems[idx] = {
+          ...lineItems[idx],
+          ...soloPieni({ category: r.categoria }),
+          ...(ricorrente !== null ? { recurring: ricorrente } : {}),
+        };
+        e.aggiornati++;
+      } else {
+        lineItems.push({
+          id: nanoid(),
+          date,
+          amount,
+          type,
+          description: r.descrizione,
+          category: r.categoria,
+          source: 'imported',
+          recurring: ricorrente ?? false,
+        });
+        e.nuovi++;
+      }
+      lineItemCategories = aggiungiCategoria(lineItemCategories, r.categoria);
+    });
+    e.patch = { lineItems, lineItemCategories };
+    return e;
+  },
+};
+
 const fondi: Destinazione = {
   id: 'fondi',
   area: 'Gestione economica',
