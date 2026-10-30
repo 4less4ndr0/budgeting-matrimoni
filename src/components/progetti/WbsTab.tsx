@@ -281,7 +281,7 @@ function DeliverableCard({ p, aggiorna }: { p: Progetto; aggiorna: Aggiorna }) {
       <CardContent className="space-y-2">
         {elenco.length === 0 && <p className="text-sm text-muted-foreground">Nessun deliverable: aggiungili dai dettagli di un task.</p>}
         {elenco.length > 0 && (
-          <div className="hidden grid-cols-[5.5rem_1fr_10rem_4.5rem_9rem_2.5rem] gap-2 text-xs text-muted-foreground sm:grid">
+          <div className="hidden grid-cols-[5.5rem_1fr_10rem_4.5rem_9rem_2.5rem] gap-2 text-xs text-muted-foreground lg:grid">
             <span className="flex items-center gap-1">
               Codice <Info k="codiceDeliverable" />
             </span>
@@ -298,10 +298,10 @@ function DeliverableCard({ p, aggiorna }: { p: Progetto; aggiorna: Aggiorna }) {
           </div>
         )}
         {elenco.map((d) => (
-          <div key={d.id} className="grid grid-cols-[5.5rem_1fr_auto] items-center gap-2 sm:grid-cols-[5.5rem_1fr_10rem_4.5rem_9rem_auto]">
+          <div key={d.id} className="grid grid-cols-[5.5rem_1fr_auto] items-center gap-2 lg:grid-cols-[5.5rem_1fr_10rem_4.5rem_9rem_auto] [&>*]:min-w-0">
             <Input aria-label="Codice" value={d.codice} onChange={(e) => set(d.id, { codice: e.target.value })} />
-            <Input placeholder="Titolo" value={d.titolo} onChange={(e) => set(d.id, { titolo: e.target.value })} />
-            <div className="col-span-3 grid grid-cols-[1fr_4.5rem_1fr] gap-2 sm:contents">
+            <Input placeholder="Titolo del deliverable" aria-label="Titolo" value={d.titolo} onChange={(e) => set(d.id, { titolo: e.target.value })} />
+            <div className="col-span-3 grid grid-cols-[1fr_4.5rem_1fr] gap-2 lg:contents [&>*]:min-w-0">
               <Select value={d.taskId} onValueChange={(v) => set(d.id, { taskId: v })}>
                 <SelectTrigger aria-label="Task">
                   <SelectValue />
@@ -331,7 +331,7 @@ function DeliverableCard({ p, aggiorna }: { p: Progetto; aggiorna: Aggiorna }) {
             <Button
               variant="ghost"
               size="icon"
-              className="col-start-3 row-start-1 sm:col-start-auto sm:row-start-auto"
+              className="col-start-3 row-start-1 lg:col-start-auto lg:row-start-auto"
               title="Elimina deliverable"
               onClick={() =>
                 aggiorna((x) => ({
@@ -368,7 +368,7 @@ function MilestoneCard({ p, aggiorna }: { p: Progetto; aggiorna: Aggiorna }) {
       <CardContent className="space-y-2">
         {p.milestone.length === 0 && <p className="text-sm text-muted-foreground">Nessuna milestone.</p>}
         {p.milestone.length > 0 && (
-          <div className="hidden grid-cols-[4.5rem_1fr_4.5rem_12rem_5.5rem_2.5rem] gap-2 text-xs text-muted-foreground sm:grid">
+          <div className="hidden grid-cols-[4.5rem_1fr_4.5rem_12rem_5.5rem_2.5rem] gap-2 text-xs text-muted-foreground lg:grid">
             <span className="flex items-center gap-1">
               Codice <Info k="codiceMilestone" />
             </span>
@@ -387,10 +387,10 @@ function MilestoneCard({ p, aggiorna }: { p: Progetto; aggiorna: Aggiorna }) {
         {[...p.milestone]
           .sort((a, b) => a.mese - b.mese)
           .map((m) => (
-            <div key={m.id} className="grid grid-cols-[4.5rem_1fr_auto] items-center gap-2 sm:grid-cols-[4.5rem_1fr_4.5rem_12rem_auto_auto]">
+            <div key={m.id} className="grid grid-cols-[4.5rem_1fr_auto] items-center gap-2 lg:grid-cols-[4.5rem_1fr_4.5rem_12rem_auto_auto] [&>*]:min-w-0">
               <Input aria-label="Codice" value={m.codice} onChange={(e) => set(m.id, { codice: e.target.value })} />
-              <Input placeholder="Titolo" value={m.titolo} onChange={(e) => set(m.id, { titolo: e.target.value })} />
-              <div className="col-span-3 grid grid-cols-[4.5rem_1fr_auto] items-center gap-2 sm:contents">
+              <Input placeholder="Titolo della milestone" aria-label="Titolo" value={m.titolo} onChange={(e) => set(m.id, { titolo: e.target.value })} />
+              <div className="col-span-3 grid grid-cols-[4.5rem_1fr_auto] items-center gap-2 lg:contents [&>*]:min-w-0">
                 <NumeroInput aria-label="Mese" step="1" min="1" value={m.mese} onChange={(v) => set(m.id, { mese: v ?? 1 })} />
                 <MultiScelta
                   etichetta="Deliverable che la sbloccano"
@@ -407,7 +407,7 @@ function MilestoneCard({ p, aggiorna }: { p: Progetto; aggiorna: Aggiorna }) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="col-start-3 row-start-1 sm:col-start-auto sm:row-start-auto"
+                className="col-start-3 row-start-1 lg:col-start-auto lg:row-start-auto"
                 title="Elimina milestone"
                 onClick={() => aggiorna((x) => ({ ...x, milestone: x.milestone.filter((y) => y.id !== m.id) }))}
               >
